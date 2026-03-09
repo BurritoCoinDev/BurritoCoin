@@ -15,14 +15,16 @@ static const CAmount COIN = 100000000;
 
 /** No amount larger than this (in satoshi) is valid.
  *
- * Note that this constant is *not* the total money supply, which in BurritoCoin
- * currently happens to be less than 21,000,000 BRTO for various reasons, but
- * rather a sanity check. As this sanity check is used by consensus-critical
- * validation code, the exact value of the MAX_MONEY constant is consensus
- * critical; in unusual circumstances like a(nother) overflow bug that allowed
- * for the creation of coins out of thin air modification could lead to a fork.
+ * BurritoCoin hard cap: 21,000,000,000 BRTO total supply.
+ *   - Genesis premine : 148,000,000 BRTO (block 0)
+ *   - Mined supply    : 20,852,000,000 BRTO
+ *       Block reward  : 10 BRTO/block (~2,102,400 BRTO/year at 2.5-min blocks)
+ *       Halving intv. : 1,042,600,000 blocks (~4,960 years – effectively steady)
+ *       Geometric sum : 10 × 1,042,600,000 × 2 = 20,852,000,000 BRTO
+ *
+ * This constant is consensus-critical; modifying it constitutes a hard fork.
  * */
-static const CAmount MAX_MONEY = 84000000 * COIN;
+static const CAmount MAX_MONEY = 21000000000LL * COIN;
 inline bool MoneyRange(const CAmount& nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 
 #endif //  BURRITOCOIN_AMOUNT_H
