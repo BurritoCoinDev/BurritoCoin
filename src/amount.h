@@ -8,12 +8,12 @@
 
 #include <stdint.h>
 
-/** Amount in satoshis (Can be negative) */
+/** Amount in burrioshi (Can be negative) */
 typedef int64_t CAmount;
 
 static const CAmount COIN = 100000000;
 
-/** No amount larger than this (in satoshi) is valid.
+/** No amount larger than this (in burrioshi) is valid.
  *
  * BurritoCoin hard cap: 21,000,000,000 BRTO total supply.
  *   - Genesis premine : 148,000,000 BRTO (block 0)

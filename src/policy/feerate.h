@@ -24,27 +24,27 @@ enum class FeeEstimateMode {
 };
 
 /**
- * Fee rate in satoshis per kilobyte: CAmount / kB
+ * Fee rate in burrioshi per kilobyte: CAmount / kB
  */
 class CFeeRate
 {
 private:
-    CAmount nSatoshisPerK; // unit is satoshis-per-1,000-bytes
+    CAmount nSatoshisPerK; // unit is burrioshi-per-1,000-bytes
     CAmount m_nFeePaid;
     size_t m_nBytes;
     uint64_t m_weight;
 
 public:
-    /** Fee rate of 0 satoshis per kB */
+    /** Fee rate of 0 burrioshi per kB */
     CFeeRate() : nSatoshisPerK(0) { }
     template<typename I>
     explicit CFeeRate(const I _nSatoshisPerK): nSatoshisPerK(_nSatoshisPerK) {
         // We've previously had bugs creep in from silent double->int conversion...
         static_assert(std::is_integral<I>::value, "CFeeRate should be used without floats");
     }
-    /** Constructor for a fee rate in satoshis per kvB (sat/kvB). The size in bytes must not exceed (2^63 - 1).
+    /** Constructor for a fee rate in burrioshi per kvB (sat/kvB). The size in bytes must not exceed (2^63 - 1).
      *
-     *  Passing an nBytes value of COIN (1e8) returns a fee rate in satoshis per vB (sat/vB),
+     *  Passing an nBytes value of COIN (1e8) returns a fee rate in burrioshi per vB (sat/vB),
      *  e.g. (nFeePaid * 1e8 / 1e3) == (nFeePaid / 1e5),
      *  where 1e5 is the ratio to convert from BRTO/kvB to sat/vB.
      *
@@ -54,15 +54,15 @@ public:
      */
     CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight);
     /**
-     * Return the fee in satoshis for the given size in bytes.
+     * Return the fee in burrioshi for the given size in bytes.
      */
     CAmount GetFee(size_t nBytes_) const;
     /**
-     * Return the fee in satoshis for the given MWEB weight.
+     * Return the fee in burrioshi for the given MWEB weight.
      */
     CAmount GetMWEBFee(uint64_t mweb_weight) const;
     /**
-     * Return the fee in satoshis for the given size in bytes & MWEB weight.
+     * Return the fee in burrioshi for the given size in bytes & MWEB weight.
      */
     CAmount GetTotalFee(size_t nBytes, uint64_t mweb_weight) const;
     /**
