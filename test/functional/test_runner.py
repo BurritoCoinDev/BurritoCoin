@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2020 The Bitcoin Core developers
+# Copyright (c) 2014-2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Run regression test suite.
@@ -8,7 +8,7 @@ This module calls down into individual test cases via subprocess. It will
 forward all unrecognized arguments onto the individual test scripts.
 
 For a description of arguments recognized by test scripts, see
-`test/functional/test_framework/test_framework.py:BitcoinTestFramework.main`.
+`test/functional/test_framework/test_framework.py:BurritoCoinTestFramework.main`.
 
 """
 
@@ -135,7 +135,7 @@ BASE_SCRIPTS = [
     'wallet_keypool_topup.py --descriptors',
     'feature_fee_estimation.py',
     'interface_zmq.py',
-    'interface_bitcoin_cli.py',
+    'interface_burritocoin_cli.py',
     'mempool_resurrect.py',
     'wallet_txn_doublespend.py --mineblock',
     'tool_wallet.py',
@@ -364,9 +364,9 @@ def main():
 
     logging.debug("Temporary test directory at %s" % tmpdir)
 
-    enable_bitcoind = config["components"].getboolean("ENABLE_BITCOIND")
+    enable_burritocoind = config["components"].getboolean("ENABLE_BURRITOCOIND")
 
-    if not enable_bitcoind:
+    if not enable_burritocoind:
         print("No functional tests to run.")
         print("Rerun ./configure with --with-daemon and then make")
         sys.exit(0)
@@ -447,11 +447,11 @@ def main():
 def run_tests(*, test_list, src_dir, build_dir, tmpdir, jobs=1, enable_coverage=False, args=None, combined_logs_len=0, failfast=False, use_term_control):
     args = args or []
 
-    # Warn if bitcoind is already running
+    # Warn if burritocoind is already running
     try:
         # pgrep exits with code zero when one or more matching processes found
-        if subprocess.run(["pgrep", "-x", "litecoind"], stdout=subprocess.DEVNULL).returncode == 0:
-            print("%sWARNING!%s There is already a litecoind process running on this system. Tests may fail unexpectedly due to resource contention!" % (BOLD[1], BOLD[0]))
+        if subprocess.run(["pgrep", "-x", "burritocoind"], stdout=subprocess.DEVNULL).returncode == 0:
+            print("%sWARNING!%s There is already a burritocoind process running on this system. Tests may fail unexpectedly due to resource contention!" % (BOLD[1], BOLD[0]))
     except OSError:
         # pgrep not supported
         pass
@@ -725,7 +725,7 @@ class RPCCoverage():
     Coverage calculation works by having each test script subprocess write
     coverage files into a particular directory. These files contain the RPC
     commands invoked during testing, as well as a complete listing of RPC
-    commands per `litecoin-cli help` (`rpc_interface.txt`).
+    commands per `burritocoin-cli help` (`rpc_interface.txt`).
 
     After all tests complete, the commands run are combined and diff'd against
     the complete list to calculate uncovered RPC commands.

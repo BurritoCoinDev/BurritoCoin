@@ -1,34 +1,34 @@
-// Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2011-2019 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <qt/bitcoinunits.h>
+#include <qt/burritocoinunits.h>
 
 #include <QStringList>
 
 #include <cassert>
 
-BitcoinUnits::BitcoinUnits(QObject *parent):
+BurritoCoinUnits::BurritoCoinUnits(QObject *parent):
         QAbstractListModel(parent),
         unitlist(availableUnits())
 {
 }
 
-QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
+QList<BurritoCoinUnits::Unit> BurritoCoinUnits::availableUnits()
 {
-    QList<BitcoinUnits::Unit> unitlist;
-    unitlist.append(BTC);
+    QList<BurritoCoinUnits::Unit> unitlist;
+    unitlist.append(BRTO);
     unitlist.append(mBTC);
     unitlist.append(uBTC);
     unitlist.append(SAT);
     return unitlist;
 }
 
-bool BitcoinUnits::valid(int unit)
+bool BurritoCoinUnits::valid(int unit)
 {
     switch(unit)
     {
-    case BTC:
+    case BRTO:
     case mBTC:
     case uBTC:
     case SAT:
@@ -38,19 +38,19 @@ bool BitcoinUnits::valid(int unit)
     }
 }
 
-QString BitcoinUnits::longName(int unit)
+QString BurritoCoinUnits::longName(int unit)
 {
     switch(unit)
     {
-    case BTC: return QString("LTC");
-    case mBTC: return QString("lites");
-    case uBTC: return QString("photons");
-    case SAT: return QString("liteoshi");
+    case BRTO: return QString("BRTO");
+    case mBTC: return QString("burritos");
+    case uBTC: return QString("morsels");
+    case SAT: return QString("burrioshi");
     default: return QString("???");
     }
 }
 
-QString BitcoinUnits::shortName(int unit)
+QString BurritoCoinUnits::shortName(int unit)
 {
     switch(unit)
     {
@@ -60,11 +60,11 @@ QString BitcoinUnits::shortName(int unit)
     }
 }
 
-QString BitcoinUnits::description(int unit)
+QString BurritoCoinUnits::description(int unit)
 {
     switch(unit)
     {
-    case BTC: return QString("Litecoins");
+    case BRTO: return QString("BurritoCoins");
     case mBTC: return QString("Lites (1 / 1" THIN_SP_UTF8 "000)");
     case uBTC: return QString("Photons (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     case SAT: return QString("Liteoshis (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
@@ -72,11 +72,11 @@ QString BitcoinUnits::description(int unit)
     }
 }
 
-qint64 BitcoinUnits::factor(int unit)
+qint64 BurritoCoinUnits::factor(int unit)
 {
     switch(unit)
     {
-    case BTC: return 100000000;
+    case BRTO: return 100000000;
     case mBTC: return 100000;
     case uBTC: return 100;
     case SAT: return 1;
@@ -84,11 +84,11 @@ qint64 BitcoinUnits::factor(int unit)
     }
 }
 
-int BitcoinUnits::decimals(int unit)
+int BurritoCoinUnits::decimals(int unit)
 {
     switch(unit)
     {
-    case BTC: return 8;
+    case BRTO: return 8;
     case mBTC: return 5;
     case uBTC: return 2;
     case SAT: return 0;
@@ -96,7 +96,7 @@ int BitcoinUnits::decimals(int unit)
     }
 }
 
-QString BitcoinUnits::format(int unit, const CAmount& nIn, bool fPlus, SeparatorStyle separators, bool justify)
+QString BurritoCoinUnits::format(int unit, const CAmount& nIn, bool fPlus, SeparatorStyle separators, bool justify)
 {
     // Note: not using straight sprintf here because we do NOT want
     // localized number formatting.
@@ -141,19 +141,19 @@ QString BitcoinUnits::format(int unit, const CAmount& nIn, bool fPlus, Separator
 // Please take care to use formatHtmlWithUnit instead, when
 // appropriate.
 
-QString BitcoinUnits::formatWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)
+QString BurritoCoinUnits::formatWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)
 {
     return format(unit, amount, plussign, separators) + QString(" ") + shortName(unit);
 }
 
-QString BitcoinUnits::formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)
+QString BurritoCoinUnits::formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)
 {
     QString str(formatWithUnit(unit, amount, plussign, separators));
     str.replace(QChar(THIN_SP_CP), QString(THIN_SP_HTML));
     return QString("<span style='white-space: nowrap;'>%1</span>").arg(str);
 }
 
-QString BitcoinUnits::formatWithPrivacy(int unit, const CAmount& amount, SeparatorStyle separators, bool privacy)
+QString BurritoCoinUnits::formatWithPrivacy(int unit, const CAmount& amount, SeparatorStyle separators, bool privacy)
 {
     assert(amount >= 0);
     QString value;
@@ -165,7 +165,7 @@ QString BitcoinUnits::formatWithPrivacy(int unit, const CAmount& amount, Separat
     return value + QString(" ") + shortName(unit);
 }
 
-bool BitcoinUnits::parse(int unit, const QString &value, CAmount *val_out)
+bool BurritoCoinUnits::parse(int unit, const QString &value, CAmount *val_out)
 {
     if(!valid(unit) || value.isEmpty())
         return false; // Refuse to parse invalid unit or empty string
@@ -204,23 +204,23 @@ bool BitcoinUnits::parse(int unit, const QString &value, CAmount *val_out)
     return ok;
 }
 
-QString BitcoinUnits::getAmountColumnTitle(int unit)
+QString BurritoCoinUnits::getAmountColumnTitle(int unit)
 {
     QString amountTitle = QObject::tr("Amount");
-    if (BitcoinUnits::valid(unit))
+    if (BurritoCoinUnits::valid(unit))
     {
-        amountTitle += " ("+BitcoinUnits::shortName(unit) + ")";
+        amountTitle += " ("+BurritoCoinUnits::shortName(unit) + ")";
     }
     return amountTitle;
 }
 
-int BitcoinUnits::rowCount(const QModelIndex &parent) const
+int BurritoCoinUnits::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return unitlist.size();
 }
 
-QVariant BitcoinUnits::data(const QModelIndex &index, int role) const
+QVariant BurritoCoinUnits::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     if(row >= 0 && row < unitlist.size())
@@ -240,7 +240,7 @@ QVariant BitcoinUnits::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-CAmount BitcoinUnits::maxMoney()
+CAmount BurritoCoinUnits::maxMoney()
 {
     return MAX_MONEY;
 }

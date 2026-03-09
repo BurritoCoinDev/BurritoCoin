@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2019 The Bitcoin Core developers
+// Copyright (c) 2009-2019 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_OUTPUTTYPE_H
-#define BITCOIN_OUTPUTTYPE_H
+#ifndef BURRITOCOIN_OUTPUTTYPE_H
+#define BURRITOCOIN_OUTPUTTYPE_H
 
 #include <attributes.h>
 #include <mw/models/crypto/SecretKey.h>
@@ -43,4 +43,4 @@ std::vector<CTxDestination> GetAllDestinationsForKey(const CPubKey& key, const S
  */
 CTxDestination AddAndGetDestinationForScript(FillableSigningProvider& keystore, const CScript& script, OutputType);
 
-#endif // BITCOIN_OUTPUTTYPE_H
+#endif // BURRITOCOIN_OUTPUTTYPE_H

@@ -2,41 +2,41 @@
 
 # backward compatibility for existing gentoo layout 
 #
-if [ -d "/var/lib/bitcoin/.bitcoin" ]; then
-	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.bitcoin"
+if [ -d "/var/lib/burritocoin/.burritocoin" ]; then
+	BURRITOCOIND_DEFAULT_DATADIR="/var/lib/burritocoin/.burritocoin"
 else
-	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoind"
+	BURRITOCOIND_DEFAULT_DATADIR="/var/lib/burritocoind"
 fi
 
-BITCOIND_CONFIGFILE=${BITCOIND_CONFIGFILE:-/etc/bitcoin/bitcoin.conf}
-BITCOIND_PIDDIR=${BITCOIND_PIDDIR:-/var/run/bitcoind}
-BITCOIND_PIDFILE=${BITCOIND_PIDFILE:-${BITCOIND_PIDDIR}/bitcoind.pid}
-BITCOIND_DATADIR=${BITCOIND_DATADIR:-${BITCOIND_DEFAULT_DATADIR}}
-BITCOIND_USER=${BITCOIND_USER:-${BITCOIN_USER:-bitcoin}}
-BITCOIND_GROUP=${BITCOIND_GROUP:-bitcoin}
-BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/bitcoind}
-BITCOIND_NICE=${BITCOIND_NICE:-${NICELEVEL:-0}}
-BITCOIND_OPTS="${BITCOIND_OPTS:-${BITCOIN_OPTS}}"
+BURRITOCOIND_CONFIGFILE=${BURRITOCOIND_CONFIGFILE:-/etc/burritocoin/burritocoin.conf}
+BURRITOCOIND_PIDDIR=${BURRITOCOIND_PIDDIR:-/var/run/burritocoind}
+BURRITOCOIND_PIDFILE=${BURRITOCOIND_PIDFILE:-${BURRITOCOIND_PIDDIR}/burritocoind.pid}
+BURRITOCOIND_DATADIR=${BURRITOCOIND_DATADIR:-${BURRITOCOIND_DEFAULT_DATADIR}}
+BURRITOCOIND_USER=${BURRITOCOIND_USER:-${BURRITOCOIN_USER:-burritocoin}}
+BURRITOCOIND_GROUP=${BURRITOCOIND_GROUP:-burritocoin}
+BURRITOCOIND_BIN=${BURRITOCOIND_BIN:-/usr/bin/burritocoind}
+BURRITOCOIND_NICE=${BURRITOCOIND_NICE:-${NICELEVEL:-0}}
+BURRITOCOIND_OPTS="${BURRITOCOIND_OPTS:-${BURRITOCOIN_OPTS}}"
 
-name="Bitcoin Core Daemon"
-description="Bitcoin cryptocurrency P2P network daemon"
+name="BurritoCoin Core Daemon"
+description="BurritoCoin cryptocurrency P2P network daemon"
 
-command="/usr/bin/bitcoind"
-command_args="-pid=\"${BITCOIND_PIDFILE}\" \
-		-conf=\"${BITCOIND_CONFIGFILE}\" \
-		-datadir=\"${BITCOIND_DATADIR}\" \
+command="/usr/bin/burritocoind"
+command_args="-pid=\"${BURRITOCOIND_PIDFILE}\" \
+		-conf=\"${BURRITOCOIND_CONFIGFILE}\" \
+		-datadir=\"${BURRITOCOIND_DATADIR}\" \
 		-daemon \
-		${BITCOIND_OPTS}"
+		${BURRITOCOIND_OPTS}"
 
-required_files="${BITCOIND_CONFIGFILE}"
-start_stop_daemon_args="-u ${BITCOIND_USER} \
-			-N ${BITCOIND_NICE} -w 2000"
-pidfile="${BITCOIND_PIDFILE}"
+required_files="${BURRITOCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${BURRITOCOIND_USER} \
+			-N ${BURRITOCOIND_NICE} -w 2000"
+pidfile="${BURRITOCOIND_PIDFILE}"
 
 # The retry schedule to use when stopping the daemon. Could be either
 # a timeout in seconds or multiple signal/timeout pairs (like
 # "SIGKILL/180 SIGTERM/300")
-retry="${BITCOIND_SIGTERM_TIMEOUT}"
+retry="${BURRITOCOIND_SIGTERM_TIMEOUT}"
 
 depend() {
 	need localmount net
@@ -50,29 +50,29 @@ start_pre() {
 	checkpath \
 	-d \
 	--mode 0750 \
-	--owner "${BITCOIND_USER}:${BITCOIND_GROUP}" \
-	"${BITCOIND_DATADIR}"
+	--owner "${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP}" \
+	"${BURRITOCOIND_DATADIR}"
 
 	checkpath \
 	-d \
 	--mode 0755 \
-	--owner "${BITCOIND_USER}:${BITCOIND_GROUP}" \
-	"${BITCOIND_PIDDIR}"
+	--owner "${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP}" \
+	"${BURRITOCOIND_PIDDIR}"
 
 	checkpath -f \
-	-o ${BITCOIND_USER}:${BITCOIND_GROUP} \
+	-o ${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP} \
 	-m 0660 \
-	${BITCOIND_CONFIGFILE}
+	${BURRITOCOIND_CONFIGFILE}
 
 	checkconfig || return 1
 }
 
 checkconfig()
 {
-	if ! grep -qs '^rpcpassword=' "${BITCOIND_CONFIGFILE}" ; then
+	if ! grep -qs '^rpcpassword=' "${BURRITOCOIND_CONFIGFILE}" ; then
 		eerror ""
-		eerror "ERROR: You must set a secure rpcpassword to run bitcoind."
-		eerror "The setting must appear in ${BITCOIND_CONFIGFILE}"
+		eerror "ERROR: You must set a secure rpcpassword to run burritocoind."
+		eerror "The setting must appear in ${BURRITOCOIND_CONFIGFILE}"
 		eerror ""
 		eerror "This password is security critical to securing wallets "
 		eerror "and must not be the same as the rpcuser setting."
@@ -84,7 +84,7 @@ checkconfig()
 		eerror "It is recommended that you also set alertnotify so you are "
 		eerror "notified of problems:"
 		eerror ""
-		eerror "ie: alertnotify=echo %%s | mail -s \"Bitcoin Alert\"" \
+		eerror "ie: alertnotify=echo %%s | mail -s \"BurritoCoin Alert\"" \
 			"admin@foo.com"
 		eerror ""
 		return 1

@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2020 The Bitcoin Core developers
+// Copyright (c) 2011-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BITCOINUNITS_H
-#define BITCOIN_QT_BITCOINUNITS_H
+#ifndef BURRITOCOIN_QT_BURRITOCOINUNITS_H
+#define BURRITOCOIN_QT_BURRITOCOINUNITS_H
 
 #include <amount.h>
 
@@ -25,22 +25,22 @@
 #define THIN_SP_UTF8 REAL_THIN_SP_UTF8
 #define THIN_SP_HTML HTML_HACK_SP
 
-/** Bitcoin unit definitions. Encapsulates parsing and formatting
+/** BurritoCoin unit definitions. Encapsulates parsing and formatting
    and serves as list model for drop-down selection boxes.
 */
-class BitcoinUnits: public QAbstractListModel
+class BurritoCoinUnits: public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    explicit BitcoinUnits(QObject *parent);
+    explicit BurritoCoinUnits(QObject *parent);
 
-    /** Bitcoin units.
-      @note Source: https://en.bitcoin.it/wiki/Units . Please add only sensible ones
+    /** BurritoCoin units.
+      @note Source: https://en.burritocoin.it/wiki/Units . Please add only sensible ones
      */
     enum Unit
     {
-        BTC,
+        BRTO,
         mBTC,
         uBTC,
         SAT
@@ -107,8 +107,8 @@ public:
     static CAmount maxMoney();
 
 private:
-    QList<BitcoinUnits::Unit> unitlist;
+    QList<BurritoCoinUnits::Unit> unitlist;
 };
-typedef BitcoinUnits::Unit BitcoinUnit;
+typedef BurritoCoinUnits::Unit BurritoCoinUnit;
 
-#endif // BITCOIN_QT_BITCOINUNITS_H
+#endif // BURRITOCOIN_QT_BURRITOCOINUNITS_H

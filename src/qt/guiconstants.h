@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2020 The Bitcoin Core developers
+// Copyright (c) 2011-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_GUICONSTANTS_H
-#define BITCOIN_QT_GUICONSTANTS_H
+#ifndef BURRITOCOIN_QT_GUICONSTANTS_H
+#define BURRITOCOIN_QT_GUICONSTANTS_H
 
 #include <cstdint>
 
@@ -13,7 +13,7 @@ static const int MODEL_UPDATE_DELAY = 250;
 /* AskPassphraseDialog -- Maximum passphrase length */
 static const int MAX_PASSPHRASE_SIZE = 1024;
 
-/* BitcoinGUI -- Size of icons in status bar */
+/* BurritoCoinGUI -- Size of icons in status bar */
 static const int STATUSBAR_ICONSIZE = 16;
 
 static const bool DEFAULT_SPLASHSCREEN = true;
@@ -42,12 +42,12 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 /* Number of frames in spinner animation */
 #define SPINNER_FRAMES 36
 
-#define QAPP_ORG_NAME "Litecoin"
-#define QAPP_ORG_DOMAIN "litecoin.org"
-#define QAPP_APP_NAME_DEFAULT "Litecoin-Qt"
+#define QAPP_ORG_NAME "BurritoCoin"
+#define QAPP_ORG_DOMAIN "burritocoin.org"
+#define QAPP_APP_NAME_DEFAULT "BurritoCoin-Qt"
 #define QAPP_APP_NAME_TESTNET "Liteocin-Qt-testnet"
-#define QAPP_APP_NAME_SIGNET "Litecoin-Qt-signet"
-#define QAPP_APP_NAME_REGTEST "Litecoin-Qt-regtest"
+#define QAPP_APP_NAME_SIGNET "BurritoCoin-Qt-signet"
+#define QAPP_APP_NAME_REGTEST "BurritoCoin-Qt-regtest"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1000000000};
@@ -55,4 +55,4 @@ static constexpr uint64_t GB_BYTES{1000000000};
 // Default prune target displayed in GUI.
 static constexpr int DEFAULT_PRUNE_TARGET_GB{2};
 
-#endif // BITCOIN_QT_GUICONSTANTS_H
+#endif // BURRITOCOIN_QT_GUICONSTANTS_H

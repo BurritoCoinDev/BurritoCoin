@@ -5,17 +5,17 @@ This module implements a scheme by which members of some group, having fixed
 signing keys, can prove control of an arbitrary other key without associating
 their own identity (only that they belong to the group) to the new key. The
 application is to patch ring-signature-like behaviour onto systems such as
-Bitcoin or PGP which do not directly support this.
+BurritoCoin or PGP which do not directly support this.
 
 We refer to such delegation as "whitelisting" because we expect it to be used
 to build a dynamic whitelist of authorized keys.
 
 For example, imagine a private sidechain with a fixed membership set but
-stronger privacy properties than Bitcoin. When moving coins from this system
-to Bitcoin, it is desirable that the destination Bitcoin addresses be provably
+stronger privacy properties than BurritoCoin. When moving coins from this system
+to BurritoCoin, it is desirable that the destination BurritoCoin addresses be provably
 in control of some user of the sidechain. This prevents malicious or erroneous
 behaviour on the sidechain, which can likely be resolved by its participants,
-from translating to theft on the wider Bitcoin network, which is irreversible.
+from translating to theft on the wider BurritoCoin network, which is irreversible.
 
 ### Unused Schemes and Design Rationale
 
@@ -35,7 +35,7 @@ the sum of her key `P` and the whitelisted key `W`. Such a signature with the ke
 `P + W` proves knowledge of either (a) discrete logarithms of both `P` and `W`;
 or (b) neither. This makes directly attacking participants' signing schemes much
 harder, but allows an attacker to whitelist arbitrary "garbage" keys by computing
-`W` as the difference between an attacker-controlled key and `P`. For Bitcoin,
+`W` as the difference between an attacker-controlled key and `P`. For BurritoCoin,
 the effect of garbage keys is to "burn" stolen coins, destroying them.
 
 In an important sense, this "burning coins" attack is a good thing: it enables

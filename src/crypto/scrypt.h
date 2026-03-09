@@ -1,5 +1,5 @@
-#ifndef BITCOIN_CRYPTO_SCRYPT_H
-#define BITCOIN_CRYPTO_SCRYPT_H
+#ifndef BURRITOCOIN_CRYPTO_SCRYPT_H
+#define BURRITOCOIN_CRYPTO_SCRYPT_H
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -46,4 +46,4 @@ static inline void le32enc(void *pp, uint32_t x)
         p[3] = (x >> 24) & 0xff;
 }
 #endif
-#endif // BITCOIN_CRYPTO_SCRYPT_H
+#endif // BURRITOCOIN_CRYPTO_SCRYPT_H

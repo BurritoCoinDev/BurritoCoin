@@ -1,13 +1,13 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2009-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_VALIDATION_H
-#define BITCOIN_VALIDATION_H
+#ifndef BURRITOCOIN_VALIDATION_H
+#define BURRITOCOIN_VALIDATION_H
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <config/burritocoin-config.h>
 #endif
 
 #include <amount.h>
@@ -998,4 +998,4 @@ inline bool IsBlockPruned(const CBlockIndex* pblockindex)
     return (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
 }
 
-#endif // BITCOIN_VALIDATION_H
+#endif // BURRITOCOIN_VALIDATION_H

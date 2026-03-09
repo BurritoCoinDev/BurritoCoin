@@ -1,5 +1,5 @@
 ---
-name: "litecoin-core-win-0.21"
+name: "burritocoin-core-win-0.21"
 enable_cache: true
 distro: "ubuntu"
 suites:
@@ -24,8 +24,8 @@ packages:
 - "ca-certificates"
 - "python3"
 remotes:
-- "url": "https://github.com/litecoin-project/litecoin.git"
-  "dir": "litecoin"
+- "url": "https://github.com/burritocoin-project/burritocoin.git"
+  "dir": "burritocoin"
 files: []
 script: |
   set -e -o pipefail
@@ -95,7 +95,7 @@ script: |
   create_per-host_compiler_wrapper "2000-01-01 12:00:00"
   export PATH=${WRAP_DIR}:${PATH}
 
-  cd litecoin
+  cd burritocoin
   BASEPREFIX="${PWD}/depends"
   # Build dependencies for each host
   for i in $HOSTS; do
@@ -134,16 +134,16 @@ script: |
     make ${MAKEOPTS}
     make ${MAKEOPTS} -C src check-security
     make ${MAKEOPTS} -C src check-symbols
-    make deploy BITCOIN_WIN_INSTALLER="${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
+    make deploy BURRITOCOIN_WIN_INSTALLER="${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
     make install DESTDIR=${INSTALLPATH}
     cd installed
     mv ${DISTNAME}/bin/*.dll ${DISTNAME}/lib/
     find . -name "lib*.la" -delete
     find . -name "lib*.a" -delete
-    # Litecoin: Delete libbitcoin from binary distribution for now, see #192
+    # BurritoCoin: Delete libburritocoin from binary distribution for now, see #192
     rm -rf ${DISTNAME:?}/lib/
     rm -rf ${DISTNAME}/include/
-    # Litecoin: ends
+    # BurritoCoin: ends
     rm -rf ${DISTNAME}/lib/pkgconfig
     find ${DISTNAME}/bin -type f -executable -print0 | xargs -0 -n1 -I{} ../contrib/devtools/split-debug.sh {} {} {}.dbg
     # Litecon: find ${DISTNAME}/lib -type f -print0 | xargs -0 -n1 -I{} ../contrib/devtools/split-debug.sh {} {} {}.dbg

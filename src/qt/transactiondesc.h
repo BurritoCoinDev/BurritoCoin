@@ -1,9 +1,9 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TRANSACTIONDESC_H
-#define BITCOIN_QT_TRANSACTIONDESC_H
+#ifndef BURRITOCOIN_QT_TRANSACTIONDESC_H
+#define BURRITOCOIN_QT_TRANSACTIONDESC_H
 
 #include <QObject>
 #include <QString>
@@ -38,4 +38,4 @@ private:
     static QString toHTML_Debug(interfaces::Node& node, interfaces::Wallet& wallet, const interfaces::WalletTx& wtx, WalletTxRecord* rec, int unit);
 };
 
-#endif // BITCOIN_QT_TRANSACTIONDESC_H
+#endif // BURRITOCOIN_QT_TRANSACTIONDESC_H

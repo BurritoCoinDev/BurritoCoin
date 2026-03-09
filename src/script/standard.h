@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2009-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_STANDARD_H
-#define BITCOIN_SCRIPT_STANDARD_H
+#ifndef BURRITOCOIN_SCRIPT_STANDARD_H
+#define BURRITOCOIN_SCRIPT_STANDARD_H
 
 #include <mw/models/wallet/StealthAddress.h>
 #include <script/interpreter.h>
@@ -213,7 +213,7 @@ struct WitnessUnknown
  *  * WitnessUnknown: TxoutType::WITNESS_UNKNOWN/WITNESS_V1_TAPROOT destination (P2W???)
  *    (taproot outputs do not require their own type as long as no wallet support exists)
  *  * StealthAddress: MWEB destination
- *  A CTxDestination is the internal data type encoded in a bitcoin address
+ *  A CTxDestination is the internal data type encoded in a burritocoin address
  */
 typedef boost::variant<CNoDestination, PKHash, ScriptHash, WitnessV0ScriptHash, WitnessV0KeyHash, WitnessUnknown, StealthAddress> CTxDestination;
 
@@ -257,7 +257,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
 bool ExtractDestinations(const CScript& scriptPubKey, TxoutType& typeRet, std::vector<CTxDestination>& addressRet, int& nRequiredRet);
 
 /**
- * Generate a Bitcoin scriptPubKey for the given CTxDestination. Returns a P2PKH
+ * Generate a BurritoCoin scriptPubKey for the given CTxDestination. Returns a P2PKH
  * script for a CKeyID destination, a P2SH script for a CScriptID, and an empty
  * script for CNoDestination.
  */
@@ -275,4 +275,4 @@ CScript GetScriptForPegin(const mw::Hash& kernel_id);
 
 #include <script/address.h>
 
-#endif // BITCOIN_SCRIPT_STANDARD_H
+#endif // BURRITOCOIN_SCRIPT_STANDARD_H

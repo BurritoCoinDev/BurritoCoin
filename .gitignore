@@ -2,17 +2,17 @@
 
 *.exe
 *.pdb
-src/litecoin
-src/litecoind
-src/litecoin-cli
-src/litecoin-gui
-src/litecoin-node
-src/litecoin-tx
-src/litecoin-wallet
+src/burritocoin
+src/burritocoind
+src/burritocoin-cli
+src/burritocoin-gui
+src/burritocoin-node
+src/burritocoin-tx
+src/burritocoin-wallet
 src/test/fuzz/*
 !src/test/fuzz/*.*
-src/test/test_litecoin
-src/qt/test/test_litecoin-qt
+src/test/test_burritocoin
+src/qt/test/test_burritocoin-qt
 
 # autoreconf
 Makefile.in
@@ -36,8 +36,8 @@ config.log
 config.status
 configure
 libtool
-src/config/bitcoin-config.h
-src/config/bitcoin-config.h.in
+src/config/burritocoin-config.h
+src/config/burritocoin-config.h.in
 src/config/stamp-h1
 src/obj
 share/setup.nsi
@@ -51,11 +51,11 @@ src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
 
-src/qt/bitcoin-qt.config
-src/qt/bitcoin-qt.creator
-src/qt/bitcoin-qt.creator.user
-src/qt/bitcoin-qt.files
-src/qt/bitcoin-qt.includes
+src/qt/burritocoin-qt.config
+src/qt/burritocoin-qt.creator
+src/qt/burritocoin-qt.creator.user
+src/qt/burritocoin-qt.files
+src/qt/burritocoin-qt.includes
 
 .deps
 .dirstamp
@@ -94,8 +94,8 @@ src/qt/bitcoin-qt.includes
 *.qm
 Makefile
 !depends/Makefile
-src/qt/litecoin-qt
-Litecoin-Qt.app
+src/qt/burritocoin-qt
+BurritoCoin-Qt.app
 background.tiff*
 
 # Qt Creator
@@ -103,7 +103,7 @@ Makefile.am.user
 
 # Unit-tests
 Makefile.test
-litecoin-qt_test
+burritocoin-qt_test
 
 # Resources cpp
 qrc_*.cpp
@@ -118,7 +118,7 @@ releases
 *.gcno
 *.gcda
 /*.info
-test_litecoin.coverage/
+test_burritocoin.coverage/
 total.coverage/
 fuzz.coverage/
 coverage_percent.txt
@@ -137,7 +137,7 @@ test/.mypy_cache/
 
 /doc/doxygen/
 
-libbitcoinconsensus.pc
+libburritocoinconsensus.pc
 contrib/devtools/split-debug.sh
 
 # Output from running db4 installation

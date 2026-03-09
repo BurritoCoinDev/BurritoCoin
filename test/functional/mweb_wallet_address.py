@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2018-2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Backwards compatibility MWEB wallet test
@@ -22,7 +22,7 @@ needs an older patch version.
 import os
 import shutil
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.descriptors import descsum_create
 
 from test_framework.util import (
@@ -30,7 +30,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
 )
 
-class MWEBWalletAddressTest(BitcoinTestFramework):
+class MWEBWalletAddressTest(BurritoCoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
@@ -73,7 +73,7 @@ class MWEBWalletAddressTest(BitcoinTestFramework):
         v15_1_wallet = os.path.join(v15_1_node.datadir, "regtest/wallet.dat")
         self.stop_node(1)
         
-        # Copy the 0.15.1 non hd wallet to the last Litecoin Core version and open it:
+        # Copy the 0.15.1 non hd wallet to the last BurritoCoin Core version and open it:
         node_master.get_wallet_rpc(self.default_wallet_name).unloadwallet()
         shutil.rmtree(node_master_wallet_dir)
         os.mkdir(node_master_wallet_dir)

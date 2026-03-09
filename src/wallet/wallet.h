@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2009-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_WALLET_H
-#define BITCOIN_WALLET_WALLET_H
+#ifndef BURRITOCOIN_WALLET_WALLET_H
+#define BURRITOCOIN_WALLET_WALLET_H
 
 #include <amount.h>
 #include <interfaces/chain.h>
@@ -316,7 +316,7 @@ public:
     unsigned int nTimeSmart;
     /**
      * From me flag is set to 1 for transactions that were created by the wallet
-     * on this bitcoin node, and set to 0 for transactions that were created
+     * on this burritocoin node, and set to 0 for transactions that were created
      * externally and came in through the network or sendrawtransaction RPC.
      */
     bool fFromMe;
@@ -1508,4 +1508,4 @@ bool AddWalletSetting(interfaces::Chain& chain, const std::string& wallet_name);
 //! Remove wallet name from persistent configuration so it will not be loaded on startup.
 bool RemoveWalletSetting(interfaces::Chain& chain, const std::string& wallet_name);
 
-#endif // BITCOIN_WALLET_WALLET_H
+#endif // BURRITOCOIN_WALLET_WALLET_H

@@ -1,12 +1,12 @@
-Litecoin Core version 0.21.2.2 is now available from:
+BurritoCoin Core version 0.21.2.2 is now available from:
 
- <https://download.litecoin.org/litecoin-0.21.2.2/>.
+ <https://download.burritocoin.org/burritocoin-0.21.2.2/>.
 
 This is a new patch version release that includes important security updates.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/litecoin-project/litecoin/issues>
+  <https://github.com/burritocoin-project/burritocoin/issues>
 
 Notable changes
 ===============
@@ -31,7 +31,7 @@ Credits
 
 Thanks to everyone who directly contributed to this release:
 
-- [The Bitcoin Core Developers](https://github.com/bitcoin/bitcoin/tree/master/doc/release-notes)
+- [The BurritoCoin Core Developers](https://github.com/burritocoin/burritocoin/tree/master/doc/release-notes)
 - David Burkett
 - Jon Atack
 - Pieter Wuille

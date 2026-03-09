@@ -1,11 +1,11 @@
 Sample configuration files for:
 ```
-SystemD: bitcoind.service
-Upstart: bitcoind.conf
-OpenRC:  bitcoind.openrc
-         bitcoind.openrcconf
-CentOS:  bitcoind.init
-macOS:   org.bitcoin.bitcoind.plist
+SystemD: burritocoind.service
+Upstart: burritocoind.conf
+OpenRC:  burritocoind.openrc
+         burritocoind.openrcconf
+CentOS:  burritocoind.init
+macOS:   org.burritocoin.burritocoind.plist
 ```
 have been made available to assist packagers in creating node packages here.
 

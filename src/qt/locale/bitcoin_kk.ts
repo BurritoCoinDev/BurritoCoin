@@ -48,7 +48,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BurritoCoinGUI</name>
     <message>
         <source>&amp;Transactions</source>
         <translation>&amp;Транзакциялар</translation>
@@ -167,7 +167,7 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin</source>
+        <source>BurritoCoin</source>
         <translation>Биткоин</translation>
     </message>
     <message>
@@ -340,7 +340,7 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>burritocoin-core</name>
     <message>
         <source>Transaction amount too small</source>
         <translation>Транзакция өте кішкентай</translation>

@@ -1,17 +1,17 @@
-Litecoin Core version 0.18.1 is now available from:
+BurritoCoin Core version 0.18.1 is now available from:
 
-  <https://download.litecoin.org/litecoin-0.18.1/>
+  <https://download.burritocoin.org/burritocoin-0.18.1/>
 
 This is a major version release, including new features, various bug
 fixes and performance improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/litecoin-project/litecoin/issues>
+  <https://github.com/burritocoin-project/burritocoin/issues>
 
 To receive security and update notifications, please subscribe to:
 
-  <https://groups.google.com/forum/#!forum/litecoin-dev>
+  <https://groups.google.com/forum/#!forum/burritocoin-dev>
 
 How to Upgrade
 ==============
@@ -19,7 +19,7 @@ How to Upgrade
 If you are running an older version, shut it down. Wait until it has
 completely shut down (which might take a few minutes for older
 versions), then run the installer (on Windows) or just copy over
-`/Applications/Litecoin-Qt` (on Mac) or `litecoind`/`litecoin-qt` (on
+`/Applications/BurritoCoin-Qt` (on Mac) or `burritocoind`/`burritocoin-qt` (on
 Linux).
 
 The first time you run version 0.15.0 or newer, your chainstate database
@@ -35,16 +35,16 @@ wallet versions are still supported.
 Compatibility
 ==============
 
-Litecoin Core is supported and extensively tested on operating systems
+BurritoCoin Core is supported and extensively tested on operating systems
 using the Linux kernel, macOS 10.10+, and Windows 7 and newer. It is not
-recommended to use Litecoin Core on unsupported systems.
+recommended to use BurritoCoin Core on unsupported systems.
 
-Litecoin Core should also work on most other Unix-like systems but is not
+BurritoCoin Core should also work on most other Unix-like systems but is not
 as frequently tested on them.
 
 From 0.17.0 onwards, macOS <10.10 is no longer supported. 0.17.0 is
 built using Qt 5.9.x, which doesn't support versions of macOS older than
-10.10. Additionally, Litecoin Core does not yet change appearance when
+10.10. Additionally, BurritoCoin Core does not yet change appearance when
 macOS "dark mode" is activated.
 
 In addition to previously-supported CPU platforms, this release's
@@ -86,7 +86,7 @@ Configuration option changes
   messages that ZMQ will queue in memory (the "high water mark") before
   dropping additional messages.  The default value is 1,000, the same as
   was used for previous releases.  See the [ZMQ
-  documentation](https://github.com/litecoin-project/litecoin/blob/master/doc/zmq.md#usage)
+  documentation](https://github.com/burritocoin-project/burritocoin/blob/master/doc/zmq.md#usage)
   for details.
 
 - The `rpcallowip` option can no longer be used to automatically listen
@@ -110,38 +110,38 @@ Configuration option changes
   disconnect/ban behavior will not cause a node that is whitelisting
   another to be dropped by peers.  Users can still explicitly enable
   this behavior with the command line option (and may want to consider
-  [contacting](mailto:contact@litecoin.org) the Litecoin Core
+  [contacting](mailto:contact@burritocoin.org) the BurritoCoin Core
   project to let us know about their use-case, as this feature could be
   deprecated in the future).
 
 Wallet changes
 --------------
-When creating a transaction with a fee above `-maxtxfee` (default 0.1 LTC),
+When creating a transaction with a fee above `-maxtxfee` (default 0.1 BRTO),
 the RPC commands `walletcreatefundedpsbt` and  `fundrawtransaction` will now fail
 instead of rounding down the fee. Beware that the `feeRate` argument is specified
-in LTC per kilobyte, not litoshi per byte.
+in BRTO per kilobyte, not litoshi per byte.
 
 Documentation
 -------------
 
-- A new short [document](https://github.com/litecoin-project/litecoin/blob/master/doc/JSON-RPC-interface.md)
+- A new short [document](https://github.com/burritocoin-project/burritocoin/blob/master/doc/JSON-RPC-interface.md)
   about the JSON-RPC interface describes cases where the results of an
   RPC might contain inconsistencies between data sourced from different
   subsystems, such as wallet state and mempool state.  A note is added
-  to the [REST interface documentation](https://github.com/litecoin-project/litecoin/blob/master/doc/REST-interface.md)
+  to the [REST interface documentation](https://github.com/burritocoin-project/burritocoin/blob/master/doc/REST-interface.md)
   indicating that the same rules apply.
 
 - Further information is added to the [JSON-RPC
-  documentation](https://github.com/litecoin-project/litecoin/blob/master/doc/JSON-RPC-interface.md)
+  documentation](https://github.com/burritocoin-project/burritocoin/blob/master/doc/JSON-RPC-interface.md)
   about how to secure this interface.
 
-- A new [document](https://github.com/litecoin-project/litecoin/blob/master/doc/litecoin-conf.md)
-  about the `litecoin.conf` file describes how to use it to configure
-  Litecoin Core.
+- A new [document](https://github.com/burritocoin-project/burritocoin/blob/master/doc/burritocoin-conf.md)
+  about the `burritocoin.conf` file describes how to use it to configure
+  BurritoCoin Core.
 
-- A new document introduces Litecoin Core's BIP174 [Partially-Signed
-  Litecoin Transactions
-  (PSBT)](https://github.com/litecoin-project/litecoin/blob/master/doc/psbt.md)
+- A new document introduces BurritoCoin Core's BIP174 [Partially-Signed
+  BurritoCoin Transactions
+  (PSBT)](https://github.com/burritocoin-project/burritocoin/blob/master/doc/psbt.md)
   interface, which is used to allow multiple programs to collaboratively
   work to create, sign, and broadcast new transactions.  This is useful
   for offline (cold storage) wallets, multisig wallets, coinjoin
@@ -149,7 +149,7 @@ Documentation
   to interact to generate a complete transaction.
 
 - The [output script
-  descriptor](https://github.com/litecoin-project/litecoin/blob/master/doc/descriptors.md)
+  descriptor](https://github.com/burritocoin-project/burritocoin/blob/master/doc/descriptors.md)
   documentation has been updated with information about new features in
   this still-developing language for describing the output scripts that
   a wallet or other program wants to receive notifications for, such as
@@ -162,15 +162,15 @@ Build system changes
 --------------------
 
 - A new `--disable-bip70` option may be passed to `./configure` to
-  prevent Litecoin-Qt from being built with support for the BIP70 payment
+  prevent BurritoCoin-Qt from being built with support for the BIP70 payment
   protocol or from linking libssl.  As the payment protocol has exposed
-  Litecoin Core to libssl vulnerabilities in the past, builders who don't
+  BurritoCoin Core to libssl vulnerabilities in the past, builders who don't
   need BIP70 support are encouraged to use this option to reduce their
   exposure to future vulnerabilities.
 
 - The minimum required version of Qt (when building the GUI) has been
   increased from 5.2 to 5.5.1 (the [depends
-  system](https://github.com/litecoin-project/litecoin/blob/master/depends/README.md)
+  system](https://github.com/burritocoin-project/burritocoin/blob/master/depends/README.md)
   provides 5.9.7)
 
 New RPCs
@@ -188,7 +188,7 @@ New RPCs
   they've been running.
 
 - `deriveaddresses` returns one or more addresses corresponding to an
-  [output descriptor](https://github.com/litecoin-project/litecoin/blob/master/doc/descriptors.md).
+  [output descriptor](https://github.com/burritocoin-project/burritocoin/blob/master/doc/descriptors.md).
 
 - `getdescriptorinfo` accepts a descriptor and returns information about
   it, including its computed checksum.
@@ -255,7 +255,7 @@ in the Low-level Changes section below.
   ignored or are inconsistent, if there are any.
 
 - `getaddressinfo` now returns an additional `solvable` boolean field
-  when Litecoin Core knows enough about the address's scriptPubKey,
+  when BurritoCoin Core knows enough about the address's scriptPubKey,
   optional redeemScript, and optional witnessScript in order for the
   wallet to be able to generate an unsigned input spending funds sent to
   that address.
@@ -269,7 +269,7 @@ in the Low-level Changes section below.
 - `importprivkey` will preserve previously-set labels for addresses or
   public keys corresponding to the private key being imported.  For
   example, if you imported a watch-only address with the label "cold
-  wallet" in earlier releases of Litecoin Core, subsequently importing
+  wallet" in earlier releases of BurritoCoin Core, subsequently importing
   the private key would default to resetting the address's label to the
   default empty-string label ("").  In this release, the previous label
   of "cold wallet" will be retained.  If you optionally specify any
@@ -297,7 +297,7 @@ in the Low-level Changes section below.
   origin information imported through `importmulti` will have their key
   origin information stored in the wallet for use with creating PSBTs.
   More information about descriptors can be found
-  [here](https://github.com/litecoin-project/litecoin/blob/master/doc/descriptors.md).
+  [here](https://github.com/burritocoin-project/burritocoin/blob/master/doc/descriptors.md).
 
 - `listunspent` has been modified so that it also returns
   `witnessScript`, the witness script in the case of a P2WSH or
@@ -320,7 +320,7 @@ Deprecated or removed RPCs
 - The 'account' API is removed after being deprecated in v0.17.  The
   'label' API was introduced in v0.17 as a replacement for accounts.
   See the [release notes from
-  v0.17](https://github.com/litecoin-project/litecoin/blob/master/doc/release-notes/release-notes-0.17.0.md#label-and-account-apis-for-wallet)
+  v0.17](https://github.com/burritocoin-project/burritocoin/blob/master/doc/release-notes/release-notes-0.17.0.md#label-and-account-apis-for-wallet)
   for a full description of the changes from the 'account' API to the
   'label' API.
 
@@ -336,7 +336,7 @@ Deprecated or removed RPCs
   require or use the wallet component. Calling `generatetoaddress` with
   an address returned by the `getnewaddress` RPC gives the same
   functionality as the old `generate` RPC.  To continue using `generate`
-  in this version, restart litecoind with the `-deprecatedrpc=generate`
+  in this version, restart burritocoind with the `-deprecatedrpc=generate`
   configuration option.
 
 - Be reminded that parts of the `validateaddress` command have been
@@ -383,7 +383,7 @@ Graphical User Interface (GUI)
 Tools
 -----
 
-- A new `litecoin-wallet` tool is now distributed alongside Litecoin
+- A new `burritocoin-wallet` tool is now distributed alongside BurritoCoin
   Core's other executables.  Without needing to use any RPCs, this tool
   can currently create a new wallet file or display some basic
   information about an existing wallet, such as whether the wallet is
@@ -393,24 +393,24 @@ Tools
 Planned changes
 ===============
 
-This section describes planned changes to Litecoin Core that may affect
-other Litecoin software and services.
+This section describes planned changes to BurritoCoin Core that may affect
+other BurritoCoin software and services.
 
-- Since version 0.16.0, Litecoin Core’s built-in wallet has defaulted to
+- Since version 0.16.0, BurritoCoin Core’s built-in wallet has defaulted to
   generating P2SH-wrapped segwit addresses when users want to receive
   payments. These addresses are backwards compatible with all
-  widely-used software.  Starting with Litecoin Core 0.20 (expected about
-  a year after 0.18), Litecoin Core will default to native segwit
+  widely-used software.  Starting with BurritoCoin Core 0.20 (expected about
+  a year after 0.18), BurritoCoin Core will default to native segwit
   addresses (bech32) that provide additional fee savings and other
   benefits. Currently, many wallets and services already support sending
-  to bech32 addresses, and if the Litecoin Core project sees enough
+  to bech32 addresses, and if the BurritoCoin Core project sees enough
   additional adoption, it will instead default to bech32 receiving
-  addresses in Litecoin Core 0.20.
+  addresses in BurritoCoin Core 0.20.
   P2SH-wrapped segwit addresses will continue to be provided if the user
   requests them in the GUI or by RPC, and anyone who doesn’t want the
   update will be able to configure their default address type.
   (Similarly, pioneering users who want to change their default now may
-  set the `addresstype=bech32` configuration option in any Litecoin Core
+  set the `addresstype=bech32` configuration option in any BurritoCoin Core
   release from 0.16.0 up.)
 
 Deprecated P2P messages
@@ -472,7 +472,7 @@ Network
   a misbehaving node will be disconnected to make room for nodes without
   a history of problems (unless the misbehaving node helps your node in
   some other way, such as by connecting to a part of the Internet from
-  which you don't have many other peers).  Previously, Litecoin Core
+  which you don't have many other peers).  Previously, BurritoCoin Core
   banned the IP addresses of misbehaving peers for a period of time
   (default of 1 day); this was easily circumvented by attackers with
   multiple IP addresses. If you manually ban a peer, such as by using
@@ -491,18 +491,18 @@ Wallet
   software. Instead such wallets will be completely unloaded and
   reloaded to achieve the same effect.
 
-- A sub-project of Litecoin Core now provides Hardware Wallet Interaction
+- A sub-project of BurritoCoin Core now provides Hardware Wallet Interaction
   (HWI) scripts that allow command-line users to use several popular
-  hardware key management devices with Litecoin Core.  See their [project
-  page](https://github.com/bitcoin-core/HWI#readme) for details.
+  hardware key management devices with BurritoCoin Core.  See their [project
+  page](https://github.com/burritocoin-core/HWI#readme) for details.
 
 Security
 --------
 
 - This release changes the Random Number Generator (RNG) used from
-  OpenSSL to Litecoin Core's own implementation, although entropy
-  gathered by Litecoin Core is fed out to OpenSSL and then read back in
-  when the program needs strong randomness. This moves Litecoin Core a
+  OpenSSL to BurritoCoin Core's own implementation, although entropy
+  gathered by BurritoCoin Core is fed out to OpenSSL and then read back in
+  when the program needs strong randomness. This moves BurritoCoin Core a
   little closer to no longer needing to depend on OpenSSL, a dependency
   that has caused security issues in the past.  The new implementation
   gathers entropy from multiple sources, including from hardware
@@ -511,7 +511,7 @@ Security
 Changes for particular platforms
 --------------------------------
 
-- On macOS, Litecoin Core now opts out of application CPU throttling
+- On macOS, BurritoCoin Core now opts out of application CPU throttling
   ("app nap") during initial blockchain download, when catching up from
   over 100 blocks behind the current chain tip, or when reindexing chain
   data. This helps prevent these operations from taking an excessively
@@ -570,9 +570,9 @@ Changes for particular platforms
 - #14023 Remove accounts RPCs (jnewbery)
 - #13825 Kill accounts (jnewbery)
 - #10605 Add AssertLockHeld assertions in CWallet::ListCoins (ryanofsky)
-- #12490 Remove deprecated wallet rpc features from `bitcoin_server` (jnewbery)
+- #12490 Remove deprecated wallet rpc features from `burritocoin_server` (jnewbery)
 - #14138 Set `encrypted_batch` to nullptr after delete. Avoid double free in the case of NDEBUG (practicalswift)
-- #14168 Remove `ENABLE_WALLET` from `libbitcoin_server.a` (jnewbery)
+- #14168 Remove `ENABLE_WALLET` from `libburritocoin_server.a` (jnewbery)
 - #12493 Reopen CDBEnv after encryption instead of shutting down (achow101)
 - #14282 Remove `-usehd` option (jnewbery)
 - #14146 Remove trailing separators from `-walletdir` arg (PierreRochard)
@@ -604,7 +604,7 @@ Changes for particular platforms
 - #14711 Remove uses of chainActive and mapBlockIndex in wallet code (ryanofsky)
 - #15279 Clarify rescanblockchain doc (MarcoFalke)
 - #15292 Remove `boost::optional`-related false positive -Wmaybe-uninitialized warnings on GCC compiler (hebasto)
-- #13926 [Tools] bitcoin-wallet - a tool for creating and managing wallets offline (jnewbery)
+- #13926 [Tools] burritocoin-wallet - a tool for creating and managing wallets offline (jnewbery)
 - #11911 Free BerkeleyEnvironment instances when not in use (ryanofsky)
 - #15235 Do not import private keys to wallets with private keys disabled (achow101)
 - #15263 Descriptor expansions only need pubkey entries for PKH/WPKH (sipa)
@@ -697,7 +697,7 @@ Changes for particular platforms
 - #13248 Make proxy icon from statusbar clickable (mess110)
 - #12818 TransactionView: highlight replacement tx after fee bump (Sjors)
 - #13529 Use new Qt5 connect syntax (promag)
-- #14162 Also log and print messages or questions like bitcoind (MarcoFalke)
+- #14162 Also log and print messages or questions like burritocoind (MarcoFalke)
 - #14385 Avoid system harfbuzz and bz2 (theuni)
 - #14450 Fix QCompleter popup regression (hebasto)
 - #14177 Set C locale for amountWidget (hebasto)
@@ -705,7 +705,7 @@ Changes for particular platforms
 - #14554 Remove unused `adjustedTime` parameter (hebasto)
 - #14228 Enable system tray icon by default if available (hebasto)
 - #14608 Remove the "Pay only required fee…" checkbox (hebasto)
-- #14521 qt, docs: Fix `bitcoin-qt -version` output formatting (hebasto)
+- #14521 qt, docs: Fix `burritocoin-qt -version` output formatting (hebasto)
 - #13966 When private key is disabled, only show watch-only balance (ken2812221)
 - #14828 Remove hidden columns in coin control dialog (promag)
 - #14783 Fix `boost::signals2::no_slots_error` in early calls to InitWarning (promag)
@@ -718,7 +718,7 @@ Changes for particular platforms
 - #14375 Correct misleading "overridden options" label (hebasto)
 - #15007 Notificator class refactoring (hebasto)
 - #14784 Use `WalletModel*` instead of the wallet name as map key (promag)
-- #11625 Add BitcoinApplication & RPCConsole tests (ryanofsky)
+- #11625 Add BurritoCoinApplication & RPCConsole tests (ryanofsky)
 - #14517 Fix start with the `-min` option (hebasto)
 - #13216 implements concept for different disk sizes on intro (marcoagner)
 - #15114 Replace remaining 0 with nullptr (Empact)
@@ -762,7 +762,7 @@ Changes for particular platforms
 - #14183 Remove unused Qt 4 dependencies (ken2812221)
 - #14127 Avoid getifaddrs when unavailable (greenaddress)
 - #14184 Scripts and tools: increased timeout downloading (cisba)
-- #14204 Move `interfaces/*` to `libbitcoin_server` (laanwj)
+- #14204 Move `interfaces/*` to `libburritocoin_server` (laanwj)
 - #14208 Actually remove `ENABLE_WALLET` (jnewbery)
 - #14212 Remove libssl from LDADD unless GUI (MarcoFalke)
 - #13578 Upgrade zeromq to 4.2.5 and avoid deprecated zeromq API functions (mruddy)
@@ -782,19 +782,19 @@ Changes for particular platforms
 - #14849 Qt 5.9.7 (fanquake)
 - #15020 Add names to Travis jobs (gkrizek)
 - #15047 Allow to configure --with-sanitizers=fuzzer (MarcoFalke)
-- #15154 Configure: bitcoin-tx doesn't need libevent, so don't pull it in (luke-jr)
+- #15154 Configure: burritocoin-tx doesn't need libevent, so don't pull it in (luke-jr)
 - #15175 Drop macports support (Empact)
 - #15308 Restore compatibility with older boost (Empact)
 - #15407 msvc: Fix silent merge conflict between #13926 and #14372 part II (ken2812221)
-- #15388 Makefile.am: add rule for src/bitcoin-wallet (Sjors)
+- #15388 Makefile.am: add rule for src/burritocoin-wallet (Sjors)
 - #15393 Bump minimum Qt version to 5.5.1 (Sjors)
 - #15285 Prefer Python 3.4 even if newer versions are present on the system (Sjors)
 - #15398 msvc: Add rapidcheck property tests (ken2812221)
 - #15431 msvc: scripted-diff: Remove NDEBUG pre-define in project file (ken2812221)
 - #15549 gitian: Improve error handling (laanwj)
 - #15548 use full version string in setup.exe (MarcoFalke)
-- #11526 Visual Studio build configuration for Bitcoin Core (sipsorcery)
-- #15110 build\_msvc: Fix the build problem in `libbitcoin_server` (Mr-Leshiy)
+- #11526 Visual Studio build configuration for BurritoCoin Core (sipsorcery)
+- #15110 build\_msvc: Fix the build problem in `libburritocoin_server` (Mr-Leshiy)
 - #14372 msvc: build secp256k1 and leveldb locally (ken2812221)
 - #15325 msvc: Fix silent merge conflict between #13926 and #14372 (ken2812221)
 - #15391 Add compile time verification of assumptions we're currently making implicitly/tacitly (practicalswift)
@@ -802,12 +802,12 @@ Changes for particular platforms
 - #13765 contrib: Add gitian build support for github pull request (ken2812221)
 - #15809 gitignore: plist and dat (jamesob)
 - #15985 Add test for GCC bug 90348 (sipa)
-- #15947 Install bitcoin-wallet manpage (domob1812)
+- #15947 Install burritocoin-wallet manpage (domob1812)
 - #15983 build with -fstack-reuse=none (MarcoFalke)
 
 ### Tests and QA
 - #15405 appveyor: Clean cache when build configuration changes (Sjors)
-- #13953 Fix deprecation in bitcoin-util-test.py (isghe)
+- #13953 Fix deprecation in burritocoin-util-test.py (isghe)
 - #13963 Replace usage of tostring() with tobytes() (dongcarl)
 - #13964 ci: Add appveyor ci (ken2812221)
 - #13997 appveyor: fetch the latest port data (ken2812221)
@@ -823,7 +823,7 @@ Changes for particular platforms
 - #14088 Don't assert(…) with side effects (practicalswift)
 - #14086 appveyor: Use clcache to speed up build (ken2812221)
 - #13954 Warn (don't fail!) on spelling errors. Fix typos reported by codespell (practicalswift)
-- #12775 Integration of property based testing into Bitcoin Core (Christewart)
+- #12775 Integration of property based testing into BurritoCoin Core (Christewart)
 - #14119 Read reject reasons from debug log, not P2P messages (MarcoFalke)
 - #14189 Fix silent merge conflict in `wallet_importmulti` (MarcoFalke)
 - #13419 Speed up `knapsack_solver_test` by not recreating wallet 100 times (lucash-dev)
@@ -836,7 +836,7 @@ Changes for particular platforms
 - #14275 Write the notification message to different files to avoid race condition in `feature_notifications.py` (ken2812221)
 - #14306 appveyor: Move AppVeyor YAML to dot-file-style YAML (MitchellCash)
 - #14305 Enforce critical class instance attributes in functional tests, fix segwit test specificity (JustinTArthur)
-- #12246 Bugfix: Only run bitcoin-tx tests when bitcoin-tx is enabled (luke-jr)
+- #12246 Bugfix: Only run burritocoin-tx tests when burritocoin-tx is enabled (luke-jr)
 - #14316 Exclude all tests with difference parameters in `--exclude` list (ken2812221)
 - #14381 Add missing call to `skip_if_no_cli()` (practicalswift)
 - #14389 travis: Set codespell version to avoid breakage (MarcoFalke)
@@ -858,7 +858,7 @@ Changes for particular platforms
 - #14631 Move deterministic address import to `setup_nodes` (jnewbery)
 - #14630 test: Remove travis specific code (MarcoFalke)
 - #14528 travis: Compile once on xenial (MarcoFalke)
-- #14092 Dry run `bench_bitcoin` as part `make check` to allow for quick identification of assertion/sanitizer failures in benchmarking code (practicalswift)
+- #14092 Dry run `bench_burritocoin` as part `make check` to allow for quick identification of assertion/sanitizer failures in benchmarking code (practicalswift)
 - #14664 `example_test.py`: fixup coinbase height argument, derive number clearly (instagibbs)
 - #14522 Add invalid P2P message tests (jamesob)
 - #14619 Fix value display name in `test_runner` help text (merland)
@@ -902,7 +902,7 @@ Changes for particular platforms
 - #14969 Fix `cuckoocache_tests` TSAN failure introduced in 14935 (practicalswift)
 - #14964 Fix race in `mempool_accept` (MarcoFalke)
 - #14829 travis: Enable functional tests in the threadsanitizer (tsan) build job (practicalswift)
-- #14985 Remove `thread_local` from `test_bitcoin` (MarcoFalke)
+- #14985 Remove `thread_local` from `test_burritocoin` (MarcoFalke)
 - #15005 Bump timeout to run tests in travis thread sanitizer (MarcoFalke)
 - #15013 Avoid race in `p2p_timeouts` (MarcoFalke)
 - #14960 lint/format-strings: Correctly exclude escaped percent symbols (luke-jr)
@@ -983,8 +983,8 @@ Changes for particular platforms
 - #14097 validation: Log FormatStateMessage on ConnectBlock error in ConnectTip (MarcoFalke)
 - #13724 contrib: Support ARM and RISC-V symbol check (ken2812221)
 - #13159 Don't close old debug log file handle prematurely when trying to re-open (on SIGHUP) (practicalswift)
-- #14186 bitcoin-cli: don't translate command line options (HashUnlimited)
-- #14057 logging: Only log `using config file path_to_bitcoin.conf` message on startup if conf file exists (leishman)
+- #14186 burritocoin-cli: don't translate command line options (HashUnlimited)
+- #14057 logging: Only log `using config file path_to_burritocoin.conf` message on startup if conf file exists (leishman)
 - #14164 Update univalue subtree (MarcoFalke)
 - #14272 init: Remove deprecated args from hidden args (MarcoFalke)
 - #14494 Error if # is used in rpcpassword in conf (MeshCollider)
@@ -1004,7 +1004,7 @@ Changes for particular platforms
 - #14839 threads: Fix unitialized members in `sched_param` (fanquake)
 - #14955 Switch all RNG code to the built-in PRNG (sipa)
 - #15258 Scripts and tools: Fix `devtools/copyright_header.py` to always honor exclusions (Empact)
-- #12255 Update bitcoin.service to conform to init.md (dongcarl)
+- #12255 Update burritocoin.service to conform to init.md (dongcarl)
 - #15266 memory: Construct globals on first use (MarcoFalke)
 - #15347 Fix build after pr 15266 merged (hebasto)
 - #15351 Update linearize-hashes.py (OverlordQ)
@@ -1042,7 +1042,7 @@ Changes for particular platforms
 - #14428 Fix macOS files description in qt/README.md (hebasto)
 - #14390 release process: RPC documentation (karel-3d)
 - #14472 getblocktemplate: use SegWit in example (Sjors)
-- #14497 Add doc/bitcoin-conf.md (hebasto)
+- #14497 Add doc/burritocoin-conf.md (hebasto)
 - #14526 Document lint tests (fanquake)
 - #14511 Remove explicit storage requirement from README.md (merland)
 - #14600 Clarify commit message guidelines (merland)
@@ -1078,7 +1078,7 @@ Changes for particular platforms
 - #15272 Correct logging return type and RPC example (fanquake)
 - #15244 Gdb attaching to process during tests has non-sudo solution (instagibbs)
 - #15332 Small updates to `getrawtransaction` description (amitiuttarwar)
-- #15354 Add missing `bitcoin-wallet` tool manpages (MarcoFalke)
+- #15354 Add missing `burritocoin-wallet` tool manpages (MarcoFalke)
 - #15343 netaddress: Make IPv4 loopback comment more descriptive (dongcarl)
 - #15353 Minor textual improvements in `translation_strings_policy.md` (merland)
 - #15426 importmulti: add missing description of keypool option (harding)
@@ -1096,9 +1096,9 @@ Changes for particular platforms
 - #15754 getrpcinfo docs (benthecarman)
 - #15763 Update bips.md for 0.18.0 (sipa)
 - #15757 List new RPCs in psbt.md and descriptors.md (sipa)
-- #15765 correct bitcoinconsensus_version in shared-libraries.md (fanquake)
+- #15765 correct burritocoinconsensus_version in shared-libraries.md (fanquake)
 - #15792 describe onlynet option in doc/tor.md (jonatack)
-- #15802 mention creating application support bitcoin folder on OSX (JimmyMow)
+- #15802 mention creating application support burritocoin folder on OSX (JimmyMow)
 - #15799 Clarify RPC versioning (MarcoFalke)
 - #15890 Remove text about txes always relayed from -whitelist (harding)
 
@@ -1107,7 +1107,7 @@ Credits
 
 Thanks to everyone who directly contributed to this release:
 
-- [The Bitcoin Core Developers](https://github.com/bitcoin/bitcoin/tree/master/doc/release-notes)
+- [The BurritoCoin Core Developers](https://github.com/burritocoin/burritocoin/tree/master/doc/release-notes)
 - Adrian Gallagher
 - aunyks
 - coblee

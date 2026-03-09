@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2018-2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -38,7 +38,7 @@ fi
 
 if [ "$RUN_UNIT_TESTS_SEQUENTIAL" = "true" ]; then
   BEGIN_FOLD unit-tests-seq
-  DOCKER_EXEC ${TEST_RUNNER_ENV} DIR_UNIT_TEST_DATA=${DIR_UNIT_TEST_DATA} LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib "${BASE_BUILD_DIR}/litecoin-*/src/test/test_litecoin*" --catch_system_errors=no -l test_suite
+  DOCKER_EXEC ${TEST_RUNNER_ENV} DIR_UNIT_TEST_DATA=${DIR_UNIT_TEST_DATA} LD_LIBRARY_PATH=$DEPENDS_DIR/$HOST/lib "${BASE_BUILD_DIR}/burritocoin-*/src/test/test_burritocoin*" --catch_system_errors=no -l test_suite
   END_FOLD
 fi
 

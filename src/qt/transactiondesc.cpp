@@ -1,14 +1,14 @@
-// Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2011-2019 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifdef HAVE_CONFIG_H
-#include <config/bitcoin-config.h>
+#include <config/burritocoin-config.h>
 #endif
 
 #include <qt/transactiondesc.h>
 
-#include <qt/bitcoinunits.h>
+#include <qt/burritocoinunits.h>
 #include <qt/guiutil.h>
 #include <qt/paymentserver.h>
 
@@ -211,7 +211,7 @@ QString TransactionDesc::toHTML_Amounts(interfaces::Wallet& wallet, const interf
             nUnmatured += wallet.getCredit(out.txout, ISMINE_ALL);
         strHTML += "<b>" + tr("Credit") + ":</b> ";
         if (status.is_in_main_chain)
-            strHTML += BitcoinUnits::formatHtmlWithUnit(unit, nUnmatured) + " (" + tr("matures in %n more block(s)", "", status.blocks_to_maturity) + ")";
+            strHTML += BurritoCoinUnits::formatHtmlWithUnit(unit, nUnmatured) + " (" + tr("matures in %n more block(s)", "", status.blocks_to_maturity) + ")";
         else
             strHTML += "(" + tr("not accepted") + ")";
         strHTML += "<br>";
@@ -219,7 +219,7 @@ QString TransactionDesc::toHTML_Amounts(interfaces::Wallet& wallet, const interf
         //
         // Credit
         //
-        strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, nNet) + "<br>";
+        strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, nNet) + "<br>";
     } else {
         isminetype fAllFromMe = ISMINE_SPENDABLE;
         for (const isminetype mine : wtx.txin_is_mine) {
@@ -268,9 +268,9 @@ QString TransactionDesc::toHTML_Amounts(interfaces::Wallet& wallet, const interf
                     }
                 }
 
-                strHTML += "<b>" + tr("Debit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -txout.nValue) + "<br>";
+                strHTML += "<b>" + tr("Debit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -txout.nValue) + "<br>";
                 if (toSelf)
-                    strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, txout.nValue) + "<br>";
+                    strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, txout.nValue) + "<br>";
             }
 
             auto pegout_mine = wtx.pegout_is_mine.begin();
@@ -295,23 +295,23 @@ QString TransactionDesc::toHTML_Amounts(interfaces::Wallet& wallet, const interf
                     strHTML += "<br>";
                 }
 
-                strHTML += "<b>" + tr("Debit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -pegout.GetAmount()) + "<br>";
+                strHTML += "<b>" + tr("Debit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -pegout.GetAmount()) + "<br>";
                 if (toSelf)
-                    strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, pegout.GetAmount()) + "<br>";
+                    strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, pegout.GetAmount()) + "<br>";
             }
 
             if (fAllToMe) {
                 // Payment to self
                 CAmount nValue = wtx.credit - wtx.change;
-                strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, wtx.credit) + "<br>";
-                strHTML += "<b>" + tr("Change") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, wtx.change) + "<br>";
-                strHTML += "<b>" + tr("Total debit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -nValue) + "<br>";
-                strHTML += "<b>" + tr("Total credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, nValue) + "<br>";
+                strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, wtx.credit) + "<br>";
+                strHTML += "<b>" + tr("Change") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, wtx.change) + "<br>";
+                strHTML += "<b>" + tr("Total debit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -nValue) + "<br>";
+                strHTML += "<b>" + tr("Total credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, nValue) + "<br>";
             }
 
             CAmount nTxFee = wtx.fee;
             if (nTxFee > 0)
-                strHTML += "<b>" + tr("Transaction fee") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -nTxFee) + "<br>";
+                strHTML += "<b>" + tr("Transaction fee") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -nTxFee) + "<br>";
         } else {
             //
             // Mixed debit transaction
@@ -319,27 +319,27 @@ QString TransactionDesc::toHTML_Amounts(interfaces::Wallet& wallet, const interf
             auto mine = wtx.txin_is_mine.begin();
             for (const CTxInput& txin : wtx.inputs) {
                 if (*(mine++)) {
-                    strHTML += "<b>" + tr("Debit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -wallet.getDebit(txin, ISMINE_ALL)) + "<br>";
+                    strHTML += "<b>" + tr("Debit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -wallet.getDebit(txin, ISMINE_ALL)) + "<br>";
                 }
             }
 
             mine = wtx.txout_is_mine.begin();
             for (const interfaces::WalletTxOut& out : wtx.outputs) {
                 if (*(mine++)) {
-                    strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, wallet.getCredit(out.txout, ISMINE_ALL)) + "<br>";
+                    strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, wallet.getCredit(out.txout, ISMINE_ALL)) + "<br>";
                 }
             }
 
             mine = wtx.pegout_is_mine.begin();
             for (const PegOutCoin& pegout : wtx.pegouts) {
                 if (*(mine++)) {
-                    strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, pegout.GetAmount()) + "<br>";
+                    strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, pegout.GetAmount()) + "<br>";
                 }
             }
         }
     }
 
-    strHTML += "<b>" + tr("Net amount") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, nNet, true) + "<br>";
+    strHTML += "<b>" + tr("Net amount") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, nNet, true) + "<br>";
     return strHTML;
 }
 
@@ -347,7 +347,7 @@ QString TransactionDesc::toHTML_OrderForm(const interfaces::WalletOrderForm& ord
 {
     QString strHTML;
 
-    // Message from normal bitcoin:URI (bitcoin:123...?message=example)
+    // Message from normal burritocoin:URI (burritocoin:123...?message=example)
     for (const std::pair<std::string, std::string>& r : orderForm) {
         if (r.first == "Message")
             strHTML += "<br><b>" + tr("Message") + ":</b><br>" + GUIUtil::HtmlEscape(r.second, true) + "<br>";
@@ -376,11 +376,11 @@ QString TransactionDesc::toHTML_Debug(interfaces::Node& node, interfaces::Wallet
     QString strHTML = "<hr><br>" + tr("Debug information") + "<br><br>";
     for (const CTxInput& txin : wtx.inputs) {
         if (wallet.txinIsMine(txin))
-            strHTML += "<b>" + tr("Debit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, -wallet.getDebit(txin, ISMINE_ALL)) + "<br>";
+            strHTML += "<b>" + tr("Debit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, -wallet.getDebit(txin, ISMINE_ALL)) + "<br>";
     }
     for (const interfaces::WalletTxOut& out : wtx.outputs)
         if (wallet.txoutIsMine(out.txout))
-            strHTML += "<b>" + tr("Credit") + ":</b> " + BitcoinUnits::formatHtmlWithUnit(unit, wallet.getCredit(out.txout, ISMINE_ALL)) + "<br>";
+            strHTML += "<b>" + tr("Credit") + ":</b> " + BurritoCoinUnits::formatHtmlWithUnit(unit, wallet.getCredit(out.txout, ISMINE_ALL)) + "<br>";
 
     strHTML += "<br><b>" + tr("Transaction") + ":</b><br>";
     strHTML += GUIUtil::HtmlEscape(rec->GetTxString(), true);
@@ -414,7 +414,7 @@ QString TransactionDesc::toHTML_Debug(interfaces::Node& node, interfaces::Wallet
                 strHTML += QString::fromStdString(EncodeDestination(address));
             }
 
-            strHTML = strHTML + " " + tr("Amount") + "=" + BitcoinUnits::formatHtmlWithUnit(unit, wallet.getValue(prevout));
+            strHTML = strHTML + " " + tr("Amount") + "=" + BurritoCoinUnits::formatHtmlWithUnit(unit, wallet.getValue(prevout));
         }
 
         strHTML = strHTML + " IsMine=" + (wallet.txinIsMine(txin) & ISMINE_SPENDABLE ? tr("true") : tr("false"));
@@ -439,7 +439,7 @@ QString TransactionDesc::toHTML_Debug(interfaces::Node& node, interfaces::Wallet
             strHTML += QString::fromStdString(EncodeDestination(address));
         }
 
-        strHTML = strHTML + " " + tr("Amount") + "=" + BitcoinUnits::formatHtmlWithUnit(unit, wallet.getValue(txout.txout));
+        strHTML = strHTML + " " + tr("Amount") + "=" + BurritoCoinUnits::formatHtmlWithUnit(unit, wallet.getValue(txout.txout));
 
         strHTML = strHTML + " IsMine=" + (wallet.txoutIsMine(txout.txout) & ISMINE_SPENDABLE ? tr("true") : tr("false"));
         strHTML = strHTML + " IsWatchOnly=" + (wallet.txoutIsMine(txout.txout) & ISMINE_WATCH_ONLY ? tr("true") : tr("false"));
