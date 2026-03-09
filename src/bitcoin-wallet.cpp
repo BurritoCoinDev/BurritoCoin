@@ -1,9 +1,9 @@
-// Copyright (c) 2016-2020 The Bitcoin Core developers
+// Copyright (c) 2016-2020 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <config/burritocoin-config.h>
 #endif
 
 #include <chainparams.h>
@@ -43,12 +43,12 @@ static bool WalletAppInit(int argc, char* argv[])
         return false;
     }
     if (argc < 2 || HelpRequested(gArgs)) {
-        std::string usage = strprintf("%s litecoin-wallet version", PACKAGE_NAME) + " " + FormatFullVersion() + "\n\n" +
-                                      "litecoin-wallet is an offline tool for creating and interacting with " PACKAGE_NAME " wallet files.\n" +
-                                      "By default litecoin-wallet will act on wallets in the default mainnet wallet directory in the datadir.\n" +
+        std::string usage = strprintf("%s burritocoin-wallet version", PACKAGE_NAME) + " " + FormatFullVersion() + "\n\n" +
+                                      "burritocoin-wallet is an offline tool for creating and interacting with " PACKAGE_NAME " wallet files.\n" +
+                                      "By default burritocoin-wallet will act on wallets in the default mainnet wallet directory in the datadir.\n" +
                                       "To change the target wallet, use the -datadir, -wallet and -testnet/-regtest arguments.\n\n" +
                                       "Usage:\n" +
-                                     "  litecoin-wallet [options] <command>\n\n" +
+                                     "  burritocoin-wallet [options] <command>\n\n" +
                                      gArgs.GetHelpMessage();
 
         tfm::format(std::cout, "%s", usage);
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
     }
 
     if (method.empty()) {
-        tfm::format(std::cerr, "No method provided. Run `litecoin-wallet -help` for valid methods.\n");
+        tfm::format(std::cerr, "No method provided. Run `burritocoin-wallet -help` for valid methods.\n");
         return EXIT_FAILURE;
     }
 

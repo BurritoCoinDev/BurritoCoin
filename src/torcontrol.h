@@ -1,12 +1,12 @@
-// Copyright (c) 2015-2019 The Bitcoin Core developers
+// Copyright (c) 2015-2019 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 /**
  * Functionality for communicating with Tor.
  */
-#ifndef BITCOIN_TORCONTROL_H
-#define BITCOIN_TORCONTROL_H
+#ifndef BURRITOCOIN_TORCONTROL_H
+#define BURRITOCOIN_TORCONTROL_H
 
 #include <string>
 
@@ -21,4 +21,4 @@ void StopTorControl();
 
 CService DefaultOnionServiceTarget();
 
-#endif /* BITCOIN_TORCONTROL_H */
+#endif /* BURRITOCOIN_TORCONTROL_H */

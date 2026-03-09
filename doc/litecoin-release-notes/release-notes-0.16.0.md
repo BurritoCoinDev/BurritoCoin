@@ -1,25 +1,25 @@
-Litecoin Core version 0.16.0 is now available from:
+BurritoCoin Core version 0.16.0 is now available from:
 
-  <https://download.litecoin.org/litecoin-0.16.0/>
+  <https://download.burritocoin.org/burritocoin-0.16.0/>
 
 This is a new major version release, including new features, various bugfixes
 and performance improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/litecoin-project/litecoin/issues>
+  <https://github.com/burritocoin-project/burritocoin/issues>
 
 To receive security and update notifications, please subscribe to:
 
-  <https://groups.google.com/forum/#!forum/litecoin-dev>
+  <https://groups.google.com/forum/#!forum/burritocoin-dev>
 
 How to Upgrade
 ==============
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
-installer (on Windows) or just copy over `/Applications/Litecoin-Qt` (on Mac)
-or `litecoind`/`litecoin-qt` (on Linux).
+installer (on Windows) or just copy over `/Applications/BurritoCoin-Qt` (on Mac)
+or `burritocoind`/`burritocoin-qt` (on Linux).
 
 The first time you run version 0.15.0 or newer, your chainstate database will be converted to a
 new format, which will take anywhere from a few minutes to half an hour,
@@ -40,10 +40,10 @@ wallets that were created with older versions are not affected by this.
 Compatibility
 ==============
 
-Litecoin Core is extensively tested on multiple operating systems using
+BurritoCoin Core is extensively tested on multiple operating systems using
 the Linux kernel, macOS 10.8+, and Windows Vista and later. Windows XP is not supported.
 
-Litecoin Core should also work on most other Unix-like systems but is not
+BurritoCoin Core should also work on most other Unix-like systems but is not
 frequently tested on them.
 
 Notable changes
@@ -54,7 +54,7 @@ Wallet changes
 
 ### Segwit Wallet
 
-Litecoin Core 0.16.0 introduces full support for segwit in the wallet and user interfaces. A new `-addresstype` argument has been added, which supports `legacy`, `p2sh-segwit` (default), and `bech32` addresses. It controls what kind of addresses are produced by `getnewaddress`, `getaccountaddress`, and `createmultisigaddress`. A `-changetype` argument has also been added, with the same options, and by default equal to `-addresstype`, to control which kind of change is used.
+BurritoCoin Core 0.16.0 introduces full support for segwit in the wallet and user interfaces. A new `-addresstype` argument has been added, which supports `legacy`, `p2sh-segwit` (default), and `bech32` addresses. It controls what kind of addresses are produced by `getnewaddress`, `getaccountaddress`, and `createmultisigaddress`. A `-changetype` argument has also been added, with the same options, and by default equal to `-addresstype`, to control which kind of change is used.
 
 A new `address_type` parameter has been added to the `getnewaddress` and `addmultisigaddress` RPCs to specify which type of address to generate.
 A `change_type` argument has been added to the `fundrawtransaction` RPC to override the `-changetype` argument for specific transactions.
@@ -84,9 +84,9 @@ to new wallets; wallets made with previous versions will not be upgraded to be H
 
 ### Wallets directory configuration (`-walletdir`)
 
-Litecoin Core now has more flexibility in where the wallets directory can be
+BurritoCoin Core now has more flexibility in where the wallets directory can be
 located. Previously wallet database files were stored at the top level of the
-litecoin data directory. The behavior is now:
+burritocoin data directory. The behavior is now:
 
 - For new installations (where the data directory doesn't already exist),
   wallets will now be stored in a new `wallets/` subdirectory inside the data
@@ -104,7 +104,7 @@ becomes unavailable during operation, funds may be lost.
 
 Build: Minimum GCC bumped to 4.8.x
 ------------------------------------
-The minimum version of the GCC compiler required to compile Litecoin Core is now 4.8. No effort will be
+The minimum version of the GCC compiler required to compile BurritoCoin Core is now 4.8. No effort will be
 made to support older versions of GCC. See discussion in issue #11732 for more information.
 The minimum version for the Clang compiler is still 3.3. Other minimum dependency versions can be found in `doc/dependencies.md` in the repository.
 
@@ -182,14 +182,14 @@ The `validateaddress` RPC output has been extended with a few new fields, and su
 Other changed command-line options
 ----------------------------------
 - `-debuglogfile=<file>` can be used to specify an alternative debug logging file.
-- litecoin-cli now has an `-stdinrpcpass` option to allow the RPC password to be read from standard input.
+- burritocoin-cli now has an `-stdinrpcpass` option to allow the RPC password to be read from standard input.
 - The `-usehd` option has been removed.
-- litecoin-cli now supports a new `-getinfo` flag which returns an output like that of the now-removed `getinfo` RPC.
+- burritocoin-cli now supports a new `-getinfo` flag which returns an output like that of the now-removed `getinfo` RPC.
 
 Testing changes
 ----------------
 - The default regtest JSON-RPC port has been changed to 19443 to avoid conflict with testnet's default of 19332.
-- Segwit is now always active in regtest mode by default. Thus, if you upgrade a regtest node you will need to either -reindex or use the old rules by adding `vbparams=segwit:0:999999999999` to your regtest litecoin.conf. Failure to do this will result in a CheckBlockIndex() assertion failure that will look like: Assertion `(pindexFirstNeverProcessed != nullptr) == (pindex->nChainTx == 0)' failed.
+- Segwit is now always active in regtest mode by default. Thus, if you upgrade a regtest node you will need to either -reindex or use the old rules by adding `vbparams=segwit:0:999999999999` to your regtest burritocoin.conf. Failure to do this will result in a CheckBlockIndex() assertion failure that will look like: Assertion `(pindexFirstNeverProcessed != nullptr) == (pindex->nChainTx == 0)' failed.
 
 0.16.0 change log
 ------------------
@@ -226,7 +226,7 @@ Testing changes
 - #11740 `59d3dc8` Implement BIP159 NODE_NETWORK_LIMITED (pruned peers) *signaling only* (jonasschnelli)
 - #11583 `37ffa16` Do not make it trivial for inbound peers to generate log entries (TheBlueMatt)
 - #11363 `ba2f195` Split socket create/connect (theuni)
-- #11917 `bc66765` Add testnet DNS seed:  seed.testnet.bitcoin.sprovoost.nl (Sjors)
+- #11917 `bc66765` Add testnet DNS seed:  seed.testnet.burritocoin.sprovoost.nl (Sjors)
 - #11512 `6e89de5` Use GetDesireableServiceFlags in seeds, dnsseeds, fixing static seed adding (TheBlueMatt)
 - #12262 `16bac24` Hardcoded seed update (laanwj)
 - #12270 `9cf6393` Update chainTxData for 0.16 (laanwj)
@@ -259,7 +259,7 @@ Testing changes
 - #11923 `81c89e9` Remove unused fNoncriticalErrors variable from CWalletDB::FindWalletTx (PierreRochard)
 - #11726 `604e08c` Cleanups + nit fixes for walletdir PR (MeshCollider)
 - #11403 `d889c03` Segwit wallet support (sipa)
-- #11970 `b7450cd` Add test coverage for bitcoin-cli multiwallet calls (ryanofsky)
+- #11970 `b7450cd` Add test coverage for burritocoin-cli multiwallet calls (ryanofsky)
 - #11904 `66e3af7` Add a lock to the wallet directory (MeshCollider)
 - #12101 `c7978be` Clamp walletpassphrase timeout to 2^30 seconds and check its bounds (achow101)
 - #12210 `17180fa` Deprecate addwitnessaddress (laanwj)
@@ -272,7 +272,7 @@ Testing changes
 ### RPC and other APIs
 - #11008 `3841aaf` Enable disablesafemode by default (gmaxwell)
 - #11050 `7ed57d3` Avoid treating null RPC arguments different from missing arguments (ryanofsky)
-- #10997 `affe927` Add option -stdinrpcpass to bitcoin-cli to allow RPC password to be read from standard input (jharvell)
+- #10997 `affe927` Add option -stdinrpcpass to burritocoin-cli to allow RPC password to be read from standard input (jharvell)
 - #11179 `e0e3cbb` Push down safe mode checks (laanwj)
 - #11203 `d745b4c` add wtxid to mempool entry output (sdaftuar)
 - #11099 `bc561b4` Add savemempool RPC (greenaddress)
@@ -357,7 +357,7 @@ Testing changes
 - #11541 `bb9ab0f` Build: Fix Automake warnings when running autogen.sh (fanquake)
 - #11611 `0e70791` [build] Don't fail when passed --disable-lcov and lcov isn't available (fanquake)
 - #11651 `3c098a8` refactor: Make all #includes relative to project root (laanwj, MeshCollider, ryanofsky)
-- #11621 `1f7695b` [build] Add temp_bitcoin_locale_qrc to CLEAN_QT to fix make distcheck (fanquake)
+- #11621 `1f7695b` [build] Add temp_burritocoin_locale_qrc to CLEAN_QT to fix make distcheck (fanquake)
 - #11755 `84fa645` [Docs] Bump minimum required version of GCC to 4.8 (fanquake)
 - #9254 `6d3dc52` [depends] ZeroMQ 4.2.2 (fanquake)
 - #11842 `3c8f0a3` [build] Add missing stuff to clean-local (kallewoof)
@@ -367,7 +367,7 @@ Testing changes
 - #11903 `8f68fd2` [trivial] Add required package dependencies for depends cross compilation (jonasschnelli)
 - #12168 `45cf8a0`  #include sys/fcntl.h to just fcntl.h (without sys/) (jsarenik)
 - #12095 `3fa1ab4` Use BDB_LIBS/CFLAGS and pass --disable-replication (fanquake)
-- #11711 `6378e5c` bitcoin_qt.m4: Minor fixes and clean-ups (fanquake)
+- #11711 `6378e5c` burritocoin_qt.m4: Minor fixes and clean-ups (fanquake)
 - #11989 `90d4104` .gitignore: add QT Creator artifacts (Sjors)
 - #11577 `c0ae864` Fix warnings (-Wsign-compare) when building with DEBUG_ADDRMAN (practicalswift)
 
@@ -380,7 +380,7 @@ Testing changes
 - #11260 `52f8877` travis: Assert default datadir isn't created, Run scripted diff only once (MarcoFalke)
 - #11271 `638e6c5` travis: filter out pyenv (theuni)
 - #11285 `3255d63` Add -usehd to excluded args in check-doc.py (MeshCollider)
-- #11297 `16e4184` Make sure ~/.bitcoin doesn't exist before build (MeshCollider)
+- #11297 `16e4184` Make sure ~/.burritocoin doesn't exist before build (MeshCollider)
 - #11311 `cce94c5` travis: Revert default datadir check (MarcoFalke)
 - #11300 `f4ed44a` Add a lint check for trailing whitespace (MeshCollider)
 - #11323 `4ce2f3d` mininode: add an optimistic write and disable nagle (theuni)
@@ -526,7 +526,7 @@ Testing changes
 - #10781 `60dd9cc` Python cleanups (practicalswift)
 - #10701 `50fae68` Remove the virtual specifier for functions with the override specifier (practicalswift)
 - #11164 `38a54a5` Fix boost headers included as user instead of system headers (danra)
-- #11143 `3aa60b7` Fix include path for bitcoin-config.h (danra)
+- #11143 `3aa60b7` Fix include path for burritocoin-config.h (danra)
 - #8330 `59e1789` Structure Packing Optimizations in C{,Mutable}Transaction (JeremyRubin)
 - #10845 `39ae413` Remove unreachable code (practicalswift)
 - #11238 `6acdb1f` Add assertions before potential null deferences (MeshCollider)
@@ -569,8 +569,8 @@ Testing changes
 
 ### Miscellaneous
 - #11246 `777519b` github-merge: Coalesce git fetches (laanwj)
-- #10871 `c9a4aa8` Handle getinfo in bitcoin-cli w/ -getinfo (revival of #8843) (achow101)
-- #11419 `093074b` Utils: Fix launchctl not being able to stop bitcoind (OmeGak)
+- #10871 `c9a4aa8` Handle getinfo in burritocoin-cli w/ -getinfo (revival of #8843) (achow101)
+- #11419 `093074b` Utils: Fix launchctl not being able to stop burritocoind (OmeGak)
 - #11394 `6e4e98e` Perform a weaker subtree check in Travis (sipa)
 - #11702 `4122112` [build] Add a script for installing db4 (jamesob)
 - #11794 `dd49862` Prefix leveldb debug logging (laanwj)
@@ -587,7 +587,7 @@ Testing changes
 - #11951 `1fb34e0` Remove dead feeest-file read code for old versions (TheBlueMatt)
 - #11421 `9ccafb1` Merge current secp256k1 subtree (MarcoFalke)
 - #11573 `2631d55` [Util] Update tinyformat.h (fanquake)
-- #10529 `331352f` Improve bitcoind systemd service file (Flowdalic)
+- #10529 `331352f` Improve burritocoind systemd service file (Flowdalic)
 - #11620 `70fec9e` [build] .gitignore: add background.tiff (Sjors)
 - #11558 `68e021e` Minimal code changes to allow msvc compilation (sipsorcery)
 - #11284 `10bee0d` Fix invalid memory access in CScript::operator+= (guidovranken, ajtowns)
@@ -600,14 +600,14 @@ Testing changes
 - #11952 `9ab9963` univalue: Bump subtree (MarcoFalke)
 - #12367 `09fc859` Fix two fast-shutdown bugs (TheBlueMatt)
 - #12422 `4d54e7a` util: Make LockDirectory thread-safe, consistent, and fix OpenBSD 6.2 build (laanwj)
-- #482 `5c8e26d` Litecoin: Basic changes for v0.16 release (thrasher-)
+- #482 `5c8e26d` BurritoCoin: Basic changes for v0.16 release (thrasher-)
 
 Credits
 =======
 
 Thanks to everyone who directly contributed to this release:
 
-- [The Bitcoin Core Developers](/doc/release-notes)
+- [The BurritoCoin Core Developers](/doc/release-notes)
 - Adrian Gallagher
 - aunyks
 - coblee

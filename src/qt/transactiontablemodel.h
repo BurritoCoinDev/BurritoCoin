@@ -1,11 +1,11 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TRANSACTIONTABLEMODEL_H
-#define BITCOIN_QT_TRANSACTIONTABLEMODEL_H
+#ifndef BURRITOCOIN_QT_TRANSACTIONTABLEMODEL_H
+#define BURRITOCOIN_QT_TRANSACTIONTABLEMODEL_H
 
-#include <qt/bitcoinunits.h>
+#include <qt/burritocoinunits.h>
 
 #include <QAbstractTableModel>
 #include <QStringList>
@@ -101,7 +101,7 @@ private:
     QString formatTxDate(const WalletTxRecord *wtx) const;
     QString formatTxType(const WalletTxRecord *wtx) const;
     QString formatTxToAddress(const WalletTxRecord *wtx, bool tooltip) const;
-    QString formatTxAmount(const WalletTxRecord *wtx, bool showUnconfirmed=true, BitcoinUnits::SeparatorStyle separators=BitcoinUnits::SeparatorStyle::STANDARD) const;
+    QString formatTxAmount(const WalletTxRecord *wtx, bool showUnconfirmed=true, BurritoCoinUnits::SeparatorStyle separators=BurritoCoinUnits::SeparatorStyle::STANDARD) const;
     QString formatTooltip(const WalletTxRecord *rec) const;
     QVariant txStatusDecoration(const WalletTxRecord *wtx) const;
     QVariant txWatchonlyDecoration(const WalletTxRecord *wtx) const;
@@ -120,4 +120,4 @@ public Q_SLOTS:
     friend class TransactionTablePriv;
 };
 
-#endif // BITCOIN_QT_TRANSACTIONTABLEMODEL_H
+#endif // BURRITOCOIN_QT_TRANSACTIONTABLEMODEL_H

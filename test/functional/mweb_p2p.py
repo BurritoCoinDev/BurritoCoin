@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2020 The Bitcoin Core developers
+# Copyright (c) 2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
@@ -23,7 +23,7 @@ from test_framework.messages import (
 )
 from test_framework.p2p import P2PInterface, p2p_lock
 from test_framework.script import MAX_SCRIPT_ELEMENT_SIZE
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.ltc_util import FIRST_MWEB_HEIGHT, get_hogex_tx, get_mweb_header
 from test_framework.util import assert_equal
 
@@ -54,7 +54,7 @@ class MockLightClient(P2PInterface):
         self.block_headers[Hash(message.block.sha256)] = CBlockHeader(message.block)
 
 
-class MWEBP2PTest(BitcoinTestFramework):
+class MWEBP2PTest(BurritoCoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.extra_args = [['-whitelist=noban@127.0.0.1']]  # immediate tx relay

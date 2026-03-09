@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2016 The Bitcoin Core developers
+# Copyright (c) 2013-2016 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,47 +20,47 @@ else
 LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
-BITCOIN_INCLUDES=-I$(builddir) -I$(srcdir)/secp256k1-zkp/include $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS)
+BURRITOCOIN_INCLUDES=-I$(builddir) -I$(srcdir)/secp256k1-zkp/include $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS)
 
-BITCOIN_INCLUDES += -I$(srcdir)/libmw/include
-BITCOIN_INCLUDES += -I$(srcdir)/libmw/deps/caches/include
-BITCOIN_INCLUDES += -I$(srcdir)/libmw/deps/ghc/include
-BITCOIN_INCLUDES += -I$(srcdir)/libmw/deps/mio/include
-BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
+BURRITOCOIN_INCLUDES += -I$(srcdir)/libmw/include
+BURRITOCOIN_INCLUDES += -I$(srcdir)/libmw/deps/caches/include
+BURRITOCOIN_INCLUDES += -I$(srcdir)/libmw/deps/ghc/include
+BURRITOCOIN_INCLUDES += -I$(srcdir)/libmw/deps/mio/include
+BURRITOCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBBITCOIN_SERVER=libbitcoin_server.a
-LIBBITCOIN_COMMON=libbitcoin_common.a
-LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
-LIBBITCOIN_CLI=libbitcoin_cli.a
-LIBBITCOIN_UTIL=libbitcoin_util.a
-LIBBITCOIN_CRYPTO_BASE=crypto/libbitcoin_crypto_base.a
-LIBBITCOINQT=qt/libbitcoinqt.a
+LIBBURRITOCOIN_SERVER=libburritocoin_server.a
+LIBBURRITOCOIN_COMMON=libburritocoin_common.a
+LIBBURRITOCOIN_CONSENSUS=libburritocoin_consensus.a
+LIBBURRITOCOIN_CLI=libburritocoin_cli.a
+LIBBURRITOCOIN_UTIL=libburritocoin_util.a
+LIBBURRITOCOIN_CRYPTO_BASE=crypto/libburritocoin_crypto_base.a
+LIBBURRITOCOINQT=qt/libburritocoinqt.a
 LIBSECP256K1=secp256k1-zkp/libsecp256k1.la
 LIBMW=libmw.a
 
 if ENABLE_ZMQ
-LIBBITCOIN_ZMQ=libbitcoin_zmq.a
+LIBBURRITOCOIN_ZMQ=libburritocoin_zmq.a
 endif
-if BUILD_BITCOIN_LIBS
-LIBBITCOINCONSENSUS=libbitcoinconsensus.la
+if BUILD_BURRITOCOIN_LIBS
+LIBBURRITOCOINCONSENSUS=libburritocoinconsensus.la
 endif
 if ENABLE_WALLET
-LIBBITCOIN_WALLET=libbitcoin_wallet.a
-LIBBITCOIN_WALLET_TOOL=libbitcoin_wallet_tool.a
+LIBBURRITOCOIN_WALLET=libburritocoin_wallet.a
+LIBBURRITOCOIN_WALLET_TOOL=libburritocoin_wallet_tool.a
 endif
 
-LIBBITCOIN_CRYPTO= $(LIBBITCOIN_CRYPTO_BASE)
+LIBBURRITOCOIN_CRYPTO= $(LIBBURRITOCOIN_CRYPTO_BASE)
 if ENABLE_SSE41
-LIBBITCOIN_CRYPTO_SSE41 = crypto/libbitcoin_crypto_sse41.a
-LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SSE41)
+LIBBURRITOCOIN_CRYPTO_SSE41 = crypto/libburritocoin_crypto_sse41.a
+LIBBURRITOCOIN_CRYPTO += $(LIBBURRITOCOIN_CRYPTO_SSE41)
 endif
 if ENABLE_AVX2
-LIBBITCOIN_CRYPTO_AVX2 = crypto/libbitcoin_crypto_avx2.a
-LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_AVX2)
+LIBBURRITOCOIN_CRYPTO_AVX2 = crypto/libburritocoin_crypto_avx2.a
+LIBBURRITOCOIN_CRYPTO += $(LIBBURRITOCOIN_CRYPTO_AVX2)
 endif
 if ENABLE_SHANI
-LIBBITCOIN_CRYPTO_SHANI = crypto/libbitcoin_crypto_shani.a
-LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_SHANI)
+LIBBURRITOCOIN_CRYPTO_SHANI = crypto/libburritocoin_crypto_shani.a
+LIBBURRITOCOIN_CRYPTO += $(LIBBURRITOCOIN_CRYPTO_SHANI)
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1-zkp/src/*.h) $(wildcard secp256k1-zkp/src/*.c) $(wildcard secp256k1-zkp/include/*)
@@ -69,46 +69,46 @@ $(LIBSECP256K1): $(wildcard secp256k1-zkp/src/*.h) $(wildcard secp256k1-zkp/src/
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBBITCOIN_CRYPTO) \
-  $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_COMMON) \
-  $(LIBBITCOIN_CONSENSUS) \
-  $(LIBBITCOIN_SERVER) \
-  $(LIBBITCOIN_CLI) \
-  $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_WALLET_TOOL) \
-  $(LIBBITCOIN_ZMQ) \
+  $(LIBBURRITOCOIN_CRYPTO) \
+  $(LIBBURRITOCOIN_UTIL) \
+  $(LIBBURRITOCOIN_COMMON) \
+  $(LIBBURRITOCOIN_CONSENSUS) \
+  $(LIBBURRITOCOIN_SERVER) \
+  $(LIBBURRITOCOIN_CLI) \
+  $(LIBBURRITOCOIN_WALLET) \
+  $(LIBBURRITOCOIN_WALLET_TOOL) \
+  $(LIBBURRITOCOIN_ZMQ) \
   $(LIBMW)
 
-lib_LTLIBRARIES = $(LIBBITCOINCONSENSUS)
+lib_LTLIBRARIES = $(LIBBURRITOCOINCONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_BITCOIND
-  bin_PROGRAMS += litecoind
+if BUILD_BURRITOCOIND
+  bin_PROGRAMS += burritocoind
 endif
 
-if BUILD_BITCOIN_NODE
-  bin_PROGRAMS += litecoin-node
+if BUILD_BURRITOCOIN_NODE
+  bin_PROGRAMS += burritocoin-node
 endif
 
-if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += litecoin-cli
+if BUILD_BURRITOCOIN_CLI
+  bin_PROGRAMS += burritocoin-cli
 endif
-if BUILD_BITCOIN_TX
-  bin_PROGRAMS += litecoin-tx
+if BUILD_BURRITOCOIN_TX
+  bin_PROGRAMS += burritocoin-tx
 endif
 if ENABLE_WALLET
-if BUILD_BITCOIN_WALLET
-  bin_PROGRAMS += litecoin-wallet
+if BUILD_BURRITOCOIN_WALLET
+  bin_PROGRAMS += burritocoin-wallet
 endif
 endif
 
 LIBMW_CPPFLAGS = -I$(srcdir) -I$(srcdir)/libmw/include -I$(srcdir)/libmw/deps/crypto/include
-libmw_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(LIBMW_CPPFLAGS)
+libmw_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(LIBMW_CPPFLAGS)
 libmw_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libmw_a_SOURCES = \
 	libmw/src/common/Logger.cpp \
@@ -150,8 +150,8 @@ libmw_a_SOURCES = \
 	libmw/src/wallet/TxBuilder.cpp
 
 .PHONY: FORCE check-symbols check-security
-# bitcoin core #
-BITCOIN_CORE_H = \
+# burritocoin core #
+BURRITOCOIN_CORE_H = \
   addrdb.h \
   addrman.h \
   attributes.h \
@@ -332,15 +332,15 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
-libbitcoin_util_a-clientversion.$(OBJEXT): obj/build.h
+libburritocoin_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between bitcoind and bitcoin-qt
+# server: shared between burritocoind and burritocoin-qt
 # Contains code accessing mempool and chain state that is meant to be separated
 # from wallet and gui code (see node/README.md). Shared code should go in
-# libbitcoin_common or libbitcoin_util libraries, instead.
-libbitcoin_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS) $(LIBMW_CPPFLAGS)
-libbitcoin_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_server_a_SOURCES = \
+# libburritocoin_common or libburritocoin_util libraries, instead.
+libburritocoin_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS) $(LIBMW_CPPFLAGS)
+libburritocoin_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_server_a_SOURCES = \
   addrdb.cpp \
   addrman.cpp \
   banman.cpp \
@@ -392,19 +392,19 @@ libbitcoin_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
 if ENABLE_WALLET
-libbitcoin_server_a_SOURCES += wallet/init.cpp
+libburritocoin_server_a_SOURCES += wallet/init.cpp
 endif
 if !ENABLE_WALLET
-libbitcoin_server_a_SOURCES += dummywallet.cpp
+libburritocoin_server_a_SOURCES += dummywallet.cpp
 endif
 
 if ENABLE_ZMQ
-libbitcoin_zmq_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
-libbitcoin_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_zmq_a_SOURCES = \
+libburritocoin_zmq_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(ZMQ_CFLAGS)
+libburritocoin_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp \
@@ -413,11 +413,11 @@ libbitcoin_zmq_a_SOURCES = \
 endif
 
 
-# wallet: shared between bitcoind and bitcoin-qt, but only linked
+# wallet: shared between burritocoind and burritocoin-qt, but only linked
 # when wallet enabled
-libbitcoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(SQLITE_CFLAGS)
-libbitcoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_wallet_a_SOURCES = \
+libburritocoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(SQLITE_CFLAGS)
+libburritocoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_wallet_a_SOURCES = \
   mweb/mweb_transact.cpp \
   mweb/mweb_wallet.cpp \
   interfaces/wallet.cpp \
@@ -441,22 +441,22 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/walletdb.cpp \
   wallet/walletutil.cpp \
   wallet/coinselection.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
 if USE_SQLITE
-libbitcoin_wallet_a_SOURCES += wallet/sqlite.cpp
+libburritocoin_wallet_a_SOURCES += wallet/sqlite.cpp
 endif
 
-libbitcoin_wallet_tool_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libbitcoin_wallet_tool_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_wallet_tool_a_SOURCES = \
+libburritocoin_wallet_tool_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+libburritocoin_wallet_tool_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_wallet_tool_a_SOURCES = \
   wallet/wallettool.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
 # crypto primitives library
-crypto_libbitcoin_crypto_base_a_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS) $(BITCOIN_INCLUDES)
-crypto_libbitcoin_crypto_base_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libbitcoin_crypto_base_a_SOURCES = \
+crypto_libburritocoin_crypto_base_a_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS) $(BURRITOCOIN_INCLUDES)
+crypto_libburritocoin_crypto_base_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libburritocoin_crypto_base_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/chacha_poly_aead.h \
@@ -490,31 +490,31 @@ crypto_libbitcoin_crypto_base_a_SOURCES = \
   libmw/src/crypto/Hasher.cpp
 
 if USE_ASM
-crypto_libbitcoin_crypto_base_a_SOURCES += crypto/sha256_sse4.cpp
+crypto_libburritocoin_crypto_base_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
-crypto_libbitcoin_crypto_sse41_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libbitcoin_crypto_sse41_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libbitcoin_crypto_sse41_a_CXXFLAGS += $(SSE41_CXXFLAGS)
-crypto_libbitcoin_crypto_sse41_a_CPPFLAGS += -DENABLE_SSE41
-crypto_libbitcoin_crypto_sse41_a_SOURCES = crypto/sha256_sse41.cpp
+crypto_libburritocoin_crypto_sse41_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libburritocoin_crypto_sse41_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libburritocoin_crypto_sse41_a_CXXFLAGS += $(SSE41_CXXFLAGS)
+crypto_libburritocoin_crypto_sse41_a_CPPFLAGS += -DENABLE_SSE41
+crypto_libburritocoin_crypto_sse41_a_SOURCES = crypto/sha256_sse41.cpp
 
-crypto_libbitcoin_crypto_avx2_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libbitcoin_crypto_avx2_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libbitcoin_crypto_avx2_a_CXXFLAGS += $(AVX2_CXXFLAGS)
-crypto_libbitcoin_crypto_avx2_a_CPPFLAGS += -DENABLE_AVX2
-crypto_libbitcoin_crypto_avx2_a_SOURCES = crypto/sha256_avx2.cpp
+crypto_libburritocoin_crypto_avx2_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libburritocoin_crypto_avx2_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libburritocoin_crypto_avx2_a_CXXFLAGS += $(AVX2_CXXFLAGS)
+crypto_libburritocoin_crypto_avx2_a_CPPFLAGS += -DENABLE_AVX2
+crypto_libburritocoin_crypto_avx2_a_SOURCES = crypto/sha256_avx2.cpp
 
-crypto_libbitcoin_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libbitcoin_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libbitcoin_crypto_shani_a_CXXFLAGS += $(SHANI_CXXFLAGS)
-crypto_libbitcoin_crypto_shani_a_CPPFLAGS += -DENABLE_SHANI
-crypto_libbitcoin_crypto_shani_a_SOURCES = crypto/sha256_shani.cpp
+crypto_libburritocoin_crypto_shani_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libburritocoin_crypto_shani_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libburritocoin_crypto_shani_a_CXXFLAGS += $(SHANI_CXXFLAGS)
+crypto_libburritocoin_crypto_shani_a_CPPFLAGS += -DENABLE_SHANI
+crypto_libburritocoin_crypto_shani_a_SOURCES = crypto/sha256_shani.cpp
 
 # consensus: shared between all executables that validate any consensus rules.
-libbitcoin_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libbitcoin_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_consensus_a_SOURCES = \
+libburritocoin_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+libburritocoin_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
   arith_uint256.h \
@@ -532,7 +532,7 @@ libbitcoin_consensus_a_SOURCES = \
   primitives/transaction.h \
   pubkey.cpp \
   pubkey.h \
-  script/bitcoinconsensus.cpp \
+  script/burritocoinconsensus.cpp \
   script/interpreter.cpp \
   script/interpreter.h \
   script/script.cpp \
@@ -548,10 +548,10 @@ libbitcoin_consensus_a_SOURCES = \
   util/strencodings.h \
   version.h
 
-# common: shared between bitcoind, and bitcoin-qt and non-server tools
-libbitcoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_common_a_SOURCES = \
+# common: shared between burritocoind, and burritocoin-qt and non-server tools
+libburritocoin_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+libburritocoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_common_a_SOURCES = \
   base58.cpp \
   bech32.cpp \
   bloom.cpp \
@@ -582,14 +582,14 @@ libbitcoin_common_a_SOURCES = \
   script/standard.cpp \
   versionbitsinfo.cpp \
   warnings.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libbitcoin_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libbitcoin_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_util_a_SOURCES = \
+libburritocoin_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+libburritocoin_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
@@ -620,132 +620,132 @@ libbitcoin_util_a_SOURCES = \
   util/strencodings.cpp \
   util/string.cpp \
   util/time.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
 if USE_LIBEVENT
-libbitcoin_util_a_SOURCES += util/url.cpp
+libburritocoin_util_a_SOURCES += util/url.cpp
 endif
 
 if GLIBC_BACK_COMPAT
-libbitcoin_util_a_SOURCES += compat/glibc_compat.cpp
+libburritocoin_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
-# cli: shared between bitcoin-cli and bitcoin-qt
-libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libbitcoin_cli_a_SOURCES = \
+# cli: shared between burritocoin-cli and burritocoin-qt
+libburritocoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+libburritocoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoin_cli_a_SOURCES = \
   compat/stdin.h \
   compat/stdin.cpp \
   rpc/client.cpp \
-  $(BITCOIN_CORE_H)
+  $(BURRITOCOIN_CORE_H)
 
-nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libburritocoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# bitcoind & bitcoin-node binaries #
-litecoin_daemon_sources = bitcoind.cpp
-litecoin_bin_cppflags = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-litecoin_bin_cxxflags = $(AM_CXXFLAGS) $(PIE_FLAGS)
-litecoin_bin_ldflags = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+# burritocoind & burritocoin-node binaries #
+burritocoin_daemon_sources = burritocoind.cpp
+burritocoin_bin_cppflags = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+burritocoin_bin_cxxflags = $(AM_CXXFLAGS) $(PIE_FLAGS)
+burritocoin_bin_ldflags = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-litecoin_daemon_sources += bitcoind-res.rc
+burritocoin_daemon_sources += burritocoind-res.rc
 endif
 
-litecoin_bin_ldadd = \
-  $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_COMMON) \
-  $(LIBBITCOIN_UTIL) \
+burritocoin_bin_ldadd = \
+  $(LIBBURRITOCOIN_WALLET) \
+  $(LIBBURRITOCOIN_COMMON) \
+  $(LIBBURRITOCOIN_UTIL) \
   $(LIBUNIVALUE) \
-  $(LIBBITCOIN_ZMQ) \
-  $(LIBBITCOIN_CONSENSUS) \
-  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBURRITOCOIN_ZMQ) \
+  $(LIBBURRITOCOIN_CONSENSUS) \
+  $(LIBBURRITOCOIN_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1) \
   $(LIBMW)
 
-litecoin_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(MWEB_LIBS)
+burritocoin_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(MWEB_LIBS)
 
-litecoind_SOURCES = $(litecoin_daemon_sources)
-litecoind_CPPFLAGS = $(litecoin_bin_cppflags)
-litecoind_CXXFLAGS = $(litecoin_bin_cxxflags)
-litecoind_LDFLAGS = $(litecoin_bin_ldflags)
-litecoind_LDADD = $(LIBBITCOIN_SERVER) $(litecoin_bin_ldadd)
+burritocoind_SOURCES = $(burritocoin_daemon_sources)
+burritocoind_CPPFLAGS = $(burritocoin_bin_cppflags)
+burritocoind_CXXFLAGS = $(burritocoin_bin_cxxflags)
+burritocoind_LDFLAGS = $(burritocoin_bin_ldflags)
+burritocoind_LDADD = $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd)
 
-litecoin_node_SOURCES = $(litecoin_daemon_sources)
-litecoin_node_CPPFLAGS = $(litecoin_bin_cppflags)
-litecoin_node_CXXFLAGS = $(litecoin_bin_cxxflags)
-litecoin_node_LDFLAGS = $(litecoin_bin_ldflags)
-litecoin_node_LDADD = $(LIBBITCOIN_SERVER) $(litecoin_bin_ldadd)
+burritocoin_node_SOURCES = $(burritocoin_daemon_sources)
+burritocoin_node_CPPFLAGS = $(burritocoin_bin_cppflags)
+burritocoin_node_CXXFLAGS = $(burritocoin_bin_cxxflags)
+burritocoin_node_LDFLAGS = $(burritocoin_bin_ldflags)
+burritocoin_node_LDADD = $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd)
 
-# bitcoin-cli binary #
-litecoin_cli_SOURCES = bitcoin-cli.cpp
-litecoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-litecoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-litecoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+# burritocoin-cli binary #
+burritocoin_cli_SOURCES = burritocoin-cli.cpp
+burritocoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(EVENT_CFLAGS)
+burritocoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+burritocoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-litecoin_cli_SOURCES += bitcoin-cli-res.rc
+burritocoin_cli_SOURCES += burritocoin-cli-res.rc
 endif
 
-litecoin_cli_LDADD = \
-  $(LIBBITCOIN_CLI) \
+burritocoin_cli_LDADD = \
+  $(LIBBURRITOCOIN_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_CRYPTO)
+  $(LIBBURRITOCOIN_UTIL) \
+  $(LIBBURRITOCOIN_CRYPTO)
 
-litecoin_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS) $(MWEB_LIBS)
+burritocoin_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS) $(MWEB_LIBS)
 #
 
-# bitcoin-tx binary #
-litecoin_tx_SOURCES = bitcoin-tx.cpp
-litecoin_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-litecoin_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-litecoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+# burritocoin-tx binary #
+burritocoin_tx_SOURCES = burritocoin-tx.cpp
+burritocoin_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
+burritocoin_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+burritocoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
 
 if TARGET_WINDOWS
-litecoin_tx_SOURCES += bitcoin-tx-res.rc
+burritocoin_tx_SOURCES += burritocoin-tx-res.rc
 endif
 
-litecoin_tx_LDADD = \
+burritocoin_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBBITCOIN_COMMON) \
-  $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_CONSENSUS) \
-  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBURRITOCOIN_COMMON) \
+  $(LIBBURRITOCOIN_UTIL) \
+  $(LIBBURRITOCOIN_CONSENSUS) \
+  $(LIBBURRITOCOIN_CRYPTO) \
   $(LIBSECP256K1) \
   $(LIBMW)
 
-litecoin_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(MWEB_LIBS)
+burritocoin_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(MWEB_LIBS)
 
-# bitcoin-wallet binary #
-litecoin_wallet_SOURCES = bitcoin-wallet.cpp
-litecoin_wallet_CPPFLAGS = $(litecoin_bin_cppflags)
-litecoin_wallet_CXXFLAGS = $(litecoin_bin_cxxflags)
-litecoin_wallet_LDFLAGS = $(litecoin_bin_ldflags)
-litecoin_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(litecoin_bin_ldadd)
+# burritocoin-wallet binary #
+burritocoin_wallet_SOURCES = burritocoin-wallet.cpp
+burritocoin_wallet_CPPFLAGS = $(burritocoin_bin_cppflags)
+burritocoin_wallet_CXXFLAGS = $(burritocoin_bin_cxxflags)
+burritocoin_wallet_LDFLAGS = $(burritocoin_bin_ldflags)
+burritocoin_wallet_LDADD = $(LIBBURRITOCOIN_WALLET_TOOL) $(burritocoin_bin_ldadd)
 
 if TARGET_WINDOWS
-litecoin_wallet_SOURCES += bitcoin-wallet-res.rc
+burritocoin_wallet_SOURCES += burritocoin-wallet-res.rc
 endif
 #
 
-# bitcoinconsensus library #
-if BUILD_BITCOIN_LIBS
-include_HEADERS = script/bitcoinconsensus.h
-libbitcoinconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libbitcoin_crypto_base_a_SOURCES) $(libbitcoin_consensus_a_SOURCES)
+# burritocoinconsensus library #
+if BUILD_BURRITOCOIN_LIBS
+include_HEADERS = script/burritocoinconsensus.h
+libburritocoinconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libburritocoin_crypto_base_a_SOURCES) $(libburritocoin_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
-  libbitcoinconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libburritocoinconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libbitcoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libbitcoinconsensus_la_LIBADD = $(LIBSECP256K1) $(CRYPTO_LIBS) $(MWEB_LIBS)
-libbitcoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1-zkp/include -DBUILD_BITCOIN_INTERNAL $(SSL_CFLAGS) $(LIBMW_CPPFLAGS)
-libbitcoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libburritocoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+libburritocoinconsensus_la_LIBADD = $(LIBSECP256K1) $(CRYPTO_LIBS) $(MWEB_LIBS)
+libburritocoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1-zkp/include -DBUILD_BURRITOCOIN_INTERNAL $(SSL_CFLAGS) $(LIBMW_CPPFLAGS)
+libburritocoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
@@ -781,12 +781,12 @@ CLEANFILES += obj/build.h
 EXTRA_DIST = $(CTAES_DIST)
 
 
-config/bitcoin-config.h: config/stamp-h1
+config/burritocoin-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-config/stamp-h1: $(top_srcdir)/$(subdir)/config/bitcoin-config.h.in $(top_builddir)/config.status
+config/stamp-h1: $(top_srcdir)/$(subdir)/config/burritocoin-config.h.in $(top_builddir)/config.status
 	$(AM_V_at)$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-$(top_srcdir)/$(subdir)/config/bitcoin-config.h.in:  $(am__configure_deps)
-	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/bitcoin-config.h.in
+$(top_srcdir)/$(subdir)/config/burritocoin-config.h.in:  $(am__configure_deps)
+	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/burritocoin-config.h.in
 
 clean-local:
 	-$(MAKE) -C secp256k1-zkp clean

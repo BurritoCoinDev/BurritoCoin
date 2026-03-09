@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021 The Litecoin Core developers
+# Copyright (c) 2021 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Basic MWEB test"""
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.util import assert_equal
 
-class MWEBBasicTest(BitcoinTestFramework):
+class MWEBBasicTest(BurritoCoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.extra_args = [['-whitelist=noban@127.0.0.1'],[]]  # immediate tx relay
@@ -51,7 +51,7 @@ class MWEBBasicTest(BitcoinTestFramework):
             utxo1 = utxos[0]
           
         assert utxo0['amount'] == 10 and utxo0['address'] == addr0
-        assert 2 < utxo1['amount'] < 2.5 # change from single 12.5 LTC coinbase being spent
+        assert 2 < utxo1['amount'] < 2.5 # change from single 12.5 BRTO coinbase being spent
 
         self.log.info("Send MWEB coins to node 1")
         addr1 = self.nodes[1].getnewaddress(address_type='mweb')

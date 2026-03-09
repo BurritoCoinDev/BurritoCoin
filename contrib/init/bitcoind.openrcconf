@@ -1,33 +1,33 @@
-# /etc/conf.d/bitcoind: config file for /etc/init.d/bitcoind
+# /etc/conf.d/burritocoind: config file for /etc/init.d/burritocoind
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/bitcoin/bitcoin.conf"
+#BURRITOCOIND_CONFIGFILE="/etc/burritocoin/burritocoin.conf"
 
-# What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
-#BITCOIND_PIDDIR="/var/run/bitcoind"
+# What directory to write pidfile to?  (created and owned by $BURRITOCOIND_USER)
+#BURRITOCOIND_PIDDIR="/var/run/burritocoind"
 
 # What filename to give the pidfile
-#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/bitcoind.pid"
+#BURRITOCOIND_PIDFILE="${BURRITOCOIND_PIDDIR}/burritocoind.pid"
 
-# Where to write bitcoind data (be mindful that the blockchain is large)
-#BITCOIND_DATADIR="/var/lib/bitcoind"
+# Where to write burritocoind data (be mindful that the blockchain is large)
+#BURRITOCOIND_DATADIR="/var/lib/burritocoind"
 
-# User and group to own bitcoind process
-#BITCOIND_USER="bitcoin"
-#BITCOIND_GROUP="bitcoin"
+# User and group to own burritocoind process
+#BURRITOCOIND_USER="burritocoin"
+#BURRITOCOIND_GROUP="burritocoin"
 
-# Path to bitcoind executable
-#BITCOIND_BIN="/usr/bin/bitcoind"
+# Path to burritocoind executable
+#BURRITOCOIND_BIN="/usr/bin/burritocoind"
 
-# Nice value to run bitcoind under
-#BITCOIND_NICE=0
+# Nice value to run burritocoind under
+#BURRITOCOIND_NICE=0
 
 # Additional options (avoid -conf and -datadir, use flags above)
-#BITCOIND_OPTS=""
+#BURRITOCOIND_OPTS=""
 
-# The timeout in seconds OpenRC will wait for bitcoind to terminate
+# The timeout in seconds OpenRC will wait for burritocoind to terminate
 # after a SIGTERM has been raised.
 # Note that this will be mapped as argument to start-stop-daemon's
 # '--retry' option, which means you can specify a retry schedule
 # here. For more information see man 8 start-stop-daemon.
-BITCOIND_SIGTERM_TIMEOUT=600
+BURRITOCOIND_SIGTERM_TIMEOUT=600

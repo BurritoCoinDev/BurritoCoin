@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2020 The Bitcoin Core developers
+# Copyright (c) 2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
@@ -16,7 +16,7 @@ from test_framework.p2p import (
     P2PInterface,
     p2p_lock,
 )
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.util import (
     assert_equal,
 )
@@ -56,7 +56,7 @@ class AddrReceiver(P2PInterface):
             self._tokens += n
 
 
-class AddrTest(BitcoinTestFramework):
+class AddrTest(BurritoCoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = False
         self.num_nodes = 1

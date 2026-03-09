@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2018 The Bitcoin Core developers
+// Copyright (c) 2017-2018 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_COINSELECTION_H
-#define BITCOIN_WALLET_COINSELECTION_H
+#ifndef BURRITOCOIN_WALLET_COINSELECTION_H
+#define BURRITOCOIN_WALLET_COINSELECTION_H
 
 #include <amount.h>
 #include <mw/models/wallet/Coin.h>
@@ -105,7 +105,7 @@ struct CoinEligibilityFilter
 };
 
 enum class InputPreference {
-    // Use LTC and MWEB inputs (MIXED)
+    // Use BRTO and MWEB inputs (MIXED)
     ANY,
     // Only use MWEB inputs (used when explicitly pegging-out)
     MWEB_ONLY,
@@ -155,4 +155,4 @@ bool SelectCoinsBnB(std::vector<OutputGroup>& utxo_pool, const CAmount& target_v
 // Original coin selection algorithm as a fallback
 bool KnapsackSolver(const CAmount& nTargetValue, std::vector<OutputGroup>& groups, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet);
 
-#endif // BITCOIN_WALLET_COINSELECTION_H
+#endif // BURRITOCOIN_WALLET_COINSELECTION_H

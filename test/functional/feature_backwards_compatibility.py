@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2018-2020 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Backwards compatibility functional test
@@ -22,7 +22,7 @@ needs an older patch version.
 import os
 import shutil
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.descriptors import descsum_create
 
 from test_framework.util import (
@@ -31,7 +31,7 @@ from test_framework.util import (
 )
 
 
-class BackwardsCompatibilityTest(BitcoinTestFramework):
+class BackwardsCompatibilityTest(BurritoCoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 5
@@ -244,13 +244,13 @@ class BackwardsCompatibilityTest(BitcoinTestFramework):
         assert info['private_keys_enabled'] == False
         assert info['keypoolsize'] == 0
 
-        # RPC loadwallet failure causes bitcoind to exit, in addition to the RPC
+        # RPC loadwallet failure causes burritocoind to exit, in addition to the RPC
         # call failure, so the following test won't work:
         # assert_raises_rpc_error(-4, "Wallet loading failed.", node_v17.loadwallet, 'w3_v18')
 
         # Instead, we stop node and try to launch it with the wallet:
         self.stop_node(3)
-        node_v17.assert_start_raises_init_error(["-wallet=w3_v18"], "Error: Error loading w3_v18: Wallet requires newer version of Litecoin Core")
+        node_v17.assert_start_raises_init_error(["-wallet=w3_v18"], "Error: Error loading w3_v18: Wallet requires newer version of BurritoCoin Core")
         if self.options.descriptors:
             # Descriptor wallets appear to be corrupted wallets to old software
             node_v17.assert_start_raises_init_error(["-wallet=w1"], "Error: wallet.dat corrupt, salvage failed")
@@ -285,13 +285,13 @@ class BackwardsCompatibilityTest(BitcoinTestFramework):
         hdkeypath = v17_info["hdkeypath"]
         pubkey = v17_info["pubkey"]
 
-        # Copy the 0.16 wallet to the last Bitcoin Core version and open it:
+        # Copy the 0.16 wallet to the last BurritoCoin Core version and open it:
         shutil.copyfile(
             os.path.join(node_v16_wallets_dir, "wallets/u1_v16"),
             os.path.join(node_master_wallets_dir, "u1_v16")
         )
         load_res = node_master.loadwallet("u1_v16")
-        # Make sure this wallet opens without warnings. See https://github.com/bitcoin/bitcoin/pull/19054
+        # Make sure this wallet opens without warnings. See https://github.com/burritocoin/burritocoin/pull/19054
         assert_equal(load_res['warning'], '')
         wallet = node_master.get_wallet_rpc("u1_v16")
         info = wallet.getaddressinfo(v16_addr)
@@ -309,7 +309,7 @@ class BackwardsCompatibilityTest(BitcoinTestFramework):
         info = wallet.validateaddress(v16_addr)
         assert_equal(info, v16_info)
 
-        # Copy the 0.17 wallet to the last Bitcoin Core version and open it:
+        # Copy the 0.17 wallet to the last BurritoCoin Core version and open it:
         node_v17.unloadwallet("u1_v17")
         shutil.copytree(
             os.path.join(node_v17_wallets_dir, "u1_v17"),

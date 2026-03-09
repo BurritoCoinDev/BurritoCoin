@@ -28,7 +28,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>BurritoCoinGUI</name>
     <message>
         <source>&amp;Transactions</source>
         <translation>&amp;Транзакциялар</translation>
@@ -103,8 +103,8 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>BurritoCoin</source>
+        <translation>BurritoCoin</translation>
     </message>
     <message>
         <source>Error</source>
@@ -336,6 +336,6 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-core</name>
+    <name>burritocoin-core</name>
     </context>
 </TS>

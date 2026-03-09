@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_MERKLEBLOCK_H
-#define BITCOIN_MERKLEBLOCK_H
+#ifndef BURRITOCOIN_MERKLEBLOCK_H
+#define BURRITOCOIN_MERKLEBLOCK_H
 
 #include <serialize.h>
 #include <uint256.h>
@@ -204,4 +204,4 @@ public:
     SERIALIZE_METHODS(CMerkleBlockWithMWEB, obj) { READWRITE(obj.merkle, obj.hogex, obj.mweb_header); }
 };
 
-#endif // BITCOIN_MERKLEBLOCK_H
+#endif // BURRITOCOIN_MERKLEBLOCK_H
