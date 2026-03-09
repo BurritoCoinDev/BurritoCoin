@@ -60,7 +60,7 @@ Represents the view to a single wallet.
 
 * UI elements like BurritoCoinAmountField, which inherit from QWidget.
 * `burritocoinstrings.cpp`: automatically generated
-* `burritocoinunits.(h/cpp)`: BRTO / mBTC / etc handling
+* `burritocoinunits.(h/cpp)`: BRTO / mBRTO / morsels / burrioshi handling
 * `callback.h`
 * `guiconstants.h`: UI colors, app name, etc
 * `guiutil.h`: several helper functions

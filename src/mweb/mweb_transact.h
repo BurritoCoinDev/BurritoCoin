@@ -40,7 +40,7 @@ private:
     mw::Recipient BuildChangeRecipient(
         const InProcessTx& new_tx,
         const boost::optional<CAmount>& pegin_amount,
-        const CAmount& ltc_change
+        const CAmount& brto_change
     );
 };
 
