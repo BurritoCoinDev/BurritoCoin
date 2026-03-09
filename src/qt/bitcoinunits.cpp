@@ -65,9 +65,9 @@ QString BurritoCoinUnits::description(int unit)
     switch(unit)
     {
     case BRTO: return QString("BurritoCoins");
-    case mBTC: return QString("Lites (1 / 1" THIN_SP_UTF8 "000)");
-    case uBTC: return QString("Photons (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-    case SAT: return QString("Liteoshis (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case mBTC: return QString("Burritos (1 / 1" THIN_SP_UTF8 "000)");
+    case uBTC: return QString("Morsels (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case SAT: return QString("Burrioshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }
