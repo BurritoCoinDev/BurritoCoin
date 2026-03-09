@@ -97,7 +97,7 @@ class InvalidBlockRequestTest(BurritoCoinTestFramework):
 
         block3 = create_block(tip, create_coinbase(height), block_time, version=0x20000000)
         block_time += 1
-        block3.vtx[0].vout[0].nValue = 100 * COIN  # Too high!
+        block3.vtx[0].vout[0].nValue = 20 * COIN  # Too high!
         block3.vtx[0].sha256 = None
         block3.vtx[0].calc_sha256()
         block3.hashMerkleRoot = block3.calc_merkle_root()

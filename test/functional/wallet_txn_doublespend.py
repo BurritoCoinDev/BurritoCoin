@@ -29,8 +29,8 @@ class TxnMallTest(BurritoCoinTestFramework):
         self.disconnect_nodes(1, 2)
 
     def run_test(self):
-        # All nodes should start with 1,250 BRTO:
-        starting_balance = 1250
+        # All nodes should start with 250 BRTO (25 blocks × 10 BRTO):
+        starting_balance = 250
 
         # All nodes should be out of IBD.
         # If the nodes are not all out of IBD, that can interfere with
@@ -130,11 +130,11 @@ class TxnMallTest(BurritoCoinTestFramework):
         # Node0's total balance should be starting balance, plus 100BTC for
         # two more matured blocks, minus 1240 for the double-spend, plus fees (which are
         # negative):
-        expected = starting_balance + 100 - 1240 + fund_foo_tx["fee"] + fund_bar_tx["fee"] + doublespend_fee
+        expected = starting_balance + 20 - 1240 + fund_foo_tx["fee"] + fund_bar_tx["fee"] + doublespend_fee
         assert_equal(self.nodes[0].getbalance(), expected)
 
-        # Node1's balance should be its initial balance (1250 for 25 block rewards) plus the doublespend:
-        assert_equal(self.nodes[1].getbalance(), 1250 + 1240)
+        # Node1's balance should be its initial balance (250 for 25 block rewards) plus the doublespend:
+        assert_equal(self.nodes[1].getbalance(), 250 + 1240)
 
 if __name__ == '__main__':
     TxnMallTest().main()
