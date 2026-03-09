@@ -76,7 +76,7 @@ class TxnMallTest(BurritoCoinTestFramework):
         doublespend = self.nodes[0].signrawtransactionwithwallet(rawtx)
         assert_equal(doublespend["complete"], True)
 
-        # Create two spends using 1 50 BRTO coin each
+        # Create two spends using coinbase outputs
         txid1 = self.nodes[0].sendtoaddress(node1_address, 40)
         txid2 = self.nodes[0].sendtoaddress(node1_address, 20)
 
@@ -88,7 +88,7 @@ class TxnMallTest(BurritoCoinTestFramework):
         tx1 = self.nodes[0].gettransaction(txid1)
         tx2 = self.nodes[0].gettransaction(txid2)
 
-        # Node0's balance should be starting balance, plus 50BTC for another
+        # Node0's balance should be starting balance, plus 10 BRTO for another
         # matured block, minus 40, minus 20, and minus transaction fees:
         expected = starting_balance + fund_foo_tx["fee"] + fund_bar_tx["fee"]
         if self.options.mine_block:
