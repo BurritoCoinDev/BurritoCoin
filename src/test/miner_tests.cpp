@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     // Just to make sure we can still make simple blocks
     BOOST_CHECK(pblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));
 
-    const CAmount BLOCKSUBSIDY = 50*COIN;
+    const CAmount BLOCKSUBSIDY = 10*COIN; // BurritoCoin block reward
     const CAmount LOWFEE = CENT;
     const CAmount HIGHFEE = COIN;
     const CAmount HIGHERFEE = 4*COIN;
@@ -360,10 +360,13 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     BOOST_CHECK_EXCEPTION(AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey), std::runtime_error, HasReason("bad-txns-inputs-missingorspent"));
     m_node.mempool->clear();
 
-    // subsidy changing
+    // Verify block template creation at various heights within the steady-emission
+    // period. BurritoCoin's halving interval is 1,042,600,000 blocks (~4,960 years),
+    // so no halving occurs anywhere near these heights; the block reward stays at
+    // 10 BRTO throughout.
     int nHeight = ::ChainActive().Height();
-    // Create an actual 209999-long block chain (without valid blocks).
-    while (::ChainActive().Tip()->nHeight < 839999) {
+    // Advance to an arbitrary mid-range height and confirm CreateNewBlock succeeds.
+    while (::ChainActive().Tip()->nHeight < nHeight + 999) {
         CBlockIndex* prev = ::ChainActive().Tip();
         CBlockIndex* next = new CBlockIndex();
         next->phashBlock = new uint256(InsecureRand256());
@@ -374,8 +377,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         ::ChainActive().SetTip(next);
     }
     BOOST_CHECK(pblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));
-    // Extend to a 210000-long block chain.
-    while (::ChainActive().Tip()->nHeight < 840000) {
+    // Advance one more block and confirm again.
+    while (::ChainActive().Tip()->nHeight < nHeight + 1000) {
         CBlockIndex* prev = ::ChainActive().Tip();
         CBlockIndex* next = new CBlockIndex();
         next->phashBlock = new uint256(InsecureRand256());
