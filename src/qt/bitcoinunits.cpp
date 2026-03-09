@@ -55,7 +55,7 @@ QString BurritoCoinUnits::shortName(int unit)
     switch(unit)
     {
     case uBRTO: return QString::fromUtf8("morsels");
-    case SAT: return QString("sat");
+    case SAT: return QString("burrioshi");
     default: return longName(unit);
     }
 }
