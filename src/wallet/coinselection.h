@@ -110,7 +110,7 @@ enum class InputPreference {
     // Only use MWEB inputs (used when explicitly pegging-out)
     MWEB_ONLY,
     // Only use canonical inputs (used when explicitly pegging-in)
-    LTC_ONLY
+    BRTO_ONLY
 };
 
 struct OutputGroup

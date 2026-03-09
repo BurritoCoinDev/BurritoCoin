@@ -216,7 +216,7 @@ void TxAssembler::CreateTransaction_Locked(
     AddTxInputs(new_tx);
 
     // Now build the MWEB side of the transaction
-    if (new_tx.mweb_type != MWEB::TxType::LTC_TO_LTC) {
+    if (new_tx.mweb_type != MWEB::TxType::BRTO_TO_BRTO) {
         MWEB::Transact(m_wallet).AddMWEBTx(new_tx);
     }
 
@@ -395,7 +395,7 @@ bool TxAssembler::AttemptCoinSelection(InProcessTx& new_tx, const CAmount& nTarg
         new_tx.coin_selection_params.change_spend_size = (size_t)change_spend_size;
     }
 
-    static auto is_ltc = [](const CInputCoin& input) { return !input.IsMWEB(); };
+    static auto is_brto = [](const CInputCoin& input) { return !input.IsMWEB(); };
     static auto is_mweb = [](const CInputCoin& input) { return input.IsMWEB(); };
 
     if (new_tx.recipients.front().IsMWEB()) {
@@ -422,12 +422,12 @@ bool TxAssembler::AttemptCoinSelection(InProcessTx& new_tx, const CAmount& nTarg
         params_pegin.change_spend_size = change_on_mweb ? 0 : new_tx.coin_selection_params.change_spend_size;
 
         if (SelectCoins(new_tx, nTargetValue, params_pegin)) {
-            return std::any_of(new_tx.selected_coins.cbegin(), new_tx.selected_coins.cend(), is_ltc);
+            return std::any_of(new_tx.selected_coins.cbegin(), new_tx.selected_coins.cend(), is_brto);
         }
     } else {
         // First try to construct a BRTO-to-BRTO transaction
         CoinSelectionParams mweb_to_mweb = new_tx.coin_selection_params;
-        mweb_to_mweb.input_preference = InputPreference::LTC_ONLY;
+        mweb_to_mweb.input_preference = InputPreference::BRTO_ONLY;
         mweb_to_mweb.mweb_change_output_weight = 0;
         mweb_to_mweb.mweb_nochange_weight = 0;
 
