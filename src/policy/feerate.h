@@ -12,7 +12,7 @@
 #include <string>
 
 const std::string CURRENCY_UNIT = "BRTO"; // One formatted unit
-const std::string CURRENCY_ATOM = "sat"; // One indivisible minimum value unit
+const std::string CURRENCY_ATOM = "burrioshi"; // One indivisible minimum value unit
 
 /* Used to determine type of fee estimation requested */
 enum class FeeEstimateMode {
@@ -66,7 +66,7 @@ public:
      */
     CAmount GetTotalFee(size_t nBytes, uint64_t mweb_weight) const;
     /**
-     * Return the fee in satoshis for a size of 1000 bytes
+     * Return the fee in burrioshi for a size of 1000 bytes
      */
     CAmount GetFeePerK() const { return GetFee(1000); }
 
