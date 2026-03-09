@@ -45,7 +45,7 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 #define QAPP_ORG_NAME "BurritoCoin"
 #define QAPP_ORG_DOMAIN "burritocoin.org"
 #define QAPP_APP_NAME_DEFAULT "BurritoCoin-Qt"
-#define QAPP_APP_NAME_TESTNET "Liteocin-Qt-testnet"
+#define QAPP_APP_NAME_TESTNET "BurritoCoin-Qt-testnet"
 #define QAPP_APP_NAME_SIGNET "BurritoCoin-Qt-signet"
 #define QAPP_APP_NAME_REGTEST "BurritoCoin-Qt-regtest"
 
