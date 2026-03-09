@@ -261,7 +261,7 @@ class SegWitTest(BurritoCoinTestFramework):
         # Now create tx3, which will spend from txid2
         tx = CTransaction()
         tx.vin.append(CTxIn(COutPoint(int(txid2, 16), 0), b""))
-        tx.vout.append(CTxOut(int(49.95 * COIN), CScript([OP_TRUE, OP_DROP] * 15 + [OP_TRUE])))  # Huge fee
+        tx.vout.append(CTxOut(int(9.95 * COIN), CScript([OP_TRUE, OP_DROP] * 15 + [OP_TRUE])))  # Huge fee
         tx.calc_sha256()
         txid3 = self.nodes[0].sendrawtransaction(hexstring=ToHex(tx), maxfeerate=0)
         assert tx.wit.is_null()
