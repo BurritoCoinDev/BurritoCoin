@@ -13,11 +13,11 @@ from test_framework.util import (
     get_auth_cookie,
 )
 
-# The block reward of coinbaseoutput.nValue (50) BRTO/block matures after
+# The block reward of coinbaseoutput.nValue (10) BRTO/block matures after
 # COINBASE_MATURITY (100) blocks. Therefore, after mining 101 blocks we expect
-# node 0 to have a balance of (BLOCKS - COINBASE_MATURITY) * 50 BRTO/block.
+# node 0 to have a balance of (BLOCKS - COINBASE_MATURITY) * 10 BRTO/block.
 BLOCKS = 101
-BALANCE = (BLOCKS - 100) * 50
+BALANCE = (BLOCKS - 100) * 10
 
 JSON_PARSING_ERROR = 'error: Error parsing JSON: foo'
 BLOCKS_VALUE_OF_ZERO = 'error: the first argument (number of blocks to generate, default: 1) must be an integer value greater than zero'
@@ -109,7 +109,7 @@ class TestBurritoCoinCli(BurritoCoinTestFramework):
             w1.sendtoaddress(w2.getnewaddress(), amounts[1])
             w1.sendtoaddress(w3.getnewaddress(), amounts[2])
 
-            # Mine a block to confirm; adds a block reward (50 BRTO) to the default wallet.
+            # Mine a block to confirm; adds a block reward (10 BRTO) to the default wallet.
             self.nodes[0].generate(1)
 
             self.log.info("Test -getinfo with multiple wallets and -rpcwallet returns specified wallet balance")

@@ -41,8 +41,8 @@ public:
     enum Unit
     {
         BRTO,
-        mBTC,
-        uBTC,
+        mBRTO,
+        uBRTO,
         SAT
     };
 

@@ -60,15 +60,15 @@ class WalletTest(BurritoCoinTestFramework):
         self.nodes[0].generate(1)
 
         walletinfo = self.nodes[0].getwalletinfo()
-        assert_equal(walletinfo['immature_balance'], 50)
+        assert_equal(walletinfo['immature_balance'], 10)
         assert_equal(walletinfo['balance'], 0)
 
         self.sync_all(self.nodes[0:3])
         self.nodes[1].generate(101)
         self.sync_all(self.nodes[0:3])
 
-        assert_equal(self.nodes[0].getbalance(), 50)
-        assert_equal(self.nodes[1].getbalance(), 50)
+        assert_equal(self.nodes[0].getbalance(), 10)
+        assert_equal(self.nodes[1].getbalance(), 10)
         assert_equal(self.nodes[2].getbalance(), 0)
 
         # Check that only first and second nodes have UTXOs
@@ -82,9 +82,9 @@ class WalletTest(BurritoCoinTestFramework):
         # First, outputs that are unspent both in the chain and in the
         # mempool should appear with or without include_mempool
         txout = self.nodes[0].gettxout(txid=confirmed_txid, n=confirmed_index, include_mempool=False)
-        assert_equal(txout['value'], 50)
+        assert_equal(txout['value'], 10)
         txout = self.nodes[0].gettxout(txid=confirmed_txid, n=confirmed_index, include_mempool=True)
-        assert_equal(txout['value'], 50)
+        assert_equal(txout['value'], 10)
 
         # Send 21 BRTO from 0 to 2 using sendtoaddress call.
         self.nodes[0].sendtoaddress(self.nodes[2].getnewaddress(), 11)
@@ -94,7 +94,7 @@ class WalletTest(BurritoCoinTestFramework):
         # utxo spent in mempool should be visible if you exclude mempool
         # but invisible if you include mempool
         txout = self.nodes[0].gettxout(confirmed_txid, confirmed_index, False)
-        assert_equal(txout['value'], 50)
+        assert_equal(txout['value'], 10)
         txout = self.nodes[0].gettxout(confirmed_txid, confirmed_index, True)
         assert txout is None
         # new utxo from mempool should be invisible if you exclude mempool
@@ -286,9 +286,9 @@ class WalletTest(BurritoCoinTestFramework):
         # 2. hex-changed one output to 0.0
         # 3. sign and send
         # 4. check if recipient (node0) can list the zero value tx
-        usp = self.nodes[1].listunspent(query_options={'minimumAmount': '49.998'})[0]
+        usp = self.nodes[1].listunspent(query_options={'minimumAmount': '9.998'})[0]
         inputs = [{"txid": usp['txid'], "vout": usp['vout']}]
-        outputs = {self.nodes[1].getnewaddress(): 49.998, self.nodes[0].getnewaddress(): 11.11}
+        outputs = {self.nodes[1].getnewaddress(): 9.998, self.nodes[0].getnewaddress(): 11.11}
 
         raw_tx = self.nodes[1].createrawtransaction(inputs, outputs).replace("c0833842", "00000000")  # replace 11.11 with 0.0 (int32)
         signed_raw_tx = self.nodes[1].signrawtransactionwithwallet(raw_tx)

@@ -77,27 +77,27 @@ class WalletTest(BurritoCoinTestFramework):
 
         if not self.options.descriptors:
             # Tests legacy watchonly behavior which is not present (and does not need to be tested) in descriptor wallets
-            assert_equal(self.nodes[0].getbalances()['mine']['trusted'], 50)
-            assert_equal(self.nodes[0].getwalletinfo()['balance'], 50)
-            assert_equal(self.nodes[1].getbalances()['mine']['trusted'], 50)
+            assert_equal(self.nodes[0].getbalances()['mine']['trusted'], 10)
+            assert_equal(self.nodes[0].getwalletinfo()['balance'], 10)
+            assert_equal(self.nodes[1].getbalances()['mine']['trusted'], 10)
 
             assert_equal(self.nodes[0].getbalances()['watchonly']['immature'], 5000)
             assert 'watchonly' not in self.nodes[1].getbalances()
 
-            assert_equal(self.nodes[0].getbalance(), 50)
-            assert_equal(self.nodes[1].getbalance(), 50)
+            assert_equal(self.nodes[0].getbalance(), 10)
+            assert_equal(self.nodes[1].getbalance(), 10)
 
         self.log.info("Test getbalance with different arguments")
-        assert_equal(self.nodes[0].getbalance("*"), 50)
-        assert_equal(self.nodes[0].getbalance("*", 1), 50)
-        assert_equal(self.nodes[0].getbalance(minconf=1), 50)
+        assert_equal(self.nodes[0].getbalance("*"), 10)
+        assert_equal(self.nodes[0].getbalance("*", 1), 10)
+        assert_equal(self.nodes[0].getbalance(minconf=1), 10)
         if not self.options.descriptors:
             assert_equal(self.nodes[0].getbalance(minconf=0, include_watchonly=True), 100)
             assert_equal(self.nodes[0].getbalance("*", 1, True), 100)
         else:
-            assert_equal(self.nodes[0].getbalance(minconf=0, include_watchonly=True), 50)
-            assert_equal(self.nodes[0].getbalance("*", 1, True), 50)
-        assert_equal(self.nodes[1].getbalance(minconf=0, include_watchonly=True), 50)
+            assert_equal(self.nodes[0].getbalance(minconf=0, include_watchonly=True), 10)
+            assert_equal(self.nodes[0].getbalance("*", 1, True), 10)
+        assert_equal(self.nodes[1].getbalance(minconf=0, include_watchonly=True), 10)
 
         # Send 40 BRTO from 0 to 1 and 60 BRTO from 1 to 0.
         txs = create_transactions(self.nodes[0], self.nodes[1].getnewaddress(), 40, [Decimal('0.01')])
@@ -159,7 +159,7 @@ class WalletTest(BurritoCoinTestFramework):
                                                  'trusted':           Decimal('9.99'),  # change from node 0's send
                                                  'untrusted_pending': Decimal('60.0')},
                                    'watchonly': {'immature':          Decimal('5000'),
-                                                 'trusted':           Decimal('50.0'),
+                                                 'trusted':           Decimal('10.0'),
                                                  'untrusted_pending': Decimal('0E-8')}}
             expected_balances_1 = {'mine':      {'immature':          Decimal('0E-8'),
                                                  'trusted':           Decimal('0E-8'),  # node 1's send had an unsafe input
