@@ -138,9 +138,9 @@ class WalletLabelsTest(BurritoCoinTestFramework):
         node.createwallet(wallet_name='watch_only', disable_private_keys=True)
         wallet_watch_only = node.get_wallet_rpc('watch_only')
         BECH32_VALID = {
-            '✔️_VER15_PROG40': 'rltc10qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqevpw9x',
-            '✔️_VER16_PROG03': 'rltc1sqqqqqap5g4h',
-            '✔️_VER16_PROB02': 'rltc1sqqqqfsjxnh',
+            '✔️_VER15_PROG40': 'rbrto10qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqnwayrn',
+            '✔️_VER16_PROG03': 'rbrto1sqqqqqqndrdv',
+            '✔️_VER16_PROB02': 'rbrto1sqqqqu2apng',
         }
         BECH32_INVALID = {
             '❌_VER15_PROG41': 'bcrt1sqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqajlxj8',
