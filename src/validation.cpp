@@ -1265,13 +1265,21 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
+    // Block 0 is the genesis premine (148,000,000 BRTO). Regular mining starts at block 1.
+    if (nHeight == 0)
+        return 148000000 * COIN;
+
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
     // Force block reward to zero when right shift is undefined.
     if (halvings >= 64)
         return 0;
 
-    CAmount nSubsidy = 50 * COIN;
-    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
+    // 10 BRTO per block (~2.1M BRTO/year at 2.5-min blocks).
+    // Halving interval of 1,042,600,000 blocks makes the emission effectively
+    // steady for any practical timeframe while the geometric series still
+    // converges to exactly 20,852,000,000 BRTO from mining, giving a total
+    // supply of 21,000,000,000 BRTO (including the genesis premine).
+    CAmount nSubsidy = 10 * COIN;
     nSubsidy >>= halvings;
     return nSubsidy;
 }
