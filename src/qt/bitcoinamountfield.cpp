@@ -149,7 +149,7 @@ public:
 
 private:
     int currentUnit{BurritoCoinUnits::BRTO};
-    CAmount singleStep{CAmount(100000)}; // satoshis
+    CAmount singleStep{CAmount(100000)}; // burrioshi
     mutable QSize cachedMinimumSizeHint;
     bool m_allow_empty{true};
     CAmount m_min_amount{CAmount(0)};
