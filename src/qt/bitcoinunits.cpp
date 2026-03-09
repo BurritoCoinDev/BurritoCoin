@@ -18,8 +18,8 @@ QList<BurritoCoinUnits::Unit> BurritoCoinUnits::availableUnits()
 {
     QList<BurritoCoinUnits::Unit> unitlist;
     unitlist.append(BRTO);
-    unitlist.append(mBTC);
-    unitlist.append(uBTC);
+    unitlist.append(mBRTO);
+    unitlist.append(uBRTO);
     unitlist.append(SAT);
     return unitlist;
 }
@@ -29,8 +29,8 @@ bool BurritoCoinUnits::valid(int unit)
     switch(unit)
     {
     case BRTO:
-    case mBTC:
-    case uBTC:
+    case mBRTO:
+    case uBRTO:
     case SAT:
         return true;
     default:
@@ -43,8 +43,8 @@ QString BurritoCoinUnits::longName(int unit)
     switch(unit)
     {
     case BRTO: return QString("BRTO");
-    case mBTC: return QString("burritos");
-    case uBTC: return QString("morsels");
+    case mBRTO: return QString("burritos");
+    case uBRTO: return QString("morsels");
     case SAT: return QString("burrioshi");
     default: return QString("???");
     }
@@ -54,7 +54,7 @@ QString BurritoCoinUnits::shortName(int unit)
 {
     switch(unit)
     {
-    case uBTC: return QString::fromUtf8("bits");
+    case uBRTO: return QString::fromUtf8("bits");
     case SAT: return QString("sat");
     default: return longName(unit);
     }
@@ -65,8 +65,8 @@ QString BurritoCoinUnits::description(int unit)
     switch(unit)
     {
     case BRTO: return QString("BurritoCoins");
-    case mBTC: return QString("Burritos (1 / 1" THIN_SP_UTF8 "000)");
-    case uBTC: return QString("Morsels (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case mBRTO: return QString("Burritos (1 / 1" THIN_SP_UTF8 "000)");
+    case uBRTO: return QString("Morsels (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     case SAT: return QString("Burrioshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
@@ -77,8 +77,8 @@ qint64 BurritoCoinUnits::factor(int unit)
     switch(unit)
     {
     case BRTO: return 100000000;
-    case mBTC: return 100000;
-    case uBTC: return 100;
+    case mBRTO: return 100000;
+    case uBRTO: return 100;
     case SAT: return 1;
     default: return 100000000;
     }
@@ -89,8 +89,8 @@ int BurritoCoinUnits::decimals(int unit)
     switch(unit)
     {
     case BRTO: return 8;
-    case mBTC: return 5;
-    case uBTC: return 2;
+    case mBRTO: return 5;
+    case uBRTO: return 2;
     case SAT: return 0;
     default: return 0;
     }

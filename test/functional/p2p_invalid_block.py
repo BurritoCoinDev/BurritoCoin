@@ -64,8 +64,8 @@ class InvalidBlockRequestTest(BurritoCoinTestFramework):
         block_time += 1
 
         # b'0x51' is OP_TRUE
-        tx1 = create_tx_with_script(block1.vtx[0], 0, script_sig=b'\x51', amount=50 * COIN)
-        tx2 = create_tx_with_script(tx1, 0, script_sig=b'\x51', amount=50 * COIN)
+        tx1 = create_tx_with_script(block1.vtx[0], 0, script_sig=b'\x51', amount=10 * COIN)
+        tx2 = create_tx_with_script(tx1, 0, script_sig=b'\x51', amount=10 * COIN)
 
         block2.vtx.extend([tx1, tx2])
         block2.hashMerkleRoot = block2.calc_merkle_root()
@@ -121,7 +121,7 @@ class InvalidBlockRequestTest(BurritoCoinTestFramework):
         # Complete testing of CVE-2018-17144, by checking for the inflation bug.
         # Create a block that spends the output of a tx in a previous block.
         block4 = create_block(tip, create_coinbase(height), block_time, version=0x20000000)
-        tx3 = create_tx_with_script(tx2, 0, script_sig=b'\x51', amount=50 * COIN)
+        tx3 = create_tx_with_script(tx2, 0, script_sig=b'\x51', amount=10 * COIN)
 
         # Duplicates input
         tx3.vin.append(tx3.vin[0])
