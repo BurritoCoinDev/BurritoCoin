@@ -67,7 +67,7 @@ QString BurritoCoinUnits::description(int unit)
     case BRTO: return QString("BurritoCoins");
     case mBRTO: return QString("Burritos (1 / 1" THIN_SP_UTF8 "000)");
     case uBRTO: return QString("Morsels (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-    case SAT: return QString("Burrioshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case SAT: return QString("Burrioshi (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }
