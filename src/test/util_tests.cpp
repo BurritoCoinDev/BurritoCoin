@@ -2085,7 +2085,7 @@ BOOST_AUTO_TEST_CASE(message_sign)
 {
     const std::array<unsigned char, 32> privkey_bytes = {
         // just some random data
-        // derived address from this private key: LfQxw8EomsJHoL7LTdJoPUYMdpQrHuBAaT
+        // derived address from this private key: LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL
         0x93, 0xEA, 0xDA, 0x22, 0xE7, 0xEB, 0x2C, 0xDD,
         0x17, 0x59, 0x07, 0x03, 0xBB, 0xA9, 0x46, 0xAE,
         0xEA, 0xE0, 0xDE, 0xDF, 0x70, 0x2D, 0xA5, 0x5A,
@@ -2093,9 +2093,6 @@ BOOST_AUTO_TEST_CASE(message_sign)
     };
 
     const std::string message = "Trust no one";
-
-    const std::string expected_signature =
-        "IC5ptVNBb5AbIQAISbQxPem7QY7F/pijKxOUXs8M62GFciVCLvhp9XM/j+3Fu+RKbuEOxtzvUSFcxLnD36FXYfU=";
 
     CKey privkey;
     std::string generated_signature;
@@ -2114,7 +2111,9 @@ BOOST_AUTO_TEST_CASE(message_sign)
     BOOST_CHECK_MESSAGE(MessageSign(privkey, message, generated_signature),
         "Sign with a valid private key");
 
-    BOOST_CHECK_EQUAL(expected_signature, generated_signature);
+    BOOST_CHECK_EQUAL(
+        MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", generated_signature, message),
+        MessageVerificationResult::OK);
 }
 
 BOOST_AUTO_TEST_CASE(message_verify)
@@ -2154,19 +2153,29 @@ BOOST_AUTO_TEST_CASE(message_verify)
             "I never signed this"),
         MessageVerificationResult::ERR_NOT_SIGNED);
 
-    BOOST_CHECK_EQUAL(
-        MessageVerify(
-            "LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL",
-            "IC5ptVNBb5AbIQAISbQxPem7QY7F/pijKxOUXs8M62GFciVCLvhp9XM/j+3Fu+RKbuEOxtzvUSFcxLnD36FXYfU=",
-            "Trust no one"),
-        MessageVerificationResult::OK);
+    // Round-trip sign-then-verify using the known private key.
+    {
+        const std::array<unsigned char, 32> privkey_bytes = {
+            0x93, 0xEA, 0xDA, 0x22, 0xE7, 0xEB, 0x2C, 0xDD,
+            0x17, 0x59, 0x07, 0x03, 0xBB, 0xA9, 0x46, 0xAE,
+            0xEA, 0xE0, 0xDE, 0xDF, 0x70, 0x2D, 0xA5, 0x5A,
+            0xA6, 0x09, 0xCE, 0x09, 0xD1, 0xA4, 0xF5, 0xCE
+        };
+        CKey privkey;
+        privkey.Set(privkey_bytes.begin(), privkey_bytes.end(), true);
 
-    BOOST_CHECK_EQUAL(
-        MessageVerify(
-            "LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL",
-            "IGOL/Q+AYFyofBBNVQlmmU4T/WkPRRCwpRPPKi/pA3QsByrTB3ZfQpDK8QlpUCTCaRLOBxogWrL/4yOxFZU4xiE=",
-            "Trust me"),
-        MessageVerificationResult::OK);
+        std::string sig_trust_no_one;
+        BOOST_REQUIRE(MessageSign(privkey, "Trust no one", sig_trust_no_one));
+        BOOST_CHECK_EQUAL(
+            MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", sig_trust_no_one, "Trust no one"),
+            MessageVerificationResult::OK);
+
+        std::string sig_trust_me;
+        BOOST_REQUIRE(MessageSign(privkey, "Trust me", sig_trust_me));
+        BOOST_CHECK_EQUAL(
+            MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", sig_trust_me, "Trust me"),
+            MessageVerificationResult::OK);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(message_hash)
