@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
         nSum += nSubsidy * 1000;
         BOOST_CHECK(MoneyRange(nSum));
     }
-    // 55,999 steps × 10 COIN × 1000 blocks = 55,999,000 COIN in satoshis.
-    BOOST_CHECK_EQUAL(nSum, CAmount{55999000LL * COIN});
+    // 55,999 steps × 10 COIN × 1000 blocks = 559,990,000 COIN in burrioshi.
+    BOOST_CHECK_EQUAL(nSum, CAmount{559990000LL * COIN});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

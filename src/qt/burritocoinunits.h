@@ -43,7 +43,7 @@ public:
         BRTO,
         mBRTO,
         uBRTO,
-        SAT
+        BURRIOSHI
     };
 
     enum class SeparatorStyle

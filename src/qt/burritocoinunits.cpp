@@ -20,7 +20,7 @@ QList<BurritoCoinUnits::Unit> BurritoCoinUnits::availableUnits()
     unitlist.append(BRTO);
     unitlist.append(mBRTO);
     unitlist.append(uBRTO);
-    unitlist.append(SAT);
+    unitlist.append(BURRIOSHI);
     return unitlist;
 }
 
@@ -31,7 +31,7 @@ bool BurritoCoinUnits::valid(int unit)
     case BRTO:
     case mBRTO:
     case uBRTO:
-    case SAT:
+    case BURRIOSHI:
         return true;
     default:
         return false;
@@ -45,7 +45,7 @@ QString BurritoCoinUnits::longName(int unit)
     case BRTO: return QString("BRTO");
     case mBRTO: return QString("burritos");
     case uBRTO: return QString("morsels");
-    case SAT: return QString("burrioshi");
+    case BURRIOSHI: return QString("burrioshi");
     default: return QString("???");
     }
 }
@@ -55,7 +55,7 @@ QString BurritoCoinUnits::shortName(int unit)
     switch(unit)
     {
     case uBRTO: return QString::fromUtf8("morsels");
-    case SAT: return QString("burrioshi");
+    case BURRIOSHI: return QString("burrioshi");
     default: return longName(unit);
     }
 }
@@ -67,7 +67,7 @@ QString BurritoCoinUnits::description(int unit)
     case BRTO: return QString("BurritoCoins");
     case mBRTO: return QString("Burritos (1 / 1" THIN_SP_UTF8 "000)");
     case uBRTO: return QString("Morsels (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-    case SAT: return QString("Burrioshi (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case BURRIOSHI: return QString("Burrioshi (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }
@@ -79,7 +79,7 @@ qint64 BurritoCoinUnits::factor(int unit)
     case BRTO: return 100000000;
     case mBRTO: return 100000;
     case uBRTO: return 100;
-    case SAT: return 1;
+    case BURRIOSHI: return 1;
     default: return 100000000;
     }
 }
@@ -91,7 +91,7 @@ int BurritoCoinUnits::decimals(int unit)
     case BRTO: return 8;
     case mBRTO: return 5;
     case uBRTO: return 2;
-    case SAT: return 0;
+    case BURRIOSHI: return 0;
     default: return 0;
     }
 }
