@@ -44,11 +44,16 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * transaction cannot be spent since it did not originally exist in the
  * database.
  *
- * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
- *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
- *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
- *   vMerkleTree: 4a5e1e
+ * BRTO-TODO: Update this comment block with the real BurritoCoin genesis block
+ * details once the genesis has been re-mined with a team-controlled key and
+ * unique nTime/nNonce. The fields below must reflect the actual genesis hash,
+ * coinbase (148000000.00000000 BRTO), merkle root, and scriptPubKey.
+ *
+ * CBlock(hash=<BRTO_GENESIS_HASH>, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=<BRTO_MERKLE_ROOT>, nTime=<BRTO_NTIME>, nBits=0x1e0ffff0, nNonce=<BRTO_NNONCE>, vtx=1)
+ *   CTransaction(hash=<BRTO_TX_HASH>, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+ *     CTxIn(COutPoint(000000, -1), coinbase <BRTO_COINBASE_HEX>)
+ *     CTxOut(nValue=148000000.00000000, scriptPubKey=<BRTO_GENESIS_PUBKEY>)
+ *   vMerkleTree: <BRTO_MERKLE_ROOT>
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -428,7 +433,10 @@ std::unique_ptr<const CChainParams> CreateChainParams(const ArgsManager& args, c
     } else if (chain == CBaseChainParams::TESTNET) {
         return std::unique_ptr<CChainParams>(new CTestNetParams());
     } else if (chain == CBaseChainParams::SIGNET) {
-        return std::unique_ptr<CChainParams>(new CTestNetParams()); // TODO: Support SigNet
+        // BRTO-TODO: Implement a proper CSignetParams class with BurritoCoin-specific
+        // signet challenge script and block-signing parameters. Until then, signet is
+        // explicitly unsupported — do not silently fall back to testnet rules.
+        throw std::runtime_error("Signet is not yet supported by BurritoCoin. Use testnet instead.");
     } else if (chain == CBaseChainParams::REGTEST) {
         return std::unique_ptr<CChainParams>(new CRegTestParams(args));
     }
