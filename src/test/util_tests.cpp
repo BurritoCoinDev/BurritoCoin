@@ -1250,7 +1250,12 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney)
     BOOST_CHECK(!ParseMoney(" 1.2 3 ", ret));
     BOOST_CHECK(!ParseMoney(" 1 2.3 ", ret));
 
-    // Attempted 63 bit overflow should fail
+    // BurritoCoin max supply (21,000,000,000 BRTO) must parse successfully
+    BOOST_CHECK(ParseMoney("21000000000.00", ret));
+    BOOST_CHECK_EQUAL(ret, MAX_MONEY);
+
+    // Amounts above max supply must fail (also guards against 63-bit overflow)
+    BOOST_CHECK(!ParseMoney("21000000001.00", ret));
     BOOST_CHECK(!ParseMoney("92233720368.54775808", ret));
 
     // Parsing negative amounts must fail

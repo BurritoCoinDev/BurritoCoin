@@ -66,7 +66,9 @@ bool ParseMoney(const std::string& money_string, CAmount& nRet)
     if (*p) {
         return false;
     }
-    if (strWhole.size() > 10) // guard against 63 bit overflow
+    // Guard against 63-bit overflow: max BurritoCoin supply is 21,000,000,000 BRTO (11 digits).
+    if (strWhole.size() > 11 ||
+        (strWhole.size() == 11 && atoi64(strWhole) > MAX_MONEY / COIN))
         return false;
     if (nUnits < 0 || nUnits > COIN)
         return false;
