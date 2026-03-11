@@ -7,7 +7,7 @@
  * Each line contains a BIP155 serialized (networkID, addr, port) tuple.
  *
  * BRTO-TODO: populate once BurritoCoin network nodes are live.
- * The previous entries were Litecoin seed nodes and have been removed.
+ * The previous entries were seed nodes from the upstream fork and have been removed.
  */
 static const uint8_t chainparams_seed_main[] = {
     // No fixed seeds yet — BurritoCoin mainnet has not launched.
