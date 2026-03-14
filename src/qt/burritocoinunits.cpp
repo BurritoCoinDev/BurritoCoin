@@ -197,11 +197,15 @@ bool BurritoCoinUnits::parse(int unit, const QString &value, CAmount *val_out)
         return false; // Longer numbers will exceed 63 bits
     }
     CAmount retvalue(str.toLongLong(&ok));
+    if(!ok || !MoneyRange(retvalue))
+    {
+        return false;
+    }
     if(val_out)
     {
         *val_out = retvalue;
     }
-    return ok;
+    return true;
 }
 
 QString BurritoCoinUnits::getAmountColumnTitle(int unit)
