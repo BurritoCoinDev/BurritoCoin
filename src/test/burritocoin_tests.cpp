@@ -7,7 +7,7 @@
  * and consensus rules.
  *
  * These tests verify the constants and logic that are unique to BurritoCoin
- * and would not be covered by upstream Bitcoin/Litecoin test suites.
+ * and are not covered by the generic upstream test suite.
  */
 
 #include <amount.h>
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(max_money_is_21_billion_brto)
 
 BOOST_AUTO_TEST_CASE(coin_is_100_million_burrioshi)
 {
-    // 1 BRTO == 100,000,000 burrioshi (same precision as Bitcoin satoshis).
+    // 1 BRTO == 100,000,000 burrioshi (8 decimal places).
     BOOST_CHECK_EQUAL(COIN, CAmount(100000000));
 }
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(pow_target_spacing_is_150_seconds)
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
-    // 2.5 minutes == 150 seconds (same as Litecoin).
+    // 2.5 minutes == 150 seconds.
     BOOST_CHECK_EQUAL(consensus.nPowTargetSpacing, 150);
 }
 
