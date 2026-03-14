@@ -151,7 +151,7 @@ public:
         bech32_hrp = "brto";
         mweb_hrp = "brtomweb";
 
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
+        vFixedSeeds.clear(); // No fixed seeds yet — BurritoCoin mainnet has not launched.
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -246,7 +246,7 @@ public:
         bech32_hrp = "tbrto";
         mweb_hrp = "tbrtomweb";
 
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
+        vFixedSeeds.clear(); // No fixed seeds yet — BurritoCoin testnet has not launched.
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
