@@ -1263,13 +1263,13 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
     return ReadRawBlockFromDisk(block, block_pos, message_start);
 }
 
-CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
+CAmount GetBlockSubsidy(int64_t nHeight, const Consensus::Params& consensusParams)
 {
     // Block 0 is the genesis premine (148,000,000 BRTO). Regular mining starts at block 1.
     if (nHeight == 0)
         return 148000000 * COIN;
 
-    int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+    int64_t halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
     // Force block reward to zero when right shift is undefined.
     if (halvings >= 64)
         return 0;

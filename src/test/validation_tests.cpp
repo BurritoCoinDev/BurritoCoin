@@ -25,13 +25,13 @@ static void TestBlockSubsidyHalvings(const Consensus::Params& consensusParams)
     CAmount nPreviousSubsidy = nInitialSubsidy * 2;
     for (int nHalvings = 0; nHalvings < maxHalvings; nHalvings++) {
         // Add 1 to avoid height 0 (genesis premine special case).
-        int nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval + 1;
+        int64_t nHeight = (int64_t)nHalvings * consensusParams.nSubsidyHalvingInterval + 1;
         CAmount nSubsidy = GetBlockSubsidy(nHeight, consensusParams);
         BOOST_CHECK(nSubsidy <= nInitialSubsidy);
         BOOST_CHECK_EQUAL(nSubsidy, nPreviousSubsidy / 2);
         nPreviousSubsidy = nSubsidy;
     }
-    BOOST_CHECK_EQUAL(GetBlockSubsidy(maxHalvings * consensusParams.nSubsidyHalvingInterval + 1, consensusParams), 0);
+    BOOST_CHECK_EQUAL(GetBlockSubsidy((int64_t)maxHalvings * consensusParams.nSubsidyHalvingInterval + 1, consensusParams), 0);
 }
 
 static void TestBlockSubsidyHalvings(int nSubsidyHalvingInterval)
