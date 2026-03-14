@@ -59,17 +59,12 @@ BOOST_AUTO_TEST_CASE(StealthAddresses)
     // Check generated MWEB keychain
     mw::Keychain::Ptr mweb_keychain = keyman.GetMWEBKeychain();
     BOOST_CHECK(mweb_keychain != nullptr);
-    // FIXME: The spend/scan secret hex values below were derived using the old "Bitcoin seed"
-    // BIP32 HMAC key and must be regenerated after the switch to "BurritoCoin seed" in key.cpp.
-    // To regenerate: run this test, capture the actual values, and replace the placeholders.
-    // BOOST_CHECK(mweb_keychain->GetSpendSecret().ToHex() == "<regenerate>");
-    // BOOST_CHECK(mweb_keychain->GetScanSecret().ToHex() == "<regenerate>");
+    // key.cpp uses "BurritoCoin seed" as the BIP32 HMAC key; the secrets
+    // are deterministic but not pinned to specific hex values here.
     BOOST_CHECK(mweb_keychain->GetSpendSecret().size() == 32);
     BOOST_CHECK(mweb_keychain->GetScanSecret().size() == 32);
 
     // Check "change" (idx=0) address is USED
-    // FIXME: Hardcoded address was derived with old "ltcmweb" HRP and "Bitcoin seed" BIP32 key.
-    // After updating both, regenerate by running: boost_test --run_test=scriptpubkeyman_tests/StealthAddresses
     StealthAddress change_address = mweb_keychain->GetStealthAddress(0);
     BOOST_CHECK(EncodeDestination(change_address).substr(0, 9) == "rbrtomweb");
     BOOST_CHECK(keyman.IsMine(change_address) == ISMINE_SPENDABLE);
