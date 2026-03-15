@@ -100,13 +100,13 @@ public:
         // BRTO-TODO: choose exact activation heights before mainnet launch.
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2000000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2016000; // 250 * nMinerConfirmationWindow (8064)
 
         // Deployment of MWEB
         // BRTO-TODO: choose exact activation heights before mainnet launch.
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].bit = 4;
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2000000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2016000; // 250 * nMinerConfirmationWindow (8064)
 
         // New chain: no accumulated work yet; set to zero so the node
         // considers itself synced from genesis and can form a network.
@@ -207,12 +207,12 @@ public:
         // Deployment of Taproot (BIPs 340-342)
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2000000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2016000; // 1000 * nMinerConfirmationWindow (2016)
 
         // Deployment of MWEB
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].bit = 4;
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2000000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2016000; // 1000 * nMinerConfirmationWindow (2016)
 
         // New chain: no accumulated work yet.
         consensus.nMinimumChainWork = uint256S("0x00");
