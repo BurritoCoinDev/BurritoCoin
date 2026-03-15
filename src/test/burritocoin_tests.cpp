@@ -13,6 +13,7 @@
 #include <amount.h>
 #include <chainparams.h>
 #include <consensus/consensus.h>
+#include <util/moneystr.h>
 #include <validation.h>
 #include <test/util/setup_common.h>
 
@@ -204,6 +205,243 @@ BOOST_AUTO_TEST_CASE(regtest_first_block_subsidy_is_10_brto)
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
     BOOST_CHECK_EQUAL(GetBlockSubsidy(1, consensus), CAmount(10) * COIN);
+}
+
+// ---------------------------------------------------------------------------
+// Network message-start magic ("BRTO" / "BRTN" / "BRTG")
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(mainnet_message_start_is_BRTO)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const CMessageHeader::MessageStartChars& magic = chainParams->MessageStart();
+
+    // The four bytes spell out B-R-T-O in ASCII.
+    BOOST_CHECK_EQUAL(magic[0], 0x42); // 'B'
+    BOOST_CHECK_EQUAL(magic[1], 0x52); // 'R'
+    BOOST_CHECK_EQUAL(magic[2], 0x54); // 'T'
+    BOOST_CHECK_EQUAL(magic[3], 0x4f); // 'O'
+}
+
+BOOST_AUTO_TEST_CASE(testnet_message_start_differs_from_mainnet)
+{
+    const auto mainParams    = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto testnetParams = CreateChainParams(*m_node.args, CBaseChainParams::TESTNET);
+
+    const CMessageHeader::MessageStartChars& mainMagic    = mainParams->MessageStart();
+    const CMessageHeader::MessageStartChars& testnetMagic = testnetParams->MessageStart();
+
+    // First three bytes are shared (B-R-T); only the fourth differs.
+    BOOST_CHECK_EQUAL(testnetMagic[0], mainMagic[0]);
+    BOOST_CHECK_EQUAL(testnetMagic[1], mainMagic[1]);
+    BOOST_CHECK_EQUAL(testnetMagic[2], mainMagic[2]);
+    BOOST_CHECK(testnetMagic[3] != mainMagic[3]);
+
+    // Testnet fourth byte is 'N' (0x4e).
+    BOOST_CHECK_EQUAL(testnetMagic[3], 0x4e);
+}
+
+BOOST_AUTO_TEST_CASE(regtest_message_start_differs_from_mainnet)
+{
+    const auto mainParams   = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto regtestParams = CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
+
+    const CMessageHeader::MessageStartChars& mainMagic    = mainParams->MessageStart();
+    const CMessageHeader::MessageStartChars& regtestMagic = regtestParams->MessageStart();
+
+    // Regtest fourth byte is 'G' (0x47).
+    BOOST_CHECK_EQUAL(regtestMagic[0], mainMagic[0]);
+    BOOST_CHECK_EQUAL(regtestMagic[1], mainMagic[1]);
+    BOOST_CHECK_EQUAL(regtestMagic[2], mainMagic[2]);
+    BOOST_CHECK_EQUAL(regtestMagic[3], 0x47); // 'G'
+}
+
+// ---------------------------------------------------------------------------
+// Default P2P port numbers
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(mainnet_default_port_is_9333)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 9333);
+}
+
+BOOST_AUTO_TEST_CASE(testnet_default_port_is_19335)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::TESTNET);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19335);
+}
+
+BOOST_AUTO_TEST_CASE(regtest_default_port_is_19444)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19444);
+}
+
+// ---------------------------------------------------------------------------
+// Miner confirmation window and rule-change activation threshold
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(mainnet_miner_confirmation_window_is_8064)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    // 8064 = (nPowTargetTimespan / nPowTargetSpacing) * 4
+    BOOST_CHECK_EQUAL(consensus.nMinerConfirmationWindow, 8064);
+}
+
+BOOST_AUTO_TEST_CASE(mainnet_rule_change_threshold_is_75_percent)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    // 75% of 8064 = 6048
+    BOOST_CHECK_EQUAL(consensus.nRuleChangeActivationThreshold, 6048);
+    BOOST_CHECK_EQUAL(consensus.nRuleChangeActivationThreshold * 4,
+                      consensus.nMinerConfirmationWindow * 3);
+}
+
+BOOST_AUTO_TEST_CASE(confirmation_window_equals_four_retarget_periods)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    int64_t retarget_blocks = consensus.nPowTargetTimespan / consensus.nPowTargetSpacing;
+    BOOST_CHECK_EQUAL(consensus.nMinerConfirmationWindow, retarget_blocks * 4);
+}
+
+// ---------------------------------------------------------------------------
+// Taproot and MWEB deployment timeout heights
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(taproot_active_from_genesis_on_mainnet)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    BOOST_CHECK_EQUAL(consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight, 0);
+}
+
+BOOST_AUTO_TEST_CASE(taproot_timeout_height_is_250_windows)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    // 2016000 = 250 * nMinerConfirmationWindow (8064)
+    BOOST_CHECK_EQUAL(
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight, 2016000);
+}
+
+BOOST_AUTO_TEST_CASE(mweb_active_from_genesis_on_mainnet)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    BOOST_CHECK_EQUAL(consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight, 0);
+}
+
+BOOST_AUTO_TEST_CASE(mweb_timeout_height_matches_taproot)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    BOOST_CHECK_EQUAL(
+        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight,
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight);
+}
+
+// ---------------------------------------------------------------------------
+// Mainnet Base58 address prefixes
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(mainnet_pubkey_address_prefix_produces_L_addresses)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+
+    // Version byte 48 → base58check addresses starting with 'L' (Litecoin-style).
+    const auto& prefix = chainParams->Base58Prefix(CChainParams::PUBKEY_ADDRESS);
+    BOOST_REQUIRE_EQUAL(prefix.size(), 1u);
+    BOOST_CHECK_EQUAL(prefix[0], 48);
+}
+
+BOOST_AUTO_TEST_CASE(mainnet_script_address_prefix_is_5)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+
+    const auto& prefix = chainParams->Base58Prefix(CChainParams::SCRIPT_ADDRESS);
+    BOOST_REQUIRE_EQUAL(prefix.size(), 1u);
+    BOOST_CHECK_EQUAL(prefix[0], 5);
+}
+
+BOOST_AUTO_TEST_CASE(mainnet_secret_key_prefix_is_176)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+
+    // WIF private key prefix 176 → keys starting with '6' or 'T'.
+    const auto& prefix = chainParams->Base58Prefix(CChainParams::SECRET_KEY);
+    BOOST_REQUIRE_EQUAL(prefix.size(), 1u);
+    BOOST_CHECK_EQUAL(prefix[0], 176);
+}
+
+// ---------------------------------------------------------------------------
+// FormatMoney / ParseMoney with BRTO-scale amounts
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(format_money_premine_amount)
+{
+    // 148,000,000 BRTO should format without scientific notation.
+    CAmount premine = CAmount(148000000) * COIN;
+    BOOST_CHECK_EQUAL(FormatMoney(premine), "148000000.00");
+}
+
+BOOST_AUTO_TEST_CASE(format_money_max_supply)
+{
+    // Full 21,000,000,000 BRTO supply.
+    BOOST_CHECK_EQUAL(FormatMoney(MAX_MONEY), "21000000000.00");
+}
+
+BOOST_AUTO_TEST_CASE(parse_money_max_supply_roundtrip)
+{
+    CAmount parsed = 0;
+    BOOST_CHECK(ParseMoney("21000000000.00", parsed));
+    BOOST_CHECK_EQUAL(parsed, MAX_MONEY);
+}
+
+BOOST_AUTO_TEST_CASE(parse_money_rejects_above_max_supply)
+{
+    CAmount parsed = 0;
+    // One burrioshi above the hard cap must be rejected.
+    BOOST_CHECK(!ParseMoney("21000000000.00000001", parsed));
+}
+
+BOOST_AUTO_TEST_CASE(parse_money_rejects_12_digit_whole_part)
+{
+    CAmount parsed = 0;
+    // 12-digit whole part exceeds the 11-digit guard in moneystr.cpp.
+    BOOST_CHECK(!ParseMoney("100000000000.00", parsed));
+}
+
+BOOST_AUTO_TEST_CASE(format_parse_money_block_reward_roundtrip)
+{
+    // 10 BRTO block reward.
+    CAmount reward = CAmount(10) * COIN;
+    CAmount parsed = 0;
+    BOOST_CHECK(ParseMoney(FormatMoney(reward), parsed));
+    BOOST_CHECK_EQUAL(parsed, reward);
+}
+
+// ---------------------------------------------------------------------------
+// nMinimumChainWork is zero on a new chain
+// ---------------------------------------------------------------------------
+
+BOOST_AUTO_TEST_CASE(mainnet_minimum_chain_work_is_zero)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params& consensus = chainParams->GetConsensus();
+
+    // New chain: no accumulated work yet.
+    BOOST_CHECK(consensus.nMinimumChainWork == uint256S("0x00"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
