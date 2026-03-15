@@ -62,6 +62,7 @@ src/qt/burritocoin-qt.includes
 .libs
 .vscode
 .*.swp
+*~
 *.*~*
 *.bak
 *.rej
