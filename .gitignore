@@ -34,6 +34,8 @@ build-aux/test-driver
 config.cache
 config.log
 config.status
+confdefs.h
+conftest.cpp
 configure
 libtool
 src/config/burritocoin-config.h
