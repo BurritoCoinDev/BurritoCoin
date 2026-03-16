@@ -213,9 +213,12 @@ CBlock TestChain100Setup::CreateAndProcessBlock(const std::vector<CMutableTransa
     CTxMemPool empty_pool;
     CBlock block = BlockAssembler(empty_pool, chainparams).CreateNewBlock(scriptPubKey)->block;
 
-    Assert(block.vtx.size() == 1);
+    // With MWEB active the miner appends a HogEx as the last transaction.
+    // Any extra txns must be inserted before the HogEx so it stays last.
+    const bool has_hogex = block.vtx.size() >= 2 && block.vtx.back()->IsHogEx();
+    const size_t insert_idx = has_hogex ? block.vtx.size() - 1 : block.vtx.size();
     for (const CMutableTransaction& tx : txns) {
-        block.vtx.push_back(MakeTransactionRef(tx));
+        block.vtx.insert(block.vtx.begin() + insert_idx, MakeTransactionRef(tx));
     }
     RegenerateCommitments(block);
 

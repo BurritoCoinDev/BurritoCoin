@@ -9,6 +9,7 @@
 #include <consensus/tx_verify.h>
 #include <miner.h>
 #include <policy/policy.h>
+#include <pow.h>
 #include <script/standard.h>
 #include <txmempool.h>
 #include <uint256.h>
@@ -198,7 +199,7 @@ void MinerTestingSetup::TestPackageSelection(const CChainParams& chainparams, co
 BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
 {
     // Note that by default, these tests run with size accounting enabled.
-    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
     const CChainParams& chainparams = *chainParams;
     CScript scriptPubKey = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     std::unique_ptr<CBlockTemplate> pblocktemplate;
@@ -224,15 +225,15 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         CBlock *pblock = &pblocktemplate->block; // pointer for convenience
         {
             LOCK(cs_main);
-            pblock->nVersion = 1;
             pblock->nTime = ::ChainActive().Tip()->GetMedianTimePast()+1;
             CMutableTransaction txCoinbase(*pblock->vtx[0]);
             txCoinbase.nVersion = 1;
             txCoinbase.vin[0].scriptSig = CScript();
             txCoinbase.vin[0].scriptSig.push_back(blockinfo[i].extranonce);
             txCoinbase.vin[0].scriptSig.push_back(::ChainActive().Height());
-            txCoinbase.vout.resize(1); // Ignore the (optional) segwit commitment added by CreateNewBlock (as the hardcoded nonces don't account for this)
+            txCoinbase.vout.resize(1); // Ignore the (optional) segwit commitment added by CreateNewBlock
             txCoinbase.vout[0].scriptPubKey = CScript();
+            txCoinbase.vin[0].scriptWitness.SetNull(); // Clear witness reserved value (no segwit commitment present)
             pblock->vtx[0] = MakeTransactionRef(std::move(txCoinbase));
             if (txFirst.size() == 0)
                 baseheight = ::ChainActive().Height();
@@ -240,6 +241,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
                 txFirst.push_back(pblock->vtx[0]);
             pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
             pblock->nNonce = blockinfo[i].nonce;
+            while (!CheckProofOfWork(pblock->GetPoWHash(), pblock->nBits, chainparams.GetConsensus())) ++pblock->nNonce;
         }
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
         BOOST_CHECK(Assert(m_node.chainman)->ProcessNewBlock(chainparams, shared_pblock, true, nullptr));
@@ -265,13 +267,16 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vin[0].prevout.n = 0;
     tx.vout.resize(1);
     tx.vout[0].nValue = BLOCKSUBSIDY;
+    // Use a small fee so 1001 txns don't exceed BLOCKSUBSIDY (10*COIN = 1e9 sat)
+    // CENT/20 = 50000 sat; 1001 * 50000 = 50,050,000 << 1,000,000,000
+    const CAmount SIGOPS_FEE = CENT / 20;
     for (unsigned int i = 0; i < 1001; ++i)
     {
-        tx.vout[0].nValue -= LOWFEE;
+        tx.vout[0].nValue -= SIGOPS_FEE;
         hash = tx.GetHash();
         bool spendsCoinbase = i == 0; // only first tx spends coinbase
         // If we don't set the # of sig ops in the CTxMemPoolEntry, template creation fails
-        m_node.mempool->addUnchecked(entry.Fee(LOWFEE).Time(GetTime()).SpendsCoinbase(spendsCoinbase).FromTx(tx));
+        m_node.mempool->addUnchecked(entry.Fee(SIGOPS_FEE).Time(GetTime()).SpendsCoinbase(spendsCoinbase).FromTx(tx));
         tx.vin[0].prevout.hash = hash;
     }
 
@@ -282,11 +287,11 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx.vout[0].nValue = BLOCKSUBSIDY;
     for (unsigned int i = 0; i < 1001; ++i)
     {
-        tx.vout[0].nValue -= LOWFEE;
+        tx.vout[0].nValue -= SIGOPS_FEE;
         hash = tx.GetHash();
         bool spendsCoinbase = i == 0; // only first tx spends coinbase
         // If we do set the # of sig ops in the CTxMemPoolEntry, template creation passes
-        m_node.mempool->addUnchecked(entry.Fee(LOWFEE).Time(GetTime()).SpendsCoinbase(spendsCoinbase).SigOpsCost(80).FromTx(tx));
+        m_node.mempool->addUnchecked(entry.Fee(SIGOPS_FEE).Time(GetTime()).SpendsCoinbase(spendsCoinbase).SigOpsCost(80).FromTx(tx));
         tx.vin[0].prevout.hash = hash;
     }
     BOOST_CHECK(pblocktemplate = AssemblerForTest(chainparams).CreateNewBlock(scriptPubKey));

@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(scan_for_wallet_transactions, TestChain100Setup)
         BOOST_CHECK(result.last_failed_block.IsNull());
         BOOST_CHECK_EQUAL(result.last_scanned_block, newTip->GetBlockHash());
         BOOST_CHECK_EQUAL(*result.last_scanned_height, newTip->nHeight);
-        BOOST_CHECK_EQUAL(wallet.GetBalance().m_mine_immature, 100 * COIN);
+        BOOST_CHECK_EQUAL(wallet.GetBalance().m_mine_immature, 20 * COIN); // 2 blocks × 10 COIN (BurritoCoin block subsidy)
     }
 
     // Prune the older block file.
