@@ -6,6 +6,7 @@
 #include <mw/models/tx/Transaction.h>
 #include <mw/models/tx/UTXO.h>
 #include <mw/common/Logger.h>
+#include <amount.h>
 #include <cstdlib>
 
 class KernelSumValidator
@@ -26,8 +27,8 @@ public:
         for (const Kernel& kernel : kernels) {
             total_mweb_supply += kernel.GetSupplyChange();
 
-            // Total supply can never go below 0
-            if (total_mweb_supply < 0) {
+            // Total supply must remain within [0, MAX_MONEY]
+            if (total_mweb_supply < 0 || total_mweb_supply > MAX_MONEY) {
                 ThrowValidation(EConsensusError::BLOCK_SUMS);
             }
         }

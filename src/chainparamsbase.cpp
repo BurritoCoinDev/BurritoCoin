@@ -38,8 +38,10 @@ const CBaseChainParams& BaseParams()
 }
 
 /**
- * Port numbers for incoming Tor connections (8334, 18334, 38334, 18445) have
- * been chosen arbitrarily to keep ranges of used ports tight.
+ * Port numbers for incoming Tor connections have been chosen arbitrarily
+ * to keep ranges of used ports tight.
+ * BRTO-TODO: assign unique port numbers before mainnet launch to avoid
+ * conflicts with Litecoin (9333/9332) and Bitcoin (8333/8332).
  */
 std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain)
 {
