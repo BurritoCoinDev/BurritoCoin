@@ -89,7 +89,7 @@ private:
 struct TestingSetup : public BasicTestingSetup {
     boost::thread_group threadGroup;
 
-    explicit TestingSetup(const std::string& chainName = CBaseChainParams::MAIN, const std::vector<const char*>& extra_args = {});
+    explicit TestingSetup(const std::string& chainName = CBaseChainParams::REGTEST, const std::vector<const char*>& extra_args = {});
     ~TestingSetup();
 };
 

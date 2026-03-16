@@ -11,7 +11,11 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(scriptpubkeyman_tests, BasicTestingSetup)
+struct RegBasicTestingSetup : public BasicTestingSetup {
+    RegBasicTestingSetup() : BasicTestingSetup(CBaseChainParams::REGTEST) {}
+};
+
+BOOST_FIXTURE_TEST_SUITE(scriptpubkeyman_tests, RegBasicTestingSetup)
 
 // Test LegacyScriptPubKeyMan::CanProvide behavior, making sure it returns true
 // for recognized scripts even when keys may not be available for signing.
@@ -51,7 +55,7 @@ BOOST_AUTO_TEST_CASE(StealthAddresses)
     LegacyScriptPubKeyMan& keyman = *wallet.GetOrCreateLegacyScriptPubKeyMan();
 
     // Set HD seed
-    CKey key = DecodeSecret("6usgJoGKXW12i7Ruxy8Z1C5hrRMVGfLmi9NU9uDQJMPXDJ6tQAH");
+    CKey key = DecodeSecret("cUkG8i1RFfWGWy5ziR11zJ5V4U4W3viSFCfyJmZnvQaUsd1xuF3T"); // Regtest WIF (prefix 239)
     CPubKey seed = keyman.DeriveNewSeed(key);
     keyman.SetHDSeed(seed);
     keyman.TopUp();
