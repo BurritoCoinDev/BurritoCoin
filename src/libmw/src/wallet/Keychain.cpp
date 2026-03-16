@@ -50,8 +50,8 @@ bool Keychain::RewindOutput(const Output& output, mw::Coin& coin) const
         return false;
     }
 
-    // v0.21.2 incorrectly generated MWEB keys from the pre-split keypool for upgraded wallets.
-    // These keys will not have an mweb_index, so we set the address_index as CUSTOM_KEY.
+    // Wallets upgraded from pre-MWEB versions may not have an mweb_index,
+    // so we set the address_index as CUSTOM_KEY for those coins.
     coin.address_index = pMetadata->mweb_index.get_value_or(CUSTOM_KEY);
     coin.blind = boost::make_optional(mask.GetRawBlind());
     coin.amount = value;

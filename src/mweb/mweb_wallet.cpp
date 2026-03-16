@@ -131,6 +131,28 @@ bool Wallet::GetCoin(const mw::Hash& output_id, mw::Coin& coin) const
     return false;
 }
 
+CAmount Wallet::GetBalance() const
+{
+    // Collect all MWEB output IDs that have been spent by this wallet.
+    std::set<mw::Hash> spent_outputs;
+    for (const auto& entry : m_pWallet->mapWallet) {
+        const CWalletTx& wtx = entry.second;
+        if (wtx.mweb_wtx_info && wtx.mweb_wtx_info->spent_input) {
+            spent_outputs.insert(*wtx.mweb_wtx_info->spent_input);
+        }
+    }
+
+    // Sum amounts of all unspent coins that belong to this wallet.
+    CAmount balance = 0;
+    for (const auto& entry : m_coins) {
+        const mw::Coin& coin = entry.second;
+        if (coin.IsMine() && spent_outputs.find(coin.output_id) == spent_outputs.end()) {
+            balance += coin.amount;
+        }
+    }
+    return balance;
+}
+
 mw::Keychain::Ptr Wallet::GetKeychain() const
 {
     auto spk_man = m_pWallet->GetScriptPubKeyMan(OutputType::MWEB, false);

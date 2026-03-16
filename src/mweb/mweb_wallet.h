@@ -44,6 +44,8 @@ public:
     void LoadToWallet(const mw::Coin& coin);
     void SaveToWallet(const std::vector<mw::Coin>& coins);
 
+    CAmount GetBalance() const;
+
 private:
     mw::Keychain::Ptr GetKeychain() const;
 };

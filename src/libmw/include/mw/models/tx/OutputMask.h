@@ -4,6 +4,7 @@
 #include <mw/crypto/Pedersen.h>
 #include <mw/models/crypto/BlindingFactor.h>
 #include <mw/models/crypto/SecretKey.h>
+#include <cstring>
 
 class OutputMask
 {
@@ -21,7 +22,7 @@ public:
     {
         OutputMask mask;
         mask.pre_blind = Hashed(EHashTag::BLIND, shared_secret);
-        mask.value_mask = *((uint64_t*)Hashed(EHashTag::VALUE_MASK, shared_secret).data());
+        std::memcpy(&mask.value_mask, Hashed(EHashTag::VALUE_MASK, shared_secret).data(), sizeof(uint64_t));
         mask.nonce_mask = BigInt<16>(Hashed(EHashTag::NONCE_MASK, shared_secret).data());
         return mask;
     }

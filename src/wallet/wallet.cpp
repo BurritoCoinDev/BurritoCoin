@@ -2604,6 +2604,7 @@ CWallet::Balance CWallet::GetBalance(const int min_depth, bool avoid_reuse) cons
             ret.m_watchonly_immature += wtx.GetImmatureWatchOnlyCredit();
         }
     }
+    ret.m_mine_trusted += mweb_wallet->GetBalance();
     return ret;
 }
 
