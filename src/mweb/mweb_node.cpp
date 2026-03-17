@@ -61,7 +61,7 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
     }
 
     // Only the last transaction in the block should be marked as the HogEx.
-    for (size_t i = 0; i < block.vtx.size() - 1; i++) {
+    for (size_t i = 0; i + 1 < block.vtx.size(); i++) {
         if (block.vtx[i]->IsHogEx()) {
             return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "bad-hogex-position", "hogex in wrong position");
         }
@@ -98,7 +98,7 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
     // This is the previous HogEx's first output amount (pIndexPrev->mweb_amount) plus the sum of all pegin output amounts.
     // 
     // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
-    for (size_t nTx = 1; nTx < block.vtx.size() - 1; nTx++) {
+    for (size_t nTx = 1; nTx + 1 < block.vtx.size(); nTx++) {
         const CTransactionRef& pTx = block.vtx[nTx];
         for (size_t nOut = 0; nOut < pTx->vout.size(); nOut++) {
             const CTxOut& output = pTx->vout[nOut];
@@ -136,7 +136,7 @@ bool Node::ValidateMWEBBlock(const CBlock& block)
     // Find all pegin scriptPubKeys in the block.
     // We don't support pegins in the coinbase tx or the HogEx tx, so skip those.
     std::vector<PegInCoin> block_pegins;
-    for (size_t i = 1; i < block.vtx.size() - 1; i++) {
+    for (size_t i = 1; i + 1 < block.vtx.size(); i++) {
         for (const CTxOut& out : block.vtx[i]->vout) {
             mw::Hash kernel_id;
             if (out.scriptPubKey.IsMWEBPegin(&kernel_id)) {
@@ -188,7 +188,7 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         //
         // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
         CAmount hogex_input_amount = pindexPrev->mweb_amount;
-        for (size_t nTx = 1; nTx < block.vtx.size() - 1; nTx++) {
+        for (size_t nTx = 1; nTx + 1 < block.vtx.size(); nTx++) {
             const CTransactionRef& pTx = block.vtx[nTx];
             for (const CTxOut& output : pTx->vout) {
                 if (output.scriptPubKey.IsMWEBPegin()) {
