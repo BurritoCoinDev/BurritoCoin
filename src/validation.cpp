@@ -1531,7 +1531,7 @@ bool CScriptCheck::operator()() {
     return VerifyScript(scriptSig, m_tx_out.scriptPubKey, witness, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, m_tx_out.nValue, cacheStore, *txdata), &error);
 }
 
-int GetSpendHeight(const CCoinsViewCache& inputs)
+int64_t GetSpendHeight(const CCoinsViewCache& inputs)
 {
     LOCK(cs_main);
     CBlockIndex* pindexPrev = LookupBlockIndex(inputs.GetBestBlock());
