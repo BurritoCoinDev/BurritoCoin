@@ -33,7 +33,7 @@ bilingual_str TransactionErrorString(const TransactionError err)
             return Untranslated("Fee exceeds maximum configured by user (e.g. -maxtxfee, maxfeerate)");
         // no default case, so the compiler can warn about missing cases
     }
-    assert(false);
+    return Untranslated(strprintf("Unknown TransactionError: %d", static_cast<int>(err)));
 }
 
 bilingual_str ResolveErrMsg(const std::string& optname, const std::string& strBind)
