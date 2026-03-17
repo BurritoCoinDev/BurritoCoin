@@ -1320,7 +1320,8 @@ void CChainState::InitCoinsDB(
     CBlockIndex* pindex = LookupBlockIndex(CoinsDB().GetBestBlock());
     if (pindex != nullptr) {
         if (!ReadBlockFromDisk(block, pindex, Params().GetConsensus())) {
-            // MW: TODO - Throw? return error("AppInitMain(): ReadBlockFromDisk() failed at %d, hash=%s", pindex->nHeight, pindex->GetBlockHash().ToString());
+            throw std::runtime_error(strprintf("InitCoinsDB: ReadBlockFromDisk() failed at %d, hash=%s",
+                pindex->nHeight, pindex->GetBlockHash().ToString()));
         }
     }
 
@@ -1593,7 +1594,7 @@ bool CheckInputScripts(const CTransaction& tx, TxValidationState &state, const C
     uint256 hashCacheEntry;
     CSHA256 hasher = g_scriptExecutionCacheHasher;
     hasher.Write(tx.GetWitnessHash().begin(), 32).Write((unsigned char*)&flags, sizeof(flags)).Finalize(hashCacheEntry.begin());
-    AssertLockHeld(cs_main); //TODO: Remove this requirement by making CuckooCache not require external locks
+    AssertLockHeld(cs_main); // CuckooCache requires external synchronization
     if (g_scriptExecutionCache.contains(hashCacheEntry, !cacheFullScriptStore)) {
         return true;
     }
@@ -5266,7 +5267,7 @@ bool LoadMempool(CTxMemPool& pool)
             pool.PrioritiseTransaction(i.first, i.second);
         }
 
-        // TODO: remove this try except in v0.22
+        // Keep the try-except for backward compatibility reading pre-v0.21 mempool.dat files.
         std::set<uint256> unbroadcast_txids;
         try {
           file >> unbroadcast_txids;

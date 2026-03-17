@@ -4,6 +4,7 @@
 
 #include <psbt.h>
 #include <util/strencodings.h>
+#include <stdexcept>
 
 
 PartiallySignedTransaction::PartiallySignedTransaction(const CMutableTransaction& tx) : tx(tx)
@@ -344,7 +345,7 @@ std::string PSBTRoleName(PSBTRole role) {
     case PSBTRole::EXTRACTOR: return "extractor";
         // no default case, so the compiler can warn about missing cases
     }
-    assert(false);
+    throw std::invalid_argument("Unknown PSBTRole value: " + std::to_string(static_cast<int>(role)));
 }
 
 bool DecodeBase64PSBT(PartiallySignedTransaction& psbt, const std::string& base64_tx, std::string& error)

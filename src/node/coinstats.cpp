@@ -108,7 +108,7 @@ bool GetUTXOStats(CCoinsView* view, CCoinsStats& stats, CoinStatsHashType hash_t
         return GetUTXOStats(view, stats, nullptr, interruption_point);
     }
     } // no default case, so the compiler can warn about missing cases
-    assert(false);
+    return error("GetUTXOStats: unrecognized hash_type: %d", static_cast<int>(hash_type));
 }
 
 // The legacy hash serializes the hashBlock
