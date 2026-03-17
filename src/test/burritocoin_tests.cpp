@@ -260,22 +260,22 @@ BOOST_AUTO_TEST_CASE(regtest_message_start_differs_from_mainnet)
 // Default P2P port numbers
 // ---------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(mainnet_default_port_is_9333)
+BOOST_AUTO_TEST_CASE(mainnet_default_port_is_9227)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
-    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 9333);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 9227);
 }
 
-BOOST_AUTO_TEST_CASE(testnet_default_port_is_19335)
+BOOST_AUTO_TEST_CASE(testnet_default_port_is_19227)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::TESTNET);
-    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19335);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19227);
 }
 
-BOOST_AUTO_TEST_CASE(regtest_default_port_is_19444)
+BOOST_AUTO_TEST_CASE(regtest_default_port_is_19554)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
-    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19444);
+    BOOST_CHECK_EQUAL(chainParams->GetDefaultPort(), 19554);
 }
 
 // ---------------------------------------------------------------------------

@@ -123,7 +123,7 @@ public:
         pchMessageStart[1] = 0x52; // 'R'
         pchMessageStart[2] = 0x54; // 'T'
         pchMessageStart[3] = 0x4f; // 'O'
-        nDefaultPort = 9333;
+        nDefaultPort = 9227;
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size = 40;
         m_assumed_chain_state_size = 2;
@@ -222,7 +222,7 @@ public:
         pchMessageStart[1] = 0x52; // 'R'
         pchMessageStart[2] = 0x54; // 'T'
         pchMessageStart[3] = 0x4e; // 'N' (BurriTo testNet)
-        nDefaultPort = 19335;
+        nDefaultPort = 19227;
         nPruneAfterHeight = 1000;
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
@@ -318,7 +318,7 @@ public:
         pchMessageStart[1] = 0x52; // 'R'
         pchMessageStart[2] = 0x54; // 'T'
         pchMessageStart[3] = 0x47; // 'G' (BurriTo reGtest)
-        nDefaultPort = 19444;
+        nDefaultPort = 19554;
         nPruneAfterHeight = 1000;
         m_assumed_blockchain_size = 0;
         m_assumed_chain_state_size = 0;
