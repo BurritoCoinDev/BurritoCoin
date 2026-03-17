@@ -97,7 +97,7 @@ static void UpdateWalletSetting(interfaces::Chain& chain,
 bool AddWallet(const std::shared_ptr<CWallet>& wallet)
 {
     LOCK(cs_wallets);
-    assert(wallet);
+    if (!wallet) return false;
     std::vector<std::shared_ptr<CWallet>>::const_iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
     if (i != vpwallets.end()) return false;
     vpwallets.push_back(wallet);
@@ -108,7 +108,7 @@ bool AddWallet(const std::shared_ptr<CWallet>& wallet)
 
 bool RemoveWallet(const std::shared_ptr<CWallet>& wallet, Optional<bool> load_on_start, std::vector<bilingual_str>& warnings)
 {
-    assert(wallet);
+    if (!wallet) return false;
 
     interfaces::Chain& chain = wallet->chain();
     std::string name = wallet->GetName();
