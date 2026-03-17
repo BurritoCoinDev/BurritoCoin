@@ -41,8 +41,7 @@ std::string CBlock::ToString() const
 
 CTransactionRef CBlock::GetHogEx() const noexcept
 {
-    if (vtx.size() >= 2 && vtx.back()->IsHogEx()) {
-        assert(!vtx.back()->vout.empty());
+    if (vtx.size() >= 2 && vtx.back()->IsHogEx() && !vtx.back()->vout.empty()) {
         return vtx.back();
     }
 

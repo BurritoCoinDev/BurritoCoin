@@ -73,7 +73,9 @@ bool CCoinsViewCache::GetCoin(const COutPoint &outpoint, Coin &coin) const {
 }
 
 void CCoinsViewCache::AddCoin(const COutPoint &outpoint, Coin&& coin, bool possible_overwrite) {
-    assert(!coin.IsSpent());
+    if (coin.IsSpent()) {
+        throw std::logic_error("Attempted to add a spent coin to the cache");
+    }
     if (coin.out.scriptPubKey.IsUnspendable()) return;
     CCoinsMap::iterator it;
     bool inserted;
