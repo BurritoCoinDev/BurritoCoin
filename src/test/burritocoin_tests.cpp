@@ -320,17 +320,29 @@ BOOST_AUTO_TEST_CASE(taproot_active_from_genesis_on_mainnet)
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
-    BOOST_CHECK_EQUAL(consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight, 0);
+    // Taproot uses BIP9 ALWAYS_ACTIVE (-1); verify via the time-based start field.
+    // Use a local copy to avoid ODR-use of the static constexpr member.
+    const int64_t always_active = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+    BOOST_CHECK_EQUAL(
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime,
+        always_active);
 }
 
-BOOST_AUTO_TEST_CASE(taproot_timeout_height_is_250_windows)
+BOOST_AUTO_TEST_CASE(taproot_is_always_active_on_mainnet)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
-    // 2016000 = 250 * nMinerConfirmationWindow (8064)
+    // Taproot is a core BurritoCoin feature deployed via BIP9 ALWAYS_ACTIVE
+    // (not a height-based BIP8 timeout). Use local copies to avoid ODR-use.
+    const int64_t always_active = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+    const int64_t no_timeout    = Consensus::BIP9Deployment::NO_TIMEOUT;
     BOOST_CHECK_EQUAL(
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight, 2016000);
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime,
+        always_active);
+    BOOST_CHECK_EQUAL(
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout,
+        no_timeout);
 }
 
 BOOST_AUTO_TEST_CASE(mweb_active_from_genesis_on_mainnet)
@@ -341,14 +353,16 @@ BOOST_AUTO_TEST_CASE(mweb_active_from_genesis_on_mainnet)
     BOOST_CHECK_EQUAL(consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight, 0);
 }
 
-BOOST_AUTO_TEST_CASE(mweb_timeout_height_matches_taproot)
+BOOST_AUTO_TEST_CASE(mweb_timeout_height_is_one_window)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
+    // MWEB uses BIP8 height-based activation. nTimeoutHeight forces lock-in at
+    // the end of the first confirmation window (1 * nMinerConfirmationWindow = 8064).
     BOOST_CHECK_EQUAL(
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight,
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight);
+        consensus.nMinerConfirmationWindow);
 }
 
 // ---------------------------------------------------------------------------

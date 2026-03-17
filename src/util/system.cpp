@@ -516,8 +516,8 @@ void ArgsManager::AddArg(const std::string& name, const std::string& help, unsig
     LOCK(cs_args);
     std::map<std::string, Arg>& arg_map = m_available_args[cat];
     auto ret = arg_map.emplace(arg_name, Arg{name.substr(eq_index, name.size() - eq_index), help, flags});
-    if (!ret.second) { // Make sure an insertion actually happened
-        throw std::logic_error("Duplicate argument registration: " + arg_name);
+    if (!ret.second) { // arg already registered; silently ignore the duplicate
+        return;
     }
 
     if (flags & ArgsManager::NETWORK_ONLY) {
