@@ -2153,7 +2153,7 @@ BOOST_AUTO_TEST_CASE(message_verify)
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL",
+            "BJU6kaU2erYdxDxf9E8inxdvrgBDXFJrBW",
             "IC5ptVNBb5AbIQAISbQxPem7QY7F/pijKxOUXs8M62GFciVCLvhp9XM/j+3Fu+RKbuEOxtzvUSFcxLnD36FXYfU=",
             "I never signed this"),
         MessageVerificationResult::ERR_NOT_SIGNED);
