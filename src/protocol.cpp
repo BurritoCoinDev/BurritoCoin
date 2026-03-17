@@ -6,6 +6,7 @@
 #include <protocol.h>
 
 #include <chainparams.h>
+#include <stdexcept>
 #include <util/strencodings.h>
 #include <util/system.h>
 
@@ -112,7 +113,9 @@ CMessageHeader::CMessageHeader(const MessageStartChars& pchMessageStartIn, const
     // Copy the command name, zero-padding to COMMAND_SIZE bytes
     size_t i = 0;
     for (; i < COMMAND_SIZE && pszCommand[i] != 0; ++i) pchCommand[i] = pszCommand[i];
-    assert(pszCommand[i] == 0); // Assert that the command name passed in is not longer than COMMAND_SIZE
+    if (pszCommand[i] != 0) { // Validate that the command name is not longer than COMMAND_SIZE
+        throw std::runtime_error("Command name exceeds maximum length");
+    }
     for (; i < COMMAND_SIZE; ++i) pchCommand[i] = 0;
 
     nMessageSize = nMessageSizeIn;
