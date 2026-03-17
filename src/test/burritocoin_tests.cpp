@@ -355,14 +355,14 @@ BOOST_AUTO_TEST_CASE(mweb_timeout_height_matches_taproot)
 // Mainnet Base58 address prefixes
 // ---------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(mainnet_pubkey_address_prefix_produces_L_addresses)
+BOOST_AUTO_TEST_CASE(mainnet_pubkey_address_prefix_produces_B_addresses)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
 
-    // Version byte 48 → base58check addresses starting with 'L' (Litecoin-style).
+    // Version byte 25 → base58check addresses starting with 'B' (BurritoCoin-specific).
     const auto& prefix = chainParams->Base58Prefix(CChainParams::PUBKEY_ADDRESS);
     BOOST_REQUIRE_EQUAL(prefix.size(), 1u);
-    BOOST_CHECK_EQUAL(prefix[0], 48);
+    BOOST_CHECK_EQUAL(prefix[0], 25);
 }
 
 BOOST_AUTO_TEST_CASE(mainnet_script_address_prefix_is_5)
@@ -374,14 +374,14 @@ BOOST_AUTO_TEST_CASE(mainnet_script_address_prefix_is_5)
     BOOST_CHECK_EQUAL(prefix[0], 5);
 }
 
-BOOST_AUTO_TEST_CASE(mainnet_secret_key_prefix_is_176)
+BOOST_AUTO_TEST_CASE(mainnet_secret_key_prefix_is_153)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
 
-    // WIF private key prefix 176 → keys starting with '6' or 'T'.
+    // WIF private key prefix 153 → compressed keys starting with 'P' (BurritoCoin-specific).
     const auto& prefix = chainParams->Base58Prefix(CChainParams::SECRET_KEY);
     BOOST_REQUIRE_EQUAL(prefix.size(), 1u);
-    BOOST_CHECK_EQUAL(prefix[0], 176);
+    BOOST_CHECK_EQUAL(prefix[0], 153);
 }
 
 // ---------------------------------------------------------------------------

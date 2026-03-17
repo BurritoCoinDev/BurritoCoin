@@ -141,12 +141,18 @@ public:
         vSeeds.emplace_back("dnsseed.burritocointools.com");
         vSeeds.emplace_back("dnsseed.burritocoinpool.org");
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,48);
+        // BurritoCoin-specific prefixes (unique, not shared with Bitcoin or Litecoin):
+        //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
+        //   SECRET_KEY     = 153 → WIF private keys start with 'P' (compressed)
+        //   SCRIPT_ADDRESS2 = 28 → Legacy P2SH-2 addresses start with 'C'
+        //   EXT_PUBLIC_KEY  0x0188D9CE → HD public keys encode as "Ktub..."
+        //   EXT_SECRET_KEY  0x0188D26A → HD private keys encode as "Ktpv..."
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,25);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
-        base58Prefixes[SCRIPT_ADDRESS2] = std::vector<unsigned char>(1,50);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,176);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+        base58Prefixes[SCRIPT_ADDRESS2] = std::vector<unsigned char>(1,28);
+        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,153);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x01, 0x88, 0xD9, 0xCE};
+        base58Prefixes[EXT_SECRET_KEY] = {0x01, 0x88, 0xD2, 0x6A};
 
         bech32_hrp = "brto";
         mweb_hrp = "brtomweb";
