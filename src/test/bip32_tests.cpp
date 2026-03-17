@@ -41,61 +41,66 @@ struct TestVector {
 // BIP32 specification vectors but the master key IL/IR differ because the
 // HMAC key string is "BurritoCoin seed" rather than "Bitcoin seed".
 //
+// Extended keys are encoded with BurritoCoin-specific version bytes:
+//   EXT_PUBLIC_KEY  = 0x0188D9CE  ("Ktub..." prefix)
+//   EXT_SECRET_KEY  = 0x0188D26A  ("Ktpv..." prefix)
+//
 // To regenerate: implement BIP32 master-key derivation with the string
-// "BurritoCoin seed" and re-run the three standard BIP32 derivation paths.
+// "BurritoCoin seed", run the three standard BIP32 derivation paths, then
+// re-encode the resulting keys with the BRTO version bytes above.
 
 // Path: m / 0H / 1 / 2H / 2 / 1000000000 / 0
 TestVector test1 =
   TestVector("000102030405060708090a0b0c0d0e0f")
-    ("xpub661MyMwAqRbcGBqAuKgPCL8NSnZTfBzBL9m3GdCmkd6hLDcFb3cmPLqz6yFSAWJZvfVwKwumNaML9BdL3nnGKPDcDoQqp3Yqfdc22azBWq9",
-     "xprv9s21ZrQH143K3hkhoJ9NqCBdtkiyFjGKxvqSUEoACHZiTRH73WJWqYXWFhQSD2iDgnQ3o44rM1sHzks9qAK285cBedeZKQf2w7qBtQbyC7o",
+    ("Ktub27cD8LUHaBN8fFuzfStkr796McjaUMWpYKSoKK3zk7ZX1VRpzPwwavgHSdosq13u7EniAbhkkweAMzNtEzThN5KRebbstpVPtQJiYboL5ni",
+     "Ktpv6gRsXZ3kL2qB3PDAQqQNmXJsv43PQ6xAToLmeLHhovmvR8EkfUuWaKa2CFys5qhVCFrX867p3SDQ6yNfWasyxxHvjruK3StaTnPSZMg7xPw",
      0x80000000)
-    ("xpub69MDUKUzXhwnMUvZGj4zstUJ4xKfYd7qd2nX3c99XbjdSsECVR1H7LfHZ5U1j4gKZGuncSJn8P56D8rp3Yo8FE6gvGWePVzuV8G7AZxASxx",
-     "xprv9vMs4ox6hLPV8zr6AhXzWkXZWvVB9APzForvFDjXyGCea4u3wsh2ZYLohmiyKaQrbbeaZM74QGNS7evWcXLpRoBM2a52betfbiM3Vrv9DRt",
+    ("Ktub2Ax4dJ27GTiJkZ1P2rHNXfV1ynVnMneUqCUH6HzNX6CT893mtmLTJvVatk2TPZRejrCZT66mWkMvRwcNEkUZHvCWM4hgUGwThtxogaqUgCz",
+     "Ktpv6jmj2Wba2KBM8gJYnEnzT5eoYDobHY5pkgNFRKE5auQrXmrhZrJ2JKPKeLJQCPQ87573tPA26giYDsS2HwunGfs67oKnKh8D8NuJAgqLBmq",
      1)
-    ("xpub6AjPymAKZT4hjgi9q6wTUaMaAYvcNvbM8TPWt5XKknMWeChpQwry9pGR4VnZvmrSUoDqtPPiLNC9gtBUCvydYNGJFhHrXKFYXhjVRDLFJ7j",
-     "xprv9wk3aFdRj5WQXCdgj5QT7SQqcX67yTsVmETv5h7iCSpXmQNfsQYic1wwDF5zMzEErR34eC3kMB7AwRzAsgdcfJBmA2bS2RJGCdTzdQGo5Zg",
+    ("Ktub2CLF8jhSJCqE8knybE9q8MNJ5P6jC67zLd5GvmNYkGpLKUXPpJC9MQ6iQAM1bGbmfNWcj3BhijUyugw2Q8f4b4N7gVUtc6C6kUSBw7n2Wnf",
+     "Ktpv6m9uXxGu44JGWt69LcfT3mY5dpQY7qZLG6yFFncFp62jj7LKVP9iLnzT9ofREoDWMtVXyE6i3bTH3eVgZ7CaWAsWFFrBkTXojJ2FJNWtd4b",
      0x80000002)
-    ("xpub6C5LgoyMeF4WPKXV1cN9U7dSKJPsRwjjroSdGF9hQLr2zUdyN8cgenFKnAGQMMbu8KRiXuhZ9Azz5znhUJgk2kH6Tek9XSv5QJT94HWHK9X",
-     "xprv9y5zHJSTosWDAqT1uaq96yghmGZP2V1tVaX2Trk5r1K47gJppbJS6yvqvrfyha9hWb3owD5Ls7v5rC3dLnqtj71hEFFXFraENacabRVW4ar",
+    ("Ktub2DgBqnWUNzq2nPcJmjaX7teAE8ZzF7GP4y8PJvzvPqJrfkTYmUwrrN5d7ppr1rMEJtiVNZVYXYHpJoYFfWNB5SNutSwBcDrdd59qaEGn6ph",
+     "Ktpv6nVrF15w8rJ5AWuUX8693JownZsoArhizT2MdxEdTeXG5PGUSZuRqkyMsRFQaP8y24WHGF8JZYGBxQZ92DQrZyhSKUWGytomuFAqGEoigY8",
      2)
-    ("xpub6EKtKan9Dx5EWHSqPXKUeYF2vzZj8bAbYyFa9V2W6SfxLexwvbCWX3y4tcVzQktXisTbzMatav8fbivzR7C1SpxywWZcsYcxbaB8Ejnwvrp",
-     "xprvA1LXv5FFPaWwHoNNHVnUHQJJNxjEj8SkBkKyM6ctY78yTrdoP3tFyFeb3KjoDihFuRSNHRTVjfhPXfzJq7T7DhV4bxJmcR6kULTUfLKHojx",
+    ("Ktub2FvjUZKFxhqkuMXf9eXrJKFkqpjqwkhEm8wLCAsj5w8n1vnXKwXgidoNEH4S5FdruSkNq1NsyHRVpXgYcJsSVX4oNJkexKZWpLspkjqEQod",
+     "Ktpv6pkPsmtiiZJoHUppu33UDjRYQG3esW8agcqJXC7S9kMBRZbT12VFi2h6ytKE6XgXQttqcTWTS63VdtVpWY254aAohBZXLTLJ111jLJ5JzVH",
      1000000000)
-    ("xpub6G469YoqHm5nkREbT6hK4TL2MPa2DMGE2juKbzTrhXAqewjuKBN5hKDMGabgvHZx2XDqpxnNnZoKb5cCxaKKWBYM9mTzMHBCsm4bHRDMWcE",
-     "xprvA34jk3GwTPXVXwA8M5AJhKPHoMjXotYNfWyioc4F9Bdrn9Qkme3q9WtsRJYqaye3oznQrgbu5jNbQMgbwMH6thzsGRg1vazqtpqgG71mTxk",
+    ("Ktub2HewJXLx2WrK9VKRDDugiELkGDk92WnsEub5egK5h1dfLDZUiXhFtu3ecFA8anKHD6WcfcaNAw69otMm9mzkYseAaZf2S47m6XmHoLFjEne",
+     "Ktpv6rUbhjvQnNKMXccaxcRJdeWXpf3wxGEDAPV3yhYnkpr4jrNQPceptHwPMs8GTndKKUEtBiern9ihWaC7cmr4jagcMevmedEPRVPvvtju3V6",
      0);
 
 // Path: m / 0 / 2147483647H / 1 / 2147483646H / 2 / 0
 TestVector test2 =
   TestVector("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542")
-    ("xpub661MyMwAqRbcGuE6i9PEmDD3RrqtDsFuBmLcEAfQj1rVogfHsXxCZ6ReWmUfivL1BFjf9WTK7eioqyo2rNafhFdVR8K1CnBAWUEi2h14rC9",
-     "xprv9s21ZrQH143K4R9dc7rEQ5GJsq1PpQY3pYR1RnFoAgKWvtL9Kzdx1J7AfWBs8KHSxGrzBRESH9A9mx8SLv6EsPRKUowxKRQDvbFY5u4qYNU",
+    ("Ktub27cD8LUHaBN8fyJvUGbcQzDmLh2132nYPw2NGrWdiWKKUxUsGtHNkgFwrS37PR5LMq2RzAFJW21e4nYb3aG6jwjJqvW3HZ7ijEwQYjWTXzf",
+     "Ktpv6gRsXZ3kL2qB46c6Df7ELQPYu8KoxnDtKQvLbskLnKXitbHnwyEwk59gc4mJ18GiTkKTWTHPyZWFtAdx2LfCiG74a3Ci3TdmTFonkmJhdLD",
      0)
-    ("xpub68SDVPopTdzGLj1imAvWAaLe117H4g6fZvwLufDjgExqPg9Ac3Te11r6wKBDp7fvRweVhe37AhcoKjAyDvsgt18PyKANULKUo4H6HzbnLsY",
-     "xprv9uSs5tGvdGRy8EwFf9PVoSPuSyGnfDNpCi1k7Gp87uRrWsp24W9PTDXd655R2xLLhipQREzeqsv4YY6p23C46dHgvWUZvochuE4K1n27CKN",
+    ("Ktub2A34eNLwCPknjo6YXJ8spMMMuqHPsqdJn6d6xM4xfjRf4wxk1PnpCbgQGyjfUcRFcWwGYHq6Z4udYXvXR8Z7vhEDQ7MQZ7G31pynotBs7Bu",
+     "Ktpv6irj3avPxFDq7vPiGgeVjmX9UGbCob4ehaX5HNJfjYe4UamfgUkPBza92dequmKcDCGskH3cYJGAekcKhTm1wVyS1jjKeqrFRtcZgeWZgpC",
      0xFFFFFFFF)
-    ("xpub69zH8gTnfeQR8d62B5kK7N1GXWHTMzV5CDBp1o6485B5puoYf4mLhspJwArjhaNHYQwQ1GSaUshDTkT8Axrt4rrc9q8WEuyZCZ9CbcnrLuf",
-     "xprv9vzvjAvtqGr7v91Z54DJkE4XyUSxxXmDpzGDDQgSZje6x7UQ7XT6A5Vq5t6qvhGkmWo7v4YeLjyDPAAGuJmPvZUwkw4cpaq459qHotNTAYB",
+    ("Ktub2Bb8HezuQQAwXhAqwCxgm91zSLTaBA1iQNsa4UwH7ZduWBd84R6WuTecGqRBN57cizEAqvEZsEz3gZCgNAYK7YxRadKYKgv7RKqu7ZsxuEd",
+     "Ktpv6kQngsaNAFdyupU1gbUJgZBmzmmP6uT4KrmYPWAzBNrJupS3jW45trYM2SgGoWG2GzFbF6bc3AKKVNfnajLMmSAgrAKNYd4bbpPYUnrQf3A",
      1)
-    ("xpub6BjADkDx91TbcPdgceR1wKo22rmRajyk6sF2gSpwjYFseKHS6P79F1hwjYqpAL9kSE9PeRbP85TtL7ThtvwbgqzMwRnU9Xys7Wo4QN6b6DB",
-     "xprv9xjopEh4JduJPuZDWct1aBrHUpvwBHFtjeKRt4RLBCitmWxHYqnthDPTtEuvHLMH35zXYzUzJwvUS2ZXMgcyfMFBEsVLqjr6hURNhP3uc8n",
+    ("Ktub2DL1Nim4smE81TiWNmdPb6ojwgwYPuWPK2vnj8gAj2ihKb71VjSKSbYF5DQFppu5coSAV5PNWSkiYvDG68d2jY6BNDyWEJvRLHVkvFSB8jL",
+     "Ktpv6n9fmwLXdchAPb1g8A91WWyXW8FMKewjEWpm49usnqw6jDuwApPtRzRypoVMA9LYYZSzt2Xx1NGaYF5337BwWDvvL6k6Zn5eE8ydNGhzwiN",
      0xFFFFFFFE)
-    ("xpub6ExMgkBbr4QdW1znyJf8JBGY9JmZaTo91F9HP6MTVB7nhB1qRhDBmf852HZahwaFtJf1nQRF8ojXzvP5vaubWAiRFJ5gqMGQB9tqXxbUB2V",
-     "xprvA1y1HEei1grLHXvKsH87w3KobGw5B15He2DgahwqvqaopNggt9twDrobB21qXHxktKtpe1EN2E1LGvcDo4JEjMp82C9MB8U5xdwkFdGQdyf",
+    ("Ktub2GZCqiiiapB9u65cjRsVwxHG48wgPdKnDQq3RnCgUfacNSqQq3YMyExNMx82NSKb4swnd4DEXB2NDj8e7nb2YrpEg6Giv8CxPvbY3xyTsWX",
+     "Ktpv6qNsEwJBLfeCHDNnUpP7sNT3caFVKNm88tj1koSPYUo1n5eLW8Vvxdr77abGQ6x2PoMHy3HKieMSP97jUUsCaEVs7RQ6uAhdVJVzvTRyPUt",
      2)
-    ("xpub6GWX3vwigDDMREPvL3STM8G2dSZdEHpUocFPWim7dzVVyPdcbFxzBH7oEcktkuouGfdB2Z51dYwyd5sVvWSnboBcevwEnaVwa2j4CsoukiW",
-     "xprvA3XAeRQpqqf4CkKTE1uSyzKJ5Qj8pq6dSPKniLMW5exX6bJU3iejdUoKPJwdrnXWaDmikNwu16SWtQwdDA8Mopijd8PBWoxCtYD5sJpu31B",
+    ("Ktub2J7NCuUqQxyspJUk6AepzuGkYGjk3TM81mw9ZQcLdUxKefTBzcJANrx6aHKLRQZETEuwsCs11vEoqtd47i8DeVHS5j8GsMSVnoRkisg1t2s",
+     "Ktpv6rw2c84JApSvCRmuqZASvKSY6i3YyCnTwFq7tRr3hJAj4JG7fhFjNFqqKsX4jbWn5hEC5QzrhWnczdT8tahKehQUiMdwErBkRCmLYCBrJic",
      0);
 
 // Path: m / 0H / 0
 TestVector test3 =
   TestVector("4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be")
-    ("xpub661MyMwAqRbcGfaJ8aL7eTEnLVjcZhrDGPu9TPRcbzFAGB61zNTrjtwzir1jRMpEwSA3fhX3Ldq9SrnJSq8MjePZMujZqZnoh9L6hNRUKfg",
-     "xprv9s21ZrQH143K4BVq2Yo7HKJ3nTu8AF8MuAyYf1213eiBPNksSq9cC6dWsbPwuwmbc27uyeVkFfkoTJpjmUP5biRx13mNizFybFZ62Do6YyV",
+    ("Ktub27cD8LUHaBN8fjf7thYVJEFWFKujNsNrUZauW5GqbUhywSubPio2wUnJ4WaB5rZa81SpWMK2j17yffXre2onnLVNnhvbvLjMuv2oDHzxZHj",
+     "Ktpv6gRsXZ3kL2qB3rxHe647DeRHomDYJcpCQ3Usq6WYfHvPM5iX4okbvsg2p9yNnkks7VaPJgYhx66uZXLFStx3Sb7h6H28T2VX7v7Lh22k7S1",
       0x80000000)
-    ("xpub68N9LVZqTYfFSVr7M5bN2jPBLwn2pQcJX2LRXCK2KS7oDCEzLg5Kg9rmzrJEjxyve8G57z9MMbevYxv1ZuNRJRXJf9ErHTdFb99kokLPy2F",
-     "xprv9uNnvz2wdB6xE1meF44MfbSSnuwYQwtT9oQpiouQm6apLPuqo8m58MYJ9YyfF7DyeHEiKTZ5SFfKx7fnKzzFy35B5xxa79EyDKphkr46wgG",
+    ("Ktub29xzVU6xCJRmqZvw7CojgWPuFmx9da8wjC2BZtAFJvactU4Zk2QVsjh5LWrgQTjFphYqxdwLjxwkmmfZm73rM7d85wRtNEZoourTKiySMPe",
+     "Ktpv6inetggQx9tpDhE6rbKMbvZgpDFxZKaHefv9tuPxNjo2J6sVR7N4s8ap67Z67vDF9khBeVc38g1S4LBJ1RZDoukvBCDKqBUWjzNxRgbbdjp",
       0);
 
 static void RunTest(const TestVector &test) {
