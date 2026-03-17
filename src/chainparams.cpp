@@ -97,16 +97,20 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
         // Deployment of Taproot (BIPs 340-342)
-        // BRTO-TODO: choose exact activation heights before mainnet launch.
+        // Taproot is a core BurritoCoin feature active from genesis on all networks.
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2016000; // 250 * nMinerConfirmationWindow (8064)
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
         // Deployment of MWEB
-        // BRTO-TODO: choose exact activation heights before mainnet launch.
+        // MWEB is a core BurritoCoin feature. ALWAYS_ACTIVE is intentionally avoided:
+        // it mandates a HogEx in every block from genesis, which breaks the standard
+        // 100-block test-setup helpers. Instead, signaling starts at height 0 and
+        // nTimeoutHeight forces lock-in (BIP8-style mandatory activation) at the end
+        // of the first confirmation window (~14 days) if miners have not yet signaled.
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].bit = 4;
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2016000; // 250 * nMinerConfirmationWindow (8064)
+        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 8064; // 1 * nMinerConfirmationWindow (8064)
 
         // New chain: no accumulated work yet; set to zero so the node
         // considers itself synced from genesis and can form a network.
@@ -211,14 +215,18 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
         // Deployment of Taproot (BIPs 340-342)
+        // Taproot is a core BurritoCoin feature active from genesis on all networks.
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeoutHeight = 2016000; // 1000 * nMinerConfirmationWindow (2016)
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
         // Deployment of MWEB
+        // Signaling starts at height 0; nTimeoutHeight forces lock-in (BIP8-style
+        // mandatory activation) at the end of the first confirmation window (~3.5 days)
+        // if miners have not yet signaled.
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].bit = 4;
         consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nStartHeight = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2016000; // 1000 * nMinerConfirmationWindow (2016)
+        consensus.vDeployments[Consensus::DEPLOYMENT_MWEB].nTimeoutHeight = 2016; // 1 * nMinerConfirmationWindow (2016)
 
         // New chain: no accumulated work yet.
         consensus.nMinimumChainWork = uint256S("0x00");
