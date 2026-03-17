@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <new>
 #include <type_traits>
 #include <utility>
 
@@ -179,15 +180,13 @@ private:
             }
         } else {
             if (!is_direct()) {
-                /* FIXME: Because malloc/realloc here won't call new_handler if allocation fails, assert
-                    success. These should instead use an allocator or new/delete so that handlers
-                    are called as necessary, but performance would be slightly degraded by doing so. */
-                _union.indirect_contents.indirect = static_cast<char*>(realloc(_union.indirect_contents.indirect, ((size_t)sizeof(T)) * new_capacity));
-                assert(_union.indirect_contents.indirect);
+                char* new_ptr = static_cast<char*>(realloc(_union.indirect_contents.indirect, ((size_t)sizeof(T)) * new_capacity));
+                if (!new_ptr) throw std::bad_alloc();
+                _union.indirect_contents.indirect = new_ptr;
                 _union.indirect_contents.capacity = new_capacity;
             } else {
                 char* new_indirect = static_cast<char*>(malloc(((size_t)sizeof(T)) * new_capacity));
-                assert(new_indirect);
+                if (!new_indirect) throw std::bad_alloc();
                 T* src = direct_ptr(0);
                 T* dst = reinterpret_cast<T*>(new_indirect);
                 memcpy(dst, src, size() * sizeof(T));
