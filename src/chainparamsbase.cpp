@@ -37,22 +37,16 @@ const CBaseChainParams& BaseParams()
     return *globalChainBaseParams;
 }
 
-/**
- * Port numbers for incoming Tor connections have been chosen arbitrarily
- * to keep ranges of used ports tight.
- * BRTO-TODO: assign unique port numbers before mainnet launch to avoid
- * conflicts with Litecoin (9333/9332) and Bitcoin (8333/8332).
- */
 std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain)
 {
     if (chain == CBaseChainParams::MAIN) {
-        return MakeUnique<CBaseChainParams>("", 9332, 9333);
+        return MakeUnique<CBaseChainParams>("", 9226, 9227);
     } else if (chain == CBaseChainParams::TESTNET) {
-        return MakeUnique<CBaseChainParams>("testnet4", 19334, 19335);
+        return MakeUnique<CBaseChainParams>("testnet4", 19226, 19227);
     } else if (chain == CBaseChainParams::SIGNET) {
-        return MakeUnique<CBaseChainParams>("signet", 39332, 39335);
+        return MakeUnique<CBaseChainParams>("signet", 39226, 39227);
     } else if (chain == CBaseChainParams::REGTEST) {
-        return MakeUnique<CBaseChainParams>("regtest", 19443, 19444);
+        return MakeUnique<CBaseChainParams>("regtest", 19553, 19554);
     }
     throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }
