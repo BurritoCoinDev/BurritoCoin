@@ -70,6 +70,9 @@ bool ParseMoney(const std::string& money_string, CAmount& nRet)
     if (strWhole.size() > 11 ||
         (strWhole.size() == 11 && atoi64(strWhole) > MAX_MONEY / COIN))
         return false;
+    // nUnits is computed as a sum of nMult*digit over exactly 8 decimal places,
+    // with nMult decaying from COIN/10 to 1, so it is always in [0, COIN-1].
+    // This guard is unreachable but kept as a defensive sanity check.
     if (nUnits < 0 || nUnits > COIN)
         return false;
     int64_t nWhole = atoi64(strWhole);

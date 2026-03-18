@@ -40,7 +40,10 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
         if (IsPegInOutput(pTx->GetOutput(nOut))) {
             vin.push_back(CTxIn{pTx->GetHash(), (uint32_t)nOut});
 
-            assert(MoneyRange(pTx->vout[nOut].nValue));
+            if (!MoneyRange(pTx->vout[nOut].nValue)) {
+                LogPrintf("AddHogExInputs: peg-in output value out of range\n");
+                return false;
+            }
             pegin_amount += pTx->vout[nOut].nValue;
 
             if (!MoneyRange(pegin_amount)) {
@@ -59,7 +62,10 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
 
     for (const PegOutCoin& pegout : pegouts) {
         CAmount amount(pegout.GetAmount());
-        assert(MoneyRange(amount));
+        if (!MoneyRange(amount)) {
+            LogPrintf("AddHogExInputs: peg-out amount out of range\n");
+            return false;
+        }
 
         vout.push_back(CTxOut{amount, pegout.GetScriptPubKey()});
 
@@ -135,7 +141,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pindexPrev, CBlock* pblock, C
 
     CBlock prevBlock;
     bool read_success = ReadBlockFromDisk(prevBlock, pindexPrev, Params().GetConsensus());
-    assert(read_success);
+    if (!read_success) {
+        LogPrintf("AddHogExTransaction: failed to read prev block\n");
+        return;
+    }
 
     CAmount previous_amount = 0;
 
@@ -143,7 +152,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pindexPrev, CBlock* pblock, C
     // Add previous HogAddr as new HogEx input
     //
     if (prevBlock.vtx.size() >= 2 && prevBlock.vtx.back()->IsHogEx()) {
-        assert(!prevBlock.vtx.back()->vout.empty());
+        if (prevBlock.vtx.back()->vout.empty()) {
+            LogPrintf("AddHogExTransaction: prev HogEx has no outputs\n");
+            return;
+        }
         previous_amount = prevBlock.vtx.back()->vout[0].nValue;
 
         CTxIn prevHogExIn(prevBlock.vtx.back()->GetHash(), 0);
@@ -163,7 +175,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pindexPrev, CBlock* pblock, C
     CTxOut hogAddr;
     hogAddr.scriptPubKey = CScript() << OP_8 << mweb_block->GetHash().vec();
     hogAddr.nValue = previous_amount + mweb_amount_change;
-    assert(MoneyRange(hogAddr.nValue));
+    if (!MoneyRange(hogAddr.nValue)) {
+        LogPrintf("AddHogExTransaction: HogAddr value out of range\n");
+        return;
+    }
     hogExTransaction.vout.push_back(std::move(hogAddr));
 
     //
