@@ -358,8 +358,8 @@ void TxAssembler::InitCoinSelectionParams(InProcessTx& new_tx) const
     if (new_tx.coin_control.m_feerate && new_tx.coin_selection_params.m_effective_feerate > *new_tx.coin_control.m_feerate) {
         throw CreateTxError(strprintf(
             _("Fee rate (%s) is lower than the minimum fee rate setting (%s)"),
-            new_tx.coin_control.m_feerate->ToString(FeeEstimateMode::SAT_VB),
-            new_tx.coin_selection_params.m_effective_feerate.ToString(FeeEstimateMode::SAT_VB)
+            new_tx.coin_control.m_feerate->ToString(FeeEstimateMode::BURRIOSHI_VB),
+            new_tx.coin_selection_params.m_effective_feerate.ToString(FeeEstimateMode::BURRIOSHI_VB)
         ));
     }
 

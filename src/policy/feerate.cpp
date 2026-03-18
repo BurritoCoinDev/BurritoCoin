@@ -78,7 +78,7 @@ bool CFeeRate::MeetsFeePerK(const CAmount& min_fee_per_k) const
 std::string CFeeRate::ToString(const FeeEstimateMode& fee_estimate_mode) const
 {
     switch (fee_estimate_mode) {
-    case FeeEstimateMode::SAT_VB: return strprintf("%d.%03d %s/vB", nBurrioshisPerK / 1000, nBurrioshisPerK % 1000, CURRENCY_ATOM);
+    case FeeEstimateMode::BURRIOSHI_VB: return strprintf("%d.%03d %s/vB", nBurrioshisPerK / 1000, nBurrioshisPerK % 1000, CURRENCY_ATOM);
     default:                      return strprintf("%d.%08d %s/kvB", nBurrioshisPerK / COIN, nBurrioshisPerK % COIN, CURRENCY_UNIT);
     }
 }
