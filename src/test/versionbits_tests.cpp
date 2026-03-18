@@ -330,6 +330,13 @@ static void check_computeblockversion_bip8(const Consensus::Params& params, Cons
     BOOST_CHECK(nStartHeight >= 0);
     BOOST_CHECK_EQUAL(nStartHeight % nMinerConfirmationWindow, 0U);
 
+    // When nStartHeight == 0, the deployment activates starting from the first
+    // retarget period (genesis is always DEFINED in BIP8). There is no
+    // "before nStartHeight" phase to mine toward, and Mine(nStartHeight - 1)
+    // would underflow to Mine(UINT_MAX). The null-tip check above (line 328)
+    // already covers the genesis case, so return early here.
+    if (nStartHeight == 0) return;
+
     BOOST_CHECK(nTimeoutHeight <= std::numeric_limits<uint32_t>::max());
     BOOST_CHECK_EQUAL(nTimeoutHeight % nMinerConfirmationWindow, 0U);
 
