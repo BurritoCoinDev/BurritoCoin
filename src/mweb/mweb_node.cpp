@@ -97,7 +97,7 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
     // While looping though, we perform 2 tasks:
     // 
     // 1. Calculate the total value of the HogEx inputs (hogex_input_amount).
-    // This is the previous HogEx's first output amount (pIndexPrev->mweb_amount) plus the sum of all pegin output amounts.
+    // This is the previous HogEx's first output amount (pindexPrev->mweb_amount) plus the sum of all pegin output amounts.
     // 
     // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
     for (size_t nTx = 1; nTx + 1 < block.vtx.size(); nTx++) {
@@ -186,7 +186,7 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         // While looping though, we perform 2 tasks:
         //
         // 1. Calculate the total value of the HogEx inputs (hogex_input_amount).
-        // This is the previous HogEx's first output amount (pIndexPrev->mweb_amount) plus the sum of all pegin output amounts.
+        // This is the previous HogEx's first output amount (pindexPrev->mweb_amount) plus the sum of all pegin output amounts.
         //
         // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
         CAmount hogex_input_amount = pindexPrev->mweb_amount;
