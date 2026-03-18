@@ -20,7 +20,7 @@ enum class FeeEstimateMode {
     ECONOMICAL,   //!< Force estimateSmartFee to use non-conservative estimates
     CONSERVATIVE, //!< Force estimateSmartFee to use conservative estimates
     BRTO_KVB,      //!< Use BRTO/kvB fee rate unit
-    SAT_VB,       //!< Use sat/vB fee rate unit
+    BURRIOSHI_VB, //!< Use burrioshi/vB fee rate unit
 };
 
 /**
@@ -42,11 +42,11 @@ public:
         // We've previously had bugs creep in from silent double->int conversion...
         static_assert(std::is_integral<I>::value, "CFeeRate should be used without floats");
     }
-    /** Constructor for a fee rate in burrioshi per kvB (sat/kvB). The size in bytes must not exceed (2^63 - 1).
+    /** Constructor for a fee rate in burrioshi per kvB (burrioshi/kvB). The size in bytes must not exceed (2^63 - 1).
      *
-     *  Passing an nBytes value of COIN (1e8) returns a fee rate in burrioshi per vB (sat/vB),
+     *  Passing an nBytes value of COIN (1e8) returns a fee rate in burrioshi per vB (burrioshi/vB),
      *  e.g. (nFeePaid * 1e8 / 1e3) == (nFeePaid / 1e5),
-     *  where 1e5 is the ratio to convert from BRTO/kvB to sat/vB.
+     *  where 1e5 is the ratio to convert from BRTO/kvB to burrioshi/vB.
      *
      *  @param[in] nFeePaid  CAmount fee rate to construct with
      *  @param[in] nBytes    size_t bytes (units) to construct with
