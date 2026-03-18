@@ -68,7 +68,9 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
     }
 
     // UnserializeTransaction ensures that vout is never empty when the HogEx indicator is set.
-    assert(!pHogEx->vout.empty());
+    if (pHogEx->vout.empty()) {
+        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-hogex-empty-vout", "HogEx transaction has no outputs");
+    }
 
     // Verify that the first HogEx output contains the HogAddr.
     mw::Hash mweb_hash;
@@ -210,6 +212,9 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         // This is calculated simply as: 'mweb_amount = previous_amount + supply_change'
         // where 'supply_change = (pegins - pegouts) - fees'
         CAmount mweb_amount = pindexPrev->mweb_amount + block.mweb_block.GetSupplyChange();
+        if (!MoneyRange(mweb_amount)) {
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-mweb-amount-outofrange", strprintf("MWEB amount out of range: %d", mweb_amount));
+        }
         if (mweb_amount != pHogEx->vout.front().nValue) {
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "mweb-amount-mismatch", "HogEx amount does not match expected MWEB amount");
         }

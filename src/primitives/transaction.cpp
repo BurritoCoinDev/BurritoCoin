@@ -10,6 +10,7 @@
 #include <util/strencodings.h>
 
 #include <assert.h>
+#include <stdexcept>
 
 std::string COutPoint::ToString() const
 {
@@ -152,19 +153,21 @@ std::vector<CTxInput> CTransaction::GetInputs() const noexcept
     return inputs;
 }
 
-CTxOutput CTransaction::GetOutput(const size_t index) const noexcept
+CTxOutput CTransaction::GetOutput(const size_t index) const
 {
-    assert(vout.size() > index);
+    if (vout.size() <= index)
+        throw std::out_of_range("CTransaction::GetOutput: index out of range");
     return CTxOutput{COutPoint(GetHash(), index), vout[index]};
 }
 
-CTxOutput CTransaction::GetOutput(const OutputIndex& idx) const noexcept
+CTxOutput CTransaction::GetOutput(const OutputIndex& idx) const
 {
     if (idx.type() == typeid(mw::Hash)) {
         return CTxOutput{boost::get<mw::Hash>(idx)};
     } else {
         const COutPoint& outpoint = boost::get<COutPoint>(idx);
-        assert(vout.size() > outpoint.n);
+        if (vout.size() <= outpoint.n)
+            throw std::out_of_range("CTransaction::GetOutput: output index out of range");
         return CTxOutput{outpoint, vout[outpoint.n]};
     }
 }
