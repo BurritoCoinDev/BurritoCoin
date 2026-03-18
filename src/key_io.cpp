@@ -152,7 +152,7 @@ CTxDestination DecodeDestination(const std::string& str, const CChainParams& par
     }
 
     auto decoded = bech32::Decode(str, true);
-    if (decoded.encoding == bech32::Encoding::BECH32 && decoded.hrp == params.MWEB_HRP()) {
+    if (decoded.encoding == bech32::Encoding::BECH32 && decoded.hrp == params.MWEB_HRP() && decoded.data.size() > 1) {
         std::vector<uint8_t> converted;
         converted.reserve(((decoded.data.size() - 1) * 5) / 8);
 

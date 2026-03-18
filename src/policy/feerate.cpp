@@ -14,8 +14,11 @@ static const CAmount BASE_MWEB_FEE = 100;
 CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight)
     : m_nFeePaid(nFeePaid), m_nBytes(nBytes_), m_weight(mweb_weight)
 {
-    assert(nBytes_ <= uint64_t(std::numeric_limits<int64_t>::max()));
-    assert(mweb_weight <= uint64_t(std::numeric_limits<int64_t>::max()));
+    if (nBytes_ > uint64_t(std::numeric_limits<int64_t>::max()) ||
+        mweb_weight > uint64_t(std::numeric_limits<int64_t>::max())) {
+        nBurrioshisPerK = 0;
+        return;
+    }
 
     CAmount mweb_fee = CAmount(mweb_weight) * BASE_MWEB_FEE;
     if (mweb_fee > 0 && nFeePaid < mweb_fee) {
@@ -25,7 +28,7 @@ CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight
 
         int64_t nSize = int64_t(nBytes_);
         if (nSize > 0)
-            nBurrioshisPerK = base_fee * 1000 / nSize;
+            nBurrioshisPerK = base_fee / nSize * 1000 + (base_fee % nSize) * 1000 / nSize;
         else
             nBurrioshisPerK = 0;
     }
@@ -33,7 +36,7 @@ CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight
 
 CAmount CFeeRate::GetFee(size_t nBytes_) const
 {
-    assert(nBytes_ <= uint64_t(std::numeric_limits<int64_t>::max()));
+    if (nBytes_ > uint64_t(std::numeric_limits<int64_t>::max())) return 0;
     int64_t nSize = int64_t(nBytes_);
 
     CAmount nFee = nBurrioshisPerK * nSize / 1000;
@@ -50,7 +53,7 @@ CAmount CFeeRate::GetFee(size_t nBytes_) const
 
 CAmount CFeeRate::GetMWEBFee(uint64_t mweb_weight) const
 {
-    assert(mweb_weight <= uint64_t(std::numeric_limits<int64_t>::max()));
+    if (mweb_weight > uint64_t(std::numeric_limits<int64_t>::max())) return 0;
     return CAmount(mweb_weight) * BASE_MWEB_FEE;
 }
 
@@ -80,7 +83,7 @@ bool CFeeRate::MeetsFeePerK(const CAmount& min_fee_per_k) const
 std::string CFeeRate::ToString(const FeeEstimateMode& fee_estimate_mode) const
 {
     switch (fee_estimate_mode) {
-    case FeeEstimateMode::BURRIOSHI_VB: return strprintf("%d.%03d %s/vB", nBurrioshisPerK / 1000, std::abs(nBurrioshisPerK % 1000), CURRENCY_ATOM);
-    default:                      return strprintf("%d.%08d %s/kvB", nBurrioshisPerK / COIN, std::abs(nBurrioshisPerK % COIN), CURRENCY_UNIT);
+    case FeeEstimateMode::BURRIOSHI_VB: return strprintf("%s%d.%03d %s/vB", nBurrioshisPerK < 0 ? "-" : "", std::abs(nBurrioshisPerK) / 1000, std::abs(nBurrioshisPerK) % 1000, CURRENCY_ATOM);
+    default:                      return strprintf("%s%d.%08d %s/kvB", nBurrioshisPerK < 0 ? "-" : "", std::abs(nBurrioshisPerK) / COIN, std::abs(nBurrioshisPerK) % COIN, CURRENCY_UNIT);
     }
 }
