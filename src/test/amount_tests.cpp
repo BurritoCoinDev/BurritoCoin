@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(GetFeeTest)
     BOOST_CHECK(CFeeRate(CAmount(-1), 1000, 0) == CFeeRate(-1));
     BOOST_CHECK(CFeeRate(CAmount(0), 1000, 0) == CFeeRate(0));
     BOOST_CHECK(CFeeRate(CAmount(1), 1000, 0) == CFeeRate(1));
-    // lost precision (can only resolve satoshis per kB)
+    // lost precision (can only resolve burrioshis per kB)
     BOOST_CHECK(CFeeRate(CAmount(1), 1001, 0) == CFeeRate(0));
     BOOST_CHECK(CFeeRate(CAmount(2), 1001, 0) == CFeeRate(1));
     // some more integer checks
