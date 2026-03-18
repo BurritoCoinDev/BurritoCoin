@@ -44,21 +44,18 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * transaction cannot be spent since it did not originally exist in the
  * database.
  *
- * BRTO-TODO: Update this comment block with the real BurritoCoin genesis block
- * details once the genesis has been re-mined with a team-controlled key and
- * unique nTime/nNonce. The fields below must reflect the actual genesis hash,
- * coinbase (148000000.00000000 BRTO), merkle root, and scriptPubKey.
+ * BurritoCoin genesis block (mined 2026-03-18).
  *
- * CBlock(hash=<BRTO_GENESIS_HASH>, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=<BRTO_MERKLE_ROOT>, nTime=<BRTO_NTIME>, nBits=0x1e0ffff0, nNonce=<BRTO_NNONCE>, vtx=1)
- *   CTransaction(hash=<BRTO_TX_HASH>, ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase <BRTO_COINBASE_HEX>)
- *     CTxOut(nValue=148000000.00000000, scriptPubKey=<BRTO_GENESIS_PUBKEY>)
- *   vMerkleTree: <BRTO_MERKLE_ROOT>
+ * CBlock(hash=00000f4b714b973787f41b7bf17002a796a3975b2556a6717f8ab7065c0da822, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a, nTime=1773844916, nBits=0x1e0ffff0, nNonce=457019, vtx=1)
+ *   CTransaction(ver=1, vin.size=1, vout.size=1, nLockTime=0)
+ *     CTxIn(COutPoint(000000, -1), coinbase)
+ *     CTxOut(nValue=148000000.00000000, scriptPubKey=04dd6fb3690403f42cc580ad674b7...)
+ *   vMerkleTree: 5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "NY Times 05/Oct/2011 Steve Jobs, Apple’s Visionary, Dies at 56";
-    const CScript genesisOutputScript = CScript() << ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9") << OP_CHECKSIG;
+    const char* pszTimestamp = "WSJ 18/Mar/2026 Finance Bros to Tech Bros: Don’t Mess With My Bloomberg Terminal";
+    const CScript genesisOutputScript = CScript() << ParseHex("04dd6fb3690403f42cc580ad674b72861c9962fc2dd82dda5a7287601b476394afc50de95f27f40411d94056bc1b7c119e33a274ea213ac8af18d319396bb1e00f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
@@ -133,8 +130,7 @@ public:
         m_assumed_chain_state_size = 2;
 
         // Genesis block carries the 148,000,000 BRTO premine.
-        // BRTO-TODO: re-mine genesis (new nNonce/nTime) and update hash assertions below.
-        genesis = CreateGenesisBlock(1317972665, 2084524493, 0x1e0ffff0, 1, 148000000 * COIN);
+        genesis = CreateGenesisBlock(1773844916, 457019, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -241,8 +237,7 @@ public:
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
 
-        // BRTO-TODO: re-mine testnet genesis and update hash assertions below.
-        genesis = CreateGenesisBlock(1486949366, 293345, 0x1e0ffff0, 1, 148000000 * COIN);
+        genesis = CreateGenesisBlock(1773844917, 1858828, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
@@ -339,7 +334,6 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        // BRTO-TODO: update regtest genesis hash assertion after re-mining.
         genesis = CreateGenesisBlock(1296688602, 0, 0x207fffff, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
@@ -353,7 +347,6 @@ public:
 
         checkpointData = {
             {
-                // BRTO-TODO: update with new regtest genesis hash after re-mining.
             }
         };
 
