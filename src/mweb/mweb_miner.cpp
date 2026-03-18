@@ -93,7 +93,12 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
 
     hogex_inputs.insert(hogex_inputs.end(), vin.cbegin(), vin.cend());
     hogex_outputs.insert(hogex_outputs.end(), vout.cbegin(), vout.cend());
-    mweb_amount_change += (CAmount(pegin_amount) - CAmount(pegout_amount + tx_fee));
+    CAmount pegout_plus_fee = CAmount(pegout_amount) + CAmount(tx_fee);
+    if (!MoneyRange(pegout_plus_fee)) {
+        LogPrintf("MWEB pegout_amount + tx_fee out of range\n");
+        return false;
+    }
+    mweb_amount_change += (CAmount(pegin_amount) - pegout_plus_fee);
 
     if (pTx->IsMWEBOnly()) {
         hogex_fees += tx_fee;

@@ -255,8 +255,6 @@ public:
         bech32_hrp = "tbrto";
         mweb_hrp = "tbrtomweb";
 
-        vFixedSeeds.clear(); // No fixed seeds yet — BurritoCoin testnet has not launched.
-
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         m_is_test_chain = true;

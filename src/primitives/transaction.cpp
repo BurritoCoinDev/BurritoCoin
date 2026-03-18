@@ -54,7 +54,7 @@ CTxOut::CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn)
 
 std::string CTxOut::ToString() const
 {
-    return strprintf("CTxOut(nValue=%d.%08d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, HexStr(scriptPubKey).substr(0, 30));
+    return strprintf("CTxOut(nValue=%s%d.%08d, scriptPubKey=%s)", nValue < 0 ? "-" : "", std::abs(nValue / COIN), std::abs(nValue % COIN), HexStr(scriptPubKey).substr(0, 30));
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), m_hogEx(false) {}
@@ -126,8 +126,8 @@ std::string CTransaction::ToString() const
         nLockTime);
     for (const auto& tx_in : vin)
         str += "    " + tx_in.ToString() + "\n";
-    for (const auto& tx_in : vin)
-        str += "    " + tx_in.scriptWitness.ToString() + "\n";
+    for (const auto& tx_wit : vin)
+        str += "    " + tx_wit.scriptWitness.ToString() + "\n";
     for (const auto& tx_out : vout)
         str += "    " + tx_out.ToString() + "\n";
 

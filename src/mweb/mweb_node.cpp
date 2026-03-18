@@ -55,6 +55,9 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
 
     // Last transaction must be marked as HogEx.
     // Note: We don't commit to the HogEx indicator, so if indicator not set, just mark the block as mutated.
+    if (block.vtx.empty()) {
+        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-blk-empty", "Block has no transactions");
+    }
     const CTransactionRef& pHogEx = block.vtx.back();
     if (!pHogEx->IsHogEx()) {
         return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "hogex-missing", "hogex missing");
@@ -133,6 +136,9 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
 
 bool Node::ValidateMWEBBlock(const CBlock& block)
 {
+    if (block.vtx.empty()) {
+        return false;
+    }
     const CTransactionRef& pHogEx = block.vtx.back();
 
     // Find all pegin scriptPubKeys in the block.

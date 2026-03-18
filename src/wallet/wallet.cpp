@@ -114,12 +114,12 @@ bool RemoveWallet(const std::shared_ptr<CWallet>& wallet, Optional<bool> load_on
     interfaces::Chain& chain = wallet->chain();
     std::string name = wallet->GetName();
 
-    // Unregister with the validation interface which also drops shared ponters.
-    wallet->m_chain_notifications_handler.reset();
     LOCK(cs_wallets);
     std::vector<std::shared_ptr<CWallet>>::iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
     if (i == vpwallets.end()) return false;
     vpwallets.erase(i);
+    // Unregister with the validation interface which also drops shared pointers.
+    wallet->m_chain_notifications_handler.reset();
 
     // Write the wallet setting
     UpdateWalletSetting(chain, name, load_on_start, warnings);
