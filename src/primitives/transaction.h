@@ -488,14 +488,14 @@ public:
     /// </summary>
     /// <param name="index">The index of the CTxOut. This must be a valid index.</param>
     /// <returns>The CTxOutput object.</returns>
-    CTxOutput GetOutput(const size_t index) const noexcept;
+    CTxOutput GetOutput(const size_t index) const;
 
     /// <summary>
     /// Constructs a CTxOutput for the specified output.
     /// </summary>
     /// <param name="idx">The index of the output. This could either be an output ID or a valid canonical output index.</param>
     /// <returns>The CTxOutput object.</returns>
-    CTxOutput GetOutput(const OutputIndex& idx) const noexcept;
+    CTxOutput GetOutput(const OutputIndex& idx) const;
 
     /// <summary>
     /// Builds a vector of CTxOutputs, starting with the canoncial outputs (CTxOut), followed by the MWEB output IDs.

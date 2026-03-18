@@ -36,6 +36,7 @@
 #include <wallet/reserve.h>
 
 #include <univalue.h>
+#include <cstdlib>
 
 #include <algorithm>
 #include <assert.h>
@@ -674,7 +675,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
                 encrypted_batch = nullptr;
                 // We now probably have half of our keys encrypted in memory, and half not...
                 // die and let the user reload the unencrypted wallet.
-                assert(false);
+                std::abort();
             }
         }
 
@@ -686,7 +687,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
             encrypted_batch = nullptr;
             // We now have keys encrypted in memory, but not on disk...
             // die to avoid confusion and let the user reload the unencrypted wallet.
-            assert(false);
+            std::abort();
         }
 
         delete encrypted_batch;
@@ -1386,11 +1387,15 @@ void CWallet::blockConnected(const CBlock& block, int height)
                     hogex_wtx->pegout_indices.push_back(iter->second);
                     pegout_kernels.erase(iter);
                 } else {
-                    assert(false);
+                    LogPrintf("ERROR: %s: pegout not found in kernel set\n", __func__);
+                    return;
                 }
             }
 
-            assert(hogex_wtx->tx->vout.size() == hogex_wtx->pegout_indices.size());
+            if (hogex_wtx->tx->vout.size() != hogex_wtx->pegout_indices.size()) {
+                LogPrintf("ERROR: %s: pegout_indices size mismatch\n", __func__);
+                return;
+            }
             WalletBatch(*database).WriteTx(*hogex_wtx);
         }
 
