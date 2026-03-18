@@ -29,16 +29,16 @@ enum class FeeEstimateMode {
 class CFeeRate
 {
 private:
-    CAmount nSatoshisPerK; // unit is burrioshi-per-1,000-bytes
+    CAmount nBurrioshisPerK; // unit is burrioshi-per-1,000-bytes
     CAmount m_nFeePaid;
     size_t m_nBytes;
     uint64_t m_weight;
 
 public:
     /** Fee rate of 0 burrioshi per kB */
-    CFeeRate() : nSatoshisPerK(0) { }
+    CFeeRate() : nBurrioshisPerK(0) { }
     template<typename I>
-    explicit CFeeRate(const I _nSatoshisPerK): nSatoshisPerK(_nSatoshisPerK) {
+    explicit CFeeRate(const I _nBurrioshisPerK): nBurrioshisPerK(_nBurrioshisPerK) {
         // We've previously had bugs creep in from silent double->int conversion...
         static_assert(std::is_integral<I>::value, "CFeeRate should be used without floats");
     }
@@ -72,16 +72,16 @@ public:
 
     bool MeetsFeePerK(const CAmount& min_fee_per_k) const;
 
-    friend bool operator<(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK < b.nSatoshisPerK; }
-    friend bool operator>(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK > b.nSatoshisPerK; }
-    friend bool operator==(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK == b.nSatoshisPerK; }
-    friend bool operator<=(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK <= b.nSatoshisPerK; }
-    friend bool operator>=(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK >= b.nSatoshisPerK; }
-    friend bool operator!=(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK != b.nSatoshisPerK; }
-    CFeeRate& operator+=(const CFeeRate& a) { nSatoshisPerK += a.nSatoshisPerK; return *this; }
+    friend bool operator<(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK < b.nBurrioshisPerK; }
+    friend bool operator>(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK > b.nBurrioshisPerK; }
+    friend bool operator==(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK == b.nBurrioshisPerK; }
+    friend bool operator<=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK <= b.nBurrioshisPerK; }
+    friend bool operator>=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK >= b.nBurrioshisPerK; }
+    friend bool operator!=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK != b.nBurrioshisPerK; }
+    CFeeRate& operator+=(const CFeeRate& a) { nBurrioshisPerK += a.nBurrioshisPerK; return *this; }
     std::string ToString(const FeeEstimateMode& fee_estimate_mode = FeeEstimateMode::BRTO_KVB) const;
 
-    SERIALIZE_METHODS(CFeeRate, obj) { READWRITE(obj.nSatoshisPerK); }
+    SERIALIZE_METHODS(CFeeRate, obj) { READWRITE(obj.nBurrioshisPerK); }
 };
 
 #endif //  BURRITOCOIN_POLICY_FEERATE_H
