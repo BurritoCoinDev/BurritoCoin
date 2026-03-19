@@ -171,6 +171,9 @@ bool Node::ValidateMWEBBlock(const CBlock& block)
 bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_params, const CBlockIndex* pindexPrev, CBlockUndo& blockundo, mw::CoinsViewCache& mweb_view, BlockValidationState& state)
 {
     if (!block.mweb_block.IsNull()) {
+        if (block.vtx.empty()) {
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-blk-empty", "Block has no transactions");
+        }
         const CTransactionRef& pHogEx = block.vtx.back();
 
         // Verify that the first input of the HogEx tx spends the first output of the previous block's HogEx tx.

@@ -114,11 +114,15 @@ bool RemoveWallet(const std::shared_ptr<CWallet>& wallet, Optional<bool> load_on
     interfaces::Chain& chain = wallet->chain();
     std::string name = wallet->GetName();
 
-    LOCK(cs_wallets);
-    std::vector<std::shared_ptr<CWallet>>::iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
-    if (i == vpwallets.end()) return false;
-    vpwallets.erase(i);
+    {
+        LOCK(cs_wallets);
+        std::vector<std::shared_ptr<CWallet>>::iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
+        if (i == vpwallets.end()) return false;
+        vpwallets.erase(i);
+    }
     // Unregister with the validation interface which also drops shared pointers.
+    // Done outside cs_wallets to avoid deadlock if the handler destructor triggers
+    // a callback that tries to re-acquire cs_wallets.
     wallet->m_chain_notifications_handler.reset();
 
     // Write the wallet setting
