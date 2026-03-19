@@ -15,7 +15,7 @@ CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight
     : m_nFeePaid(nFeePaid), m_nBytes(nBytes_), m_weight(mweb_weight)
 {
     if (nBytes_ > uint64_t(std::numeric_limits<int64_t>::max()) ||
-        mweb_weight > uint64_t(std::numeric_limits<int64_t>::max())) {
+        mweb_weight > uint64_t(std::numeric_limits<int64_t>::max()) / BASE_MWEB_FEE) {
         nBurrioshisPerK = 0;
         return;
     }
@@ -66,6 +66,9 @@ bool CFeeRate::MeetsFeePerK(const CAmount& min_fee_per_k) const
 {
     // (mweb_weight * BASE_MWEB_FEE) burrioshi are required as fee for MWEB transactions.
     // Anything beyond that can be used to calculate nBurrioshisPerK.
+    if (m_weight > uint64_t(std::numeric_limits<int64_t>::max()) / BASE_MWEB_FEE) {
+        return false;
+    }
     CAmount mweb_fee = CAmount(m_weight) * BASE_MWEB_FEE;
     if (m_weight > 0 && m_nFeePaid < mweb_fee) {
         return false;
