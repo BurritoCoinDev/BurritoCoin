@@ -107,7 +107,7 @@ if (!appStarted) {
 		console.error(
 			"[BurritoCoin Explorer] Failed to start btc-rpc-explorer.\n" +
 			"Check that btc-rpc-explorer is installed correctly (`npm install`).\n" +
-			e.message
+			(e instanceof Error ? e.message : String(e))
 		);
 		process.exit(1);
 	}
