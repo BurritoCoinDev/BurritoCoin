@@ -77,12 +77,15 @@ if (indexSource.includes('"BRTO"') || indexSource.includes("'BRTO'")) {
 // We use a simple text-insertion approach that works for the standard format.
 const requireLine = '\t"BRTO": require("./BRTO.js"),';
 
-// Look for the closing of the exported object.
-const exportPattern = /(\}\s*;?\s*$)/m;
-if (exportPattern.test(indexSource)) {
-	indexSource = indexSource.replace(exportPattern, (match) => {
-		return requireLine + "\n" + match;
-	});
+// Insert our require line before the last closing brace in the file.
+// Using lastIndexOf avoids the multiline-regex pitfall where the first '}'
+// in the file (inside a nested object) would be matched instead of the final one.
+const lastBraceIdx = indexSource.lastIndexOf("}");
+if (lastBraceIdx !== -1) {
+	indexSource =
+		indexSource.slice(0, lastBraceIdx) +
+		requireLine + "\n" +
+		indexSource.slice(lastBraceIdx);
 	fs.writeFileSync(indexFile, indexSource, "utf8");
 	console.log(`[BRTO postinstall] Registered BRTO in ${indexFile}`);
 } else {

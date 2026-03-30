@@ -8,7 +8,7 @@
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
-    "btc-rpc-explorer": "^3.4.0",
+    "btc-rpc-explorer": "~3.4.0",
     "decimal.js": "^10.4.3",
     "dotenv": "^16.0.3"
   },

@@ -15,6 +15,7 @@
 //      was upgraded, the explorer will always know about BRTO.
 //   4. Starts the btc-rpc-explorer web server.
 
+const fs   = require("fs");
 const path = require("path");
 
 // ---------------------------------------------------------------------------
@@ -88,17 +89,14 @@ const appCandidates = [
 
 let appStarted = false;
 for (const appPath of appCandidates) {
-	try {
-		require(appPath);
-		appStarted = true;
-		break;
-	} catch (e) {
-		if (e.code === "MODULE_NOT_FOUND" && !e.message.includes(appPath)) {
-			// A dependency inside the app is missing — propagate the error.
-			throw e;
-		}
-		// Module not found at this path — try the next candidate.
+	if (!fs.existsSync(appPath)) {
+		// This candidate path doesn't exist — try the next one.
+		continue;
 	}
+	// Path exists: require it and let real errors (missing deps, syntax errors) propagate.
+	require(appPath);
+	appStarted = true;
+	break;
 }
 
 if (!appStarted) {
