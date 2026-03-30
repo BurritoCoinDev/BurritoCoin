@@ -4,7 +4,7 @@
 // Based on Litecoin's config; adapted for BurritoCoin's unique chain parameters.
 
 const Decimal = require("decimal.js");
-const Decimal8 = Decimal.clone({ precision: 8, rounding: 8 });
+const Decimal8 = Decimal.clone({ precision: 8, rounding: 1 }); // 1 = ROUND_DOWN (truncate), matches Bitcoin's subsidy arithmetic
 
 const SUBSIDY_HALVING_INTERVAL = 1042600000;
 const INITIAL_SUBSIDY = new Decimal8("10"); // 10 BRTO per block
@@ -80,7 +80,7 @@ module.exports = {
 	//   SCRIPT_ADDRESS2 = 28  → P2SH2 addresses start with 'C'
 	p2pkhAddressPrefix: "19", // 25 decimal = 0x19 hex
 	p2shAddressPrefix: "05",  //  5 decimal = 0x05 hex
-	p2sh2AddressPrefix: "1c", // 28 decimal = 0x1C hex
+	p2sh2AddressPrefix: "1C", // 28 decimal = 0x1C hex
 
 	// SegWit / bech32 — from chainparams.cpp bech32_hrp / mweb_hrp.
 	bech32AddressPrefix: "brto",
