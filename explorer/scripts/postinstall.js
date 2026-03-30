@@ -67,7 +67,9 @@ if (!indexFile) {
 
 let indexSource = fs.readFileSync(indexFile, "utf8");
 
-if (indexSource.includes('"BRTO"') || indexSource.includes("'BRTO'")) {
+// Check for the actual require entry, not just the string "BRTO" which could
+// appear in comments, URLs, or other string values and cause a false positive.
+if (/["']BRTO["']\s*:\s*require\s*\(/.test(indexSource)) {
 	console.log("[BRTO postinstall] BRTO already registered in coins index — skipping patch.");
 	process.exit(0);
 }
