@@ -39,8 +39,8 @@ red()    { printf '\033[0;31m%s\033[0m\n' "$*"; }
 yellow() { printf '\033[0;33m%s\033[0m\n' "$*"; }
 header() { printf '\n\033[1;34m=== %s ===\033[0m\n' "$*"; }
 
-pass() { green "  PASS: $*"; ((PASS++)); }
-fail() { red   "  FAIL: $*"; ((FAIL++)); }
+pass() { green "  PASS: $*"; PASS=$((PASS + 1)); }
+fail() { red   "  FAIL: $*"; FAIL=$((FAIL + 1)); }
 
 cli() {
     "$CLI" -regtest \
