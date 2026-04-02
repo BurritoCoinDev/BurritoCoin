@@ -54,8 +54,8 @@ cli() {
 wait_for_rpc() {
     local attempts=0
     until cli getblockchaininfo &>/dev/null; do
-        ((attempts++))
-        if (( attempts >= 30 )); then
+        attempts=$((attempts + 1))
+        if [[ $attempts -ge 30 ]]; then
             red "burritocoind did not become ready in 30 seconds."
             exit 1
         fi
