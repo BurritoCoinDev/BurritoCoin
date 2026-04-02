@@ -114,7 +114,6 @@ header "Starting burritocoind (regtest)"
     -fallbackfee=0.0001 \
     -maxtxfee=1.0 \
     -txindex=1 \
-    -addressindex=1 \
     -debug=0
 
 wait_for_rpc
