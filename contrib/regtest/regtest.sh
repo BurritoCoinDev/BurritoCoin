@@ -119,6 +119,10 @@ header "Starting burritocoind (regtest)"
 wait_for_rpc
 pass "burritocoind is ready (regtest, RPC port $RPC_PORT)"
 
+# Newer Core builds no longer auto-create a default wallet.
+cli createwallet "default" >/dev/null
+pass "Wallet created"
+
 # ---------------------------------------------------------------------------
 # Section 1: Mining
 # ---------------------------------------------------------------------------
