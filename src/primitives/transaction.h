@@ -317,9 +317,6 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
                 /* It's illegal to include a HogEx with no outputs. */
                 throw std::ios_base::failure("Missing HogEx output");
             }
-
-            /* If the MWEB flag is set, but there are no MWEB txs, assume HogEx txn. */
-            tx.m_hogEx = true;
         }
     }
     if (flags) {
@@ -344,7 +341,7 @@ inline void SerializeTransaction(const TxType& tx, Stream& s) {
         }
     }
     if (fAllowMWEB) {
-        if (tx.m_hogEx || !tx.mweb_tx.IsNull()) {
+        if (tx.IsHogEx() || !tx.mweb_tx.IsNull()) {
             flags |= 8;
         }
     }
@@ -394,9 +391,6 @@ public:
     const int32_t nVersion;
     const uint32_t nLockTime;
     const MWEB::Tx mweb_tx;
-    
-    /** Memory only. */
-    const bool m_hogEx;
 
 private:
     /** Memory only. */
@@ -469,7 +463,12 @@ public:
     }
 
     bool HasMWEBTx() const noexcept { return !mweb_tx.IsNull(); }
-    bool IsHogEx() const noexcept { return m_hogEx; }
+    // A HogEx transaction has no MWEB tx data but does have a HogAddr as its first output.
+    // This is a structural check that does not rely on any memory-only flag, so it remains
+    // correct regardless of how the transaction was constructed or deserialized.
+    bool IsHogEx() const noexcept {
+        return !vout.empty() && mweb_tx.IsNull() && vout[0].scriptPubKey.IsMWEBHogAddr(nullptr);
+    }
 
     /// <summary>
     /// Determines whether the transaction is strictly MWEB-to-MWEB, with no canonical transaction data.
@@ -513,9 +512,6 @@ struct CMutableTransaction
     uint32_t nLockTime;
     MWEB::Tx mweb_tx;
 
-    /** Memory only. */
-    bool m_hogEx = false;
-
     CMutableTransaction();
     explicit CMutableTransaction(const CTransaction& tx);
 
@@ -552,6 +548,9 @@ struct CMutableTransaction
 
     bool HasMWEBTx() const noexcept { return !mweb_tx.IsNull(); }
     bool IsMWEBOnly() const noexcept { return HasMWEBTx() && vin.empty() && vout.empty(); }
+    bool IsHogEx() const noexcept {
+        return !vout.empty() && mweb_tx.IsNull() && vout[0].scriptPubKey.IsMWEBHogAddr(nullptr);
+    }
 };
 
 typedef std::shared_ptr<const CTransaction> CTransactionRef;

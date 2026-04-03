@@ -131,7 +131,6 @@ bool Miner::ValidatePegIns(const CTransactionRef& pTx, const std::vector<PegInCo
 void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, CBlockTemplate* pblocktemplate, CAmount& nFees)
 {
     CMutableTransaction hogExTransaction;
-    hogExTransaction.m_hogEx = true;
 
     CBlock prevBlock;
     bool read_success = ReadBlockFromDisk(prevBlock, pIndexPrev, Params().GetConsensus());

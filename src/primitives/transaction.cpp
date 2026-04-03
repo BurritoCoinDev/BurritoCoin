@@ -56,8 +56,8 @@ std::string CTxOut::ToString() const
     return strprintf("CTxOut(nValue=%d.%08d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, HexStr(scriptPubKey).substr(0, 30));
 }
 
-CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), m_hogEx(false) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx), m_hogEx(tx.m_hogEx) {}
+CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -93,9 +93,9 @@ uint256 CTransaction::ComputeWitnessHash() const
 }
 
 /* For backward compatibility, the hash is initialized to 0. TODO: remove the need for this default constructor entirely. */
-CTransaction::CTransaction() : vin(), vout(), nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), m_hogEx(false), hash{}, m_witness_hash{} {}
-CTransaction::CTransaction(const CMutableTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx), m_hogEx(tx.m_hogEx), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
-CTransaction::CTransaction(CMutableTransaction&& tx) : vin(std::move(tx.vin)), vout(std::move(tx.vout)), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx), m_hogEx(tx.m_hogEx), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
+CTransaction::CTransaction() : vin(), vout(), nVersion(CTransaction::CURRENT_VERSION), nLockTime(0), hash{}, m_witness_hash{} {}
+CTransaction::CTransaction(const CMutableTransaction& tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
+CTransaction::CTransaction(CMutableTransaction&& tx) : vin(std::move(tx.vin)), vout(std::move(tx.vout)), nVersion(tx.nVersion), nLockTime(tx.nLockTime), mweb_tx(tx.mweb_tx), hash{ComputeHash()}, m_witness_hash{ComputeWitnessHash()} {}
 
 CAmount CTransaction::GetValueOut() const
 {

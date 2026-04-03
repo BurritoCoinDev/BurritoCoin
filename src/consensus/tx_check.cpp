@@ -11,15 +11,8 @@ bool CheckTransaction(const CTransaction& tx, TxValidationState& state)
 {
     // Basic checks that don't depend on any context
     if (!tx.IsMWEBOnly()) {
-        if (tx.vin.empty() && !tx.IsHogEx()) {
-            // Structural fallback: detect HogEx by output script shape
-            // (guards against m_hogEx being incorrectly false in-memory)
-            const bool structuralHogEx = !tx.vout.empty() &&
-                                          tx.mweb_tx.IsNull() &&
-                                          tx.vout[0].scriptPubKey.IsMWEBHogAddr(nullptr);
-            if (!structuralHogEx)
-                return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-txns-vin-empty");
-        }
+        if (tx.vin.empty() && !tx.IsHogEx())
+            return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-txns-vin-empty");
         if (tx.vout.empty())
             return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-txns-vout-empty");
     }
