@@ -127,8 +127,8 @@ else
     RPC_PASS="${BRTO_RPC_PASS:-$(gen_password)}"
 
     sed \
-        -e "s/__RPC_USER__/$RPC_USER/" \
-        -e "s/__RPC_PASS__/$RPC_PASS/" \
+        -e "s|__RPC_USER__|$RPC_USER|" \
+        -e "s|__RPC_PASS__|$RPC_PASS|" \
         "$CONF_TEMPLATE" > "$CONF_DEST"
 
     chown root:"$SERVICE_GROUP" "$CONF_DEST"

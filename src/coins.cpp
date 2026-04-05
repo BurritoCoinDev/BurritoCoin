@@ -152,14 +152,14 @@ const Coin& CCoinsViewCache::AccessCoin(const COutPoint &outpoint) const {
 bool CCoinsViewCache::HaveCoin(const OutputIndex& index) const {
     if (index.type() == typeid(mw::Hash)) {
         const mw::Hash& output_id = boost::get<mw::Hash>(index);
-        if (GetMWEBCacheView()->HasCoinInCache(output_id)) {
-            return true;
+        if (GetMWEBCacheView()) {
+            if (GetMWEBCacheView()->HasCoinInCache(output_id)) {
+                return true;
+            }
+            if (GetMWEBCacheView()->HasSpendInCache(output_id)) {
+                return false;
+            }
         }
-
-        if (GetMWEBCacheView()->HasSpendInCache(output_id)) {
-            return false;
-        }
-
         return base->HaveCoin(index);
     } else {
         CCoinsMap::const_iterator it = FetchCoin(boost::get<COutPoint>(index));
@@ -168,15 +168,17 @@ bool CCoinsViewCache::HaveCoin(const OutputIndex& index) const {
 }
 
 bool CCoinsViewCache::GetMWEBCoin(const mw::Hash& output_id, Output& coin) const {
-    if (GetMWEBCacheView()->HasCoinInCache(output_id)) {
-        UTXO::CPtr utxo = GetMWEBCacheView()->GetUTXO(output_id);
-        assert(utxo != nullptr);
-        coin = utxo->GetOutput();
-        return true;
-    }
+    if (GetMWEBCacheView()) {
+        if (GetMWEBCacheView()->HasCoinInCache(output_id)) {
+            UTXO::CPtr utxo = GetMWEBCacheView()->GetUTXO(output_id);
+            assert(utxo != nullptr);
+            coin = utxo->GetOutput();
+            return true;
+        }
 
-    if (GetMWEBCacheView()->HasSpendInCache(output_id)) {
-        return false;
+        if (GetMWEBCacheView()->HasSpendInCache(output_id)) {
+            return false;
+        }
     }
 
     return base->GetMWEBCoin(output_id, coin);
