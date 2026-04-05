@@ -1388,9 +1388,11 @@ void CWallet::blockConnected(const CBlock& block, int height)
                 } else {
                     // Pegout output in HogEx has no matching kernel in the MWEB block.
                     // This should never happen for a valid block, but handle gracefully
-                    // rather than crashing the node.
-                    LogPrintf("%s: WARNING: HogEx pegout (value=%d) has no matching MWEB kernel — skipping\n",
+                    // rather than crashing the node. Push a null sentinel so the
+                    // pegout_indices size invariant (== vout.size()) is maintained.
+                    LogPrintf("%s: WARNING: HogEx pegout (value=%d) has no matching MWEB kernel — recording null sentinel\n",
                               __func__, hogex_out.nValue);
+                    hogex_wtx->pegout_indices.push_back({mw::Hash(), 0});
                 }
             }
 

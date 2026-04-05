@@ -1638,9 +1638,10 @@ void static ProcessGetBlockData(CNode& pfrom, const CChainParams& chainparams, c
         std::shared_ptr<const CBlock> pblock;
         if (a_recent_block && a_recent_block->GetHash() == pindex->GetBlockHash()) {
             pblock = a_recent_block;
-        } else if (inv.IsMsgMWEBBlk()) {
+        } else if (inv.IsMsgMWEBBlk() && State(pfrom.GetId())->fHaveMWEB) {
             // Fast-path: in this case it is possible to serve the block directly from disk,
-            // as the network format matches the format on disk
+            // as the network format matches the format on disk.
+            // Only serve MWEB block data to peers that have advertised NODE_MWEB capability.
             std::vector<uint8_t> block_data;
             if (!ReadRawBlockFromDisk(block_data, pindex, chainparams.MessageStart())) {
                 assert(!"cannot load block from disk");
