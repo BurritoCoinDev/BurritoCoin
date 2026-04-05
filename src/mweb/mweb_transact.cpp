@@ -140,7 +140,6 @@ void Transact::AddMWEBTx(InProcessTx& new_tx)
         if (brto_fee < 0) {
             throw CreateTxError(_("MWEB fee exceeds total fee — transaction cannot be constructed"));
         }
-        assert(brto_fee <= brto_input_amount);
         pegin_amount = (brto_input_amount - (brto_fee + brto_change));
         if (*pegin_amount < 0) {
             throw CreateTxError(_("Peg-in amount is negative after fee deduction — transaction cannot be constructed"));
