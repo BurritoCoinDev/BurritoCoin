@@ -19,7 +19,7 @@
 // amounts 1 .. 10000
 #define NUM_MULTIPLES_1COIN 10000
 
-// amounts 50 .. 84000000 (codec coverage for large values)
+// amounts 50 .. 84000000 (codec coverage for large values; value inherited from upstream, not BurritoCoin supply)
 #define NUM_MULTIPLES_50COIN 1680000
 
 BOOST_FIXTURE_TEST_SUITE(compress_tests, BasicTestingSetup)

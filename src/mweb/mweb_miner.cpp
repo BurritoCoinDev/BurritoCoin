@@ -40,7 +40,10 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
         if (IsPegInOutput(pTx->GetOutput(nOut))) {
             vin.push_back(CTxIn{pTx->GetHash(), (uint32_t)nOut});
 
-            assert(MoneyRange(pTx->vout[nOut].nValue));
+            if (!MoneyRange(pTx->vout[nOut].nValue)) {
+                LogPrintf("AddHogExInputs: peg-in output value out of range\n");
+                return false;
+            }
             pegin_amount += pTx->vout[nOut].nValue;
 
             if (!MoneyRange(pegin_amount)) {
@@ -59,7 +62,10 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
 
     for (const PegOutCoin& pegout : pegouts) {
         CAmount amount(pegout.GetAmount());
-        assert(MoneyRange(amount));
+        if (!MoneyRange(amount)) {
+            LogPrintf("AddHogExInputs: peg-out amount out of range\n");
+            return false;
+        }
 
         vout.push_back(CTxOut{amount, pegout.GetScriptPubKey()});
 
@@ -87,7 +93,12 @@ bool Miner::AddMWEBTransaction(CTxMemPool::txiter iter)
 
     hogex_inputs.insert(hogex_inputs.end(), vin.cbegin(), vin.cend());
     hogex_outputs.insert(hogex_outputs.end(), vout.cbegin(), vout.cend());
-    mweb_amount_change += (CAmount(pegin_amount) - CAmount(pegout_amount + tx_fee));
+    CAmount pegout_plus_fee = CAmount(pegout_amount) + CAmount(tx_fee);
+    if (!MoneyRange(pegout_plus_fee)) {
+        LogPrintf("MWEB pegout_amount + tx_fee out of range\n");
+        return false;
+    }
+    mweb_amount_change += (CAmount(pegin_amount) - pegout_plus_fee);
 
     if (pTx->IsMWEBOnly()) {
         hogex_fees += tx_fee;
@@ -128,14 +139,14 @@ bool Miner::ValidatePegIns(const CTransactionRef& pTx, const std::vector<PegInCo
     return true;
 }
 
-void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, CBlockTemplate* pblocktemplate, CAmount& nFees)
+void Miner::AddHogExTransaction(const CBlockIndex* pindexPrev, CBlock* pblock, CBlockTemplate* pblocktemplate, CAmount& nFees)
 {
     CMutableTransaction hogExTransaction;
 
     CBlock prevBlock;
-    if (!ReadBlockFromDisk(prevBlock, pIndexPrev, Params().GetConsensus())) {
+    if (!ReadBlockFromDisk(prevBlock, pindexPrev, Params().GetConsensus())) {
         LogPrintf("%s: ERROR: ReadBlockFromDisk failed for block %s at height %d — cannot build MWEB HogEx\n",
-                  __func__, pIndexPrev->GetBlockHash().ToString(), pIndexPrev->nHeight);
+                  __func__, pindexPrev->GetBlockHash().ToString(), pindexPrev->nHeight);
         return;
     }
 
@@ -145,7 +156,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, C
     // Add previous HogAddr as new HogEx input
     //
     if (prevBlock.vtx.size() >= 2 && prevBlock.vtx.back()->IsHogEx()) {
-        assert(!prevBlock.vtx.back()->vout.empty());
+        if (prevBlock.vtx.back()->vout.empty()) {
+            LogPrintf("AddHogExTransaction: prev HogEx has no outputs\n");
+            return;
+        }
         previous_amount = prevBlock.vtx.back()->vout[0].nValue;
 
         CTxIn prevHogExIn(prevBlock.vtx.back()->GetHash(), 0);
@@ -165,7 +179,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, C
     CTxOut hogAddr;
     hogAddr.scriptPubKey = CScript() << OP_8 << mweb_block->GetHash().vec();
     hogAddr.nValue = previous_amount + mweb_amount_change;
-    assert(MoneyRange(hogAddr.nValue));
+    if (!MoneyRange(hogAddr.nValue)) {
+        LogPrintf("AddHogExTransaction: HogAddr value out of range\n");
+        return;
+    }
     hogExTransaction.vout.push_back(std::move(hogAddr));
 
     //

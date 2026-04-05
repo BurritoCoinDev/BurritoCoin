@@ -3569,7 +3569,7 @@ RPCHelpMan signrawtransactionwithwallet()
 static RPCHelpMan bumpfee_helper(std::string method_name)
 {
     bool want_psbt = method_name == "psbtbumpfee";
-    const std::string incremental_fee{CFeeRate(DEFAULT_INCREMENTAL_RELAY_FEE).ToString(FeeEstimateMode::SAT_VB)};
+    const std::string incremental_fee{CFeeRate(DEFAULT_INCREMENTAL_RELAY_FEE).ToString(FeeEstimateMode::BURRIOSHI_VB)};
 
     return RPCHelpMan{method_name,
         "\nBumps the fee of an opt-in-RBF transaction T, replacing it with a new transaction B.\n"

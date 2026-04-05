@@ -28,7 +28,7 @@ static void ApplyStats(CCoinsStats& stats, CHashWriter& ss, const uint256& hash,
 {
     assert(!outputs.empty());
     ss << hash;
-    ss << VARINT(outputs.begin()->second.nHeight * 2 + outputs.begin()->second.fCoinBase ? 1u : 0u);
+    ss << VARINT((outputs.begin()->second.nHeight * 2) + (outputs.begin()->second.fCoinBase ? 1u : 0u));
     stats.nTransactions++;
     for (const auto& output : outputs) {
         ss << VARINT(output.first + 1);
@@ -108,7 +108,7 @@ bool GetUTXOStats(CCoinsView* view, CCoinsStats& stats, CoinStatsHashType hash_t
         return GetUTXOStats(view, stats, nullptr, interruption_point);
     }
     } // no default case, so the compiler can warn about missing cases
-    assert(false);
+    return error("GetUTXOStats: unrecognized hash_type: %d", static_cast<int>(hash_type));
 }
 
 // The legacy hash serializes the hashBlock

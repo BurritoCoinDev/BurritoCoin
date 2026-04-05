@@ -36,6 +36,7 @@
 #include <wallet/reserve.h>
 
 #include <univalue.h>
+#include <cstdlib>
 
 #include <algorithm>
 #include <assert.h>
@@ -97,7 +98,7 @@ static void UpdateWalletSetting(interfaces::Chain& chain,
 bool AddWallet(const std::shared_ptr<CWallet>& wallet)
 {
     LOCK(cs_wallets);
-    assert(wallet);
+    if (!wallet) return false;
     std::vector<std::shared_ptr<CWallet>>::const_iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
     if (i != vpwallets.end()) return false;
     vpwallets.push_back(wallet);
@@ -108,17 +109,21 @@ bool AddWallet(const std::shared_ptr<CWallet>& wallet)
 
 bool RemoveWallet(const std::shared_ptr<CWallet>& wallet, Optional<bool> load_on_start, std::vector<bilingual_str>& warnings)
 {
-    assert(wallet);
+    if (!wallet) return false;
 
     interfaces::Chain& chain = wallet->chain();
     std::string name = wallet->GetName();
 
-    // Unregister with the validation interface which also drops shared ponters.
+    {
+        LOCK(cs_wallets);
+        std::vector<std::shared_ptr<CWallet>>::iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
+        if (i == vpwallets.end()) return false;
+        vpwallets.erase(i);
+    }
+    // Unregister with the validation interface which also drops shared pointers.
+    // Done outside cs_wallets to avoid deadlock if the handler destructor triggers
+    // a callback that tries to re-acquire cs_wallets.
     wallet->m_chain_notifications_handler.reset();
-    LOCK(cs_wallets);
-    std::vector<std::shared_ptr<CWallet>>::iterator i = std::find(vpwallets.begin(), vpwallets.end(), wallet);
-    if (i == vpwallets.end()) return false;
-    vpwallets.erase(i);
 
     // Write the wallet setting
     UpdateWalletSetting(chain, name, load_on_start, warnings);
@@ -674,7 +679,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
                 encrypted_batch = nullptr;
                 // We now probably have half of our keys encrypted in memory, and half not...
                 // die and let the user reload the unencrypted wallet.
-                assert(false);
+                std::abort();
             }
         }
 
@@ -686,7 +691,7 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
             encrypted_batch = nullptr;
             // We now have keys encrypted in memory, but not on disk...
             // die to avoid confusion and let the user reload the unencrypted wallet.
-            assert(false);
+            std::abort();
         }
 
         delete encrypted_batch;
@@ -1386,17 +1391,15 @@ void CWallet::blockConnected(const CBlock& block, int height)
                     hogex_wtx->pegout_indices.push_back(iter->second);
                     pegout_kernels.erase(iter);
                 } else {
-                    // Pegout output in HogEx has no matching kernel in the MWEB block.
-                    // This should never happen for a valid block, but handle gracefully
-                    // rather than crashing the node. Push a null sentinel so the
-                    // pegout_indices size invariant (== vout.size()) is maintained.
-                    LogPrintf("%s: WARNING: HogEx pegout (value=%d) has no matching MWEB kernel — recording null sentinel\n",
-                              __func__, hogex_out.nValue);
-                    hogex_wtx->pegout_indices.push_back({mw::Hash(), 0});
+                    LogPrintf("ERROR: %s: pegout not found in kernel set\n", __func__);
+                    return;
                 }
             }
 
-            assert(hogex_wtx->tx->vout.size() == hogex_wtx->pegout_indices.size());
+            if (hogex_wtx->tx->vout.size() != hogex_wtx->pegout_indices.size()) {
+                LogPrintf("ERROR: %s: pegout_indices size mismatch\n", __func__);
+                return;
+            }
             WalletBatch(*database).WriteTx(*hogex_wtx);
         }
 
@@ -2610,6 +2613,7 @@ CWallet::Balance CWallet::GetBalance(const int min_depth, bool avoid_reuse) cons
             ret.m_watchonly_immature += wtx.GetImmatureWatchOnlyCredit();
         }
     }
+    ret.m_mine_trusted += mweb_wallet->GetBalance();
     return ret;
 }
 

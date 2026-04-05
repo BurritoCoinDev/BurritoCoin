@@ -11,6 +11,8 @@ bool CheckTransaction(const CTransaction& tx, TxValidationState& state)
 {
     // Basic checks that don't depend on any context
     if (!tx.IsMWEBOnly()) {
+        // HogEx transactions may legitimately have an empty vin on the very first
+        // MWEB-enabled block (no previous HogEx to reference and no pegins yet).
         if (tx.vin.empty() && !tx.IsHogEx())
             return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-txns-vin-empty");
         if (tx.vout.empty())

@@ -239,11 +239,11 @@ void test_one_input(const std::vector<uint8_t>& buffer)
             const CTransaction transaction{random_mutable_transaction};
             if (ContainsSpentInput(transaction, coins_view_cache)) {
                 // Avoid:
-                // consensus/tx_verify.cpp:171: bool Consensus::CheckTxInputs(const CTransaction &, TxValidationState &, const CCoinsViewCache &, int, CAmount &): Assertion `!coin.IsSpent()' failed.
+                // consensus/tx_verify.cpp:171: bool Consensus::CheckTxInputs(const CTransaction &, TxValidationState &, const CCoinsViewCache &, int64_t, CAmount &): Assertion `!coin.IsSpent()' failed.
                 break;
             }
             try {
-                (void)Consensus::CheckTxInputs(transaction, state, coins_view_cache, fuzzed_data_provider.ConsumeIntegralInRange<int>(0, std::numeric_limits<int>::max()), tx_fee_out);
+                (void)Consensus::CheckTxInputs(transaction, state, coins_view_cache, fuzzed_data_provider.ConsumeIntegralInRange<int64_t>(0, std::numeric_limits<int64_t>::max()), tx_fee_out);
                 assert(MoneyRange(tx_fee_out));
             } catch (const std::runtime_error&) {
             }

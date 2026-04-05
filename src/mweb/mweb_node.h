@@ -13,7 +13,6 @@ class TxValidationState;
 
 namespace MWEB {
 
-// MW: TODO - Fix function summaries now that we've rearranged the checks.
 class Node
 {
 public:

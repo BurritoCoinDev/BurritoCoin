@@ -17,16 +17,20 @@
 
 #include <boost/test/unit_test.hpp>
 
-static const std::string strSecret1 = "6uGFQ4DSW7zh1viHZi6iiVT17CncvoaV4MHvGvJKPDaLCdymj87";
-static const std::string strSecret2 = "6vVo7sPkeLTwVdAntrv4Gbnsyr75H8ChD3P5iyHziwaqe8mCYR5";
-static const std::string strSecret1C = "T3gJYmBuZXsdd65E7NQF88ZmUP2MaUanqnZg9GFS94W7kND4Ebjq";
-static const std::string strSecret2C = "T986ZKRRdnuuXLeDZuKBRrZW1ujotAncU9WTrFU1n7vMgRW75ZtF";
-static const std::string addr1 = "LiUo6Zn39joYJBzPUhssbDwAywhjFcoHE3";
-static const std::string addr2 = "LZJvLSP5SGKcFS13MHgdrVhpFUbEMB5XVC";
-static const std::string addr1C = "Lh2G82Bi33RNuzz4UfSMZbh54jnWHVnmw8";
-static const std::string addr2C = "LWegHWHB5rmaF5rgWYt1YN3StapRdnGJfU";
+// WIF private keys encoded with BurritoCoin SECRET_KEY = 153:
+//   uncompressed: '6'-prefix → same prefix, different version byte
+//   compressed:   'P'-prefix (BurritoCoin-specific, distinct from LTC 'T')
+static const std::string strSecret1 = "68Z8LithuLSUv4M4iNpjn7fC3ad6ycCLxefSfUUhX9RQrP9vM2d";
+static const std::string strSecret2 = "69ng4Y523YujPkoa3Xe5LE14vDwZKvpZ7Lkc7XUNrsRvHm5WELE";
+static const std::string strSecret1C = "PeLoQ3uDXzoUDBmZPdKhp8PZkPQMNrM56dEgGpHFr4AkGkbSpcky";
+static const std::string strSecret2C = "PjnbQc8jcFqk7SLYrAEe7rPJHv7ogYYtizBTyoVqV7azCopekuiL";
+// P2PKH addresses encoded with BurritoCoin PUBKEY_ADDRESS = 25 → 'B'-prefix
+static const std::string addr1 = "BThvT4vQpb9PVDnPv4DYSLg5WLn2wUAYDX";
+static const std::string addr2 = "BJY3gwXT77fTSTo3ne2JhcSimsfY12ThGp";
+static const std::string addr1C = "BSFPUXL5htmE72n4v1n2QiRyb8royBjiJu";
+static const std::string addr2C = "BFsoe1RYki7RS7egwuDgPUnMQytjKzDYze";
 
-static const std::string strAddressBad = "Lbi6bpMhSwp2CXkivEeUK9wzyQEFzHDfSr";
+static const std::string strAddressBad = "BLwDxKW57o9sPZYjMaz9AGguVoJZcnry67";
 
 
 BOOST_FIXTURE_TEST_SUITE(key_tests, BasicTestingSetup)

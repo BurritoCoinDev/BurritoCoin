@@ -55,20 +55,25 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
 
     // Last transaction must be marked as HogEx.
     // Note: We don't commit to the HogEx indicator, so if indicator not set, just mark the block as mutated.
+    if (block.vtx.empty()) {
+        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-blk-empty", "Block has no transactions");
+    }
     const CTransactionRef& pHogEx = block.vtx.back();
     if (!pHogEx->IsHogEx()) {
         return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "hogex-missing", "hogex missing");
     }
 
     // Only the last transaction in the block should be marked as the HogEx.
-    for (size_t i = 0; i < block.vtx.size() - 1; i++) {
+    for (size_t i = 0; i + 1 < block.vtx.size(); i++) {
         if (block.vtx[i]->IsHogEx()) {
             return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "bad-hogex-position", "hogex in wrong position");
         }
     }
 
     // UnserializeTransaction ensures that vout is never empty when the HogEx indicator is set.
-    assert(!pHogEx->vout.empty());
+    if (pHogEx->vout.empty()) {
+        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-hogex-empty-vout", "HogEx transaction has no outputs");
+    }
 
     // Verify that the first HogEx output contains the HogAddr.
     mw::Hash mweb_hash;
@@ -88,17 +93,17 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
 
     // For the very first HogEx transaction, all inputs are pegins, so start at index of 0.
     // For all other HogEx transaction, the first input is not a pegin, so start looking for pegins at index 1.
-    const bool is_first_hogex = !IsMWEBEnabled(pindexPrev->pprev, consensus_params);
+    const bool is_first_hogex = (pindexPrev->pprev == nullptr) || !IsMWEBEnabled(pindexPrev->pprev, consensus_params);
     size_t next_pegin_idx = is_first_hogex ? 0 : 1;
 
     // Loop through the block's txs looking for all outputs with pegin scriptPubKeys (skip Coinbase & HogEx which don't support pegins).
     // While looping though, we perform 2 tasks:
     // 
     // 1. Calculate the total value of the HogEx inputs (hogex_input_amount).
-    // This is the previous HogEx's first output amount (pIndexPrev->mweb_amount) plus the sum of all pegin output amounts.
+    // This is the previous HogEx's first output amount (pindexPrev->mweb_amount) plus the sum of all pegin output amounts.
     // 
     // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
-    for (size_t nTx = 1; nTx < block.vtx.size() - 1; nTx++) {
+    for (size_t nTx = 1; nTx + 1 < block.vtx.size(); nTx++) {
         const CTransactionRef& pTx = block.vtx[nTx];
         for (size_t nOut = 0; nOut < pTx->vout.size(); nOut++) {
             const CTxOut& output = pTx->vout[nOut];
@@ -131,12 +136,15 @@ bool Node::ContextualCheckBlock(const CBlock& block, const Consensus::Params& co
 
 bool Node::ValidateMWEBBlock(const CBlock& block)
 {
+    if (block.vtx.empty()) {
+        return false;
+    }
     const CTransactionRef& pHogEx = block.vtx.back();
 
     // Find all pegin scriptPubKeys in the block.
     // We don't support pegins in the coinbase tx or the HogEx tx, so skip those.
     std::vector<PegInCoin> block_pegins;
-    for (size_t i = 1; i < block.vtx.size() - 1; i++) {
+    for (size_t i = 1; i + 1 < block.vtx.size(); i++) {
         for (const CTxOut& out : block.vtx[i]->vout) {
             mw::Hash kernel_id;
             if (out.scriptPubKey.IsMWEBPegin(&kernel_id)) {
@@ -163,18 +171,20 @@ bool Node::ValidateMWEBBlock(const CBlock& block)
 bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_params, const CBlockIndex* pindexPrev, CBlockUndo& blockundo, mw::CoinsViewCache& mweb_view, BlockValidationState& state)
 {
     if (!block.mweb_block.IsNull()) {
+        if (block.vtx.empty()) {
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-blk-empty", "Block has no transactions");
+        }
         const CTransactionRef& pHogEx = block.vtx.back();
 
         // Verify that the first input of the HogEx tx spends the first output of the previous block's HogEx tx.
         // There is one important exception case we must handle, though.
         // The very first HogEx tx won't have a previous one to spend.
         // For that special case, this check will be skipped, and its first input will be treated as a pegin.
-        const bool is_first_hogex = !IsMWEBEnabled(pindexPrev->pprev, consensus_params);
+        const bool is_first_hogex = (pindexPrev->pprev == nullptr) || !IsMWEBEnabled(pindexPrev->pprev, consensus_params);
         if (!is_first_hogex) {
-            // ContextualCheckBlock guarantees vin is non-empty for non-first HogEx
-            // (it rejects blocks where pegin count doesn't account for the prev-HogEx input).
-            // Assert here as a defense-in-depth guard.
-            assert(!pHogEx->vin.empty());
+            if (pHogEx->vin.empty()) {
+                return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "hogex-no-inputs", "HogEx has no inputs");
+            }
             const COutPoint& prev_hogex_out = pHogEx->vin.front().prevout;
             if (prev_hogex_out.n != 0 || pindexPrev->hogex_hash != prev_hogex_out.hash) {
                 return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "invalid-hogex-input", "First input of HogEx does not point to previous HogEx");
@@ -185,11 +195,11 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         // While looping though, we perform 2 tasks:
         //
         // 1. Calculate the total value of the HogEx inputs (hogex_input_amount).
-        // This is the previous HogEx's first output amount (pIndexPrev->mweb_amount) plus the sum of all pegin output amounts.
+        // This is the previous HogEx's first output amount (pindexPrev->mweb_amount) plus the sum of all pegin output amounts.
         //
         // 2. Verify the HogEx inputs (ignoring the input that spends previous HogEx output) exactly match the pegin outputs.
         CAmount hogex_input_amount = pindexPrev->mweb_amount;
-        for (size_t nTx = 1; nTx < block.vtx.size() - 1; nTx++) {
+        for (size_t nTx = 1; nTx + 1 < block.vtx.size(); nTx++) {
             const CTransactionRef& pTx = block.vtx[nTx];
             for (const CTxOut& output : pTx->vout) {
                 if (output.scriptPubKey.IsMWEBPegin()) {
@@ -204,15 +214,18 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         // For the HogEx transaction, the fee must be equal to the total fee of the extension block.
         CAmount hogex_fee = hogex_input_amount - pHogEx->GetValueOut();
         if (!MoneyRange(hogex_fee) || hogex_fee != block.mweb_block.GetTotalFee()) {
-            return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "bad-txns-mweb-fee-mismatch", "HogEx fee does not match MWEB fee."); // TODO: This can be CONSENSUS
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-txns-mweb-fee-mismatch", "HogEx fee does not match MWEB fee.");
         }
 
         // Verify that the value of the first HogEx output matches the expected new value of the MWEB.
         // This is calculated simply as: 'mweb_amount = previous_amount + supply_change'
         // where 'supply_change = (pegins - pegouts) - fees'
         CAmount mweb_amount = pindexPrev->mweb_amount + block.mweb_block.GetSupplyChange();
+        if (!MoneyRange(mweb_amount)) {
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-mweb-amount-outofrange", strprintf("MWEB amount out of range: %d", mweb_amount));
+        }
         if (mweb_amount != pHogEx->vout.front().nValue) {
-            return state.Invalid(BlockValidationResult::BLOCK_MUTATED, "mweb-amount-mismatch", "HogEx amount does not match expected MWEB amount"); // TODO: This can be CONSENSUS
+            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "mweb-amount-mismatch", "HogEx amount does not match expected MWEB amount");
         }
 
         try {

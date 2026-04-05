@@ -13,7 +13,7 @@ class Miner
 public:
     void NewBlock(const uint64_t nHeight);
     bool AddMWEBTransaction(CTxMemPool::txiter iter);
-    void AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, CBlockTemplate* pblocktemplate, CAmount& nFees);
+    void AddHogExTransaction(const CBlockIndex* pindexPrev, CBlock* pblock, CBlockTemplate* pblocktemplate, CAmount& nFees);
 
 private:
     bool ValidatePegIns(const CTransactionRef& pTx, const std::vector<PegInCoin>& pegins) const;

@@ -110,9 +110,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     resetBlock();
 
     pblocktemplate.reset(new CBlockTemplate());
-
-    if(!pblocktemplate.get())
-        return nullptr;
     CBlock* const pblock = &pblocktemplate->block; // pointer for convenience
 
     // Add dummy coinbase tx as first transaction
@@ -122,7 +119,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     LOCK2(cs_main, m_mempool.cs);
     CBlockIndex* pindexPrev = ::ChainActive().Tip();
-    assert(pindexPrev != nullptr);
+    if (!pindexPrev) return nullptr;
     nHeight = pindexPrev->nHeight + 1;
 
     pblock->nVersion = ComputeBlockVersion(pindexPrev, chainparams.GetConsensus());
@@ -174,7 +171,11 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     coinbaseTx.vin[0].prevout.SetNull();
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
-    coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+    CAmount coinbaseValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+    if (!MoneyRange(coinbaseValue)) {
+        return nullptr;
+    }
+    coinbaseTx.vout[0].nValue = coinbaseValue;
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
     pblock->vtx[0] = MakeTransactionRef(std::move(coinbaseTx));
     pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, chainparams.GetConsensus());

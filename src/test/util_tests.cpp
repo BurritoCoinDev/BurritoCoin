@@ -2117,7 +2117,7 @@ BOOST_AUTO_TEST_CASE(message_sign)
         "Sign with a valid private key");
 
     BOOST_CHECK_EQUAL(
-        MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", generated_signature, message),
+        MessageVerify("BJU6kaU2erYdxDxf9E8inxdvrgBDXFJrBW", generated_signature, message),
         MessageVerificationResult::OK);
 }
 
@@ -2139,21 +2139,21 @@ BOOST_AUTO_TEST_CASE(message_verify)
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "LVHp936YwkddZXGF41n1H3Jp4QQPyhyKEy",
+            "BEWwVYEvcbyUkZ4FVN7g8A3iaoUhfvqiEW",
             "invalid signature, not in base64 encoding",
             "message should be irrelevant"),
         MessageVerificationResult::ERR_MALFORMED_SIGNATURE);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "LVHp936YwkddZXGF41n1H3Jp4QQPyhyKEy",
+            "BEWwVYEvcbyUkZ4FVN7g8A3iaoUhfvqiEW",
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
             "message should be irrelevant"),
         MessageVerificationResult::ERR_PUBKEY_NOT_RECOVERED);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL",
+            "BJU6kaU2erYdxDxf9E8inxdvrgBDXFJrBW",
             "IC5ptVNBb5AbIQAISbQxPem7QY7F/pijKxOUXs8M62GFciVCLvhp9XM/j+3Fu+RKbuEOxtzvUSFcxLnD36FXYfU=",
             "I never signed this"),
         MessageVerificationResult::ERR_NOT_SIGNED);
@@ -2172,13 +2172,13 @@ BOOST_AUTO_TEST_CASE(message_verify)
         std::string sig_trust_no_one;
         BOOST_REQUIRE(MessageSign(privkey, "Trust no one", sig_trust_no_one));
         BOOST_CHECK_EQUAL(
-            MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", sig_trust_no_one, "Trust no one"),
+            MessageVerify("BJU6kaU2erYdxDxf9E8inxdvrgBDXFJrBW", sig_trust_no_one, "Trust no one"),
             MessageVerificationResult::OK);
 
         std::string sig_trust_me;
         BOOST_REQUIRE(MessageSign(privkey, "Trust me", sig_trust_me));
         BOOST_CHECK_EQUAL(
-            MessageVerify("LZEyQ5Kez1CnmCAehso3wqu2LH6ux251aL", sig_trust_me, "Trust me"),
+            MessageVerify("BJU6kaU2erYdxDxf9E8inxdvrgBDXFJrBW", sig_trust_me, "Trust me"),
             MessageVerificationResult::OK);
     }
 }

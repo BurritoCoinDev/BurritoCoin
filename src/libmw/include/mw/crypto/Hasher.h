@@ -29,9 +29,23 @@ public:
 
     Hasher(const EHashTag tag)
     {
-        blake3_hasher_init(&m_hasher);
-        char c_tag = static_cast<char>(tag);
-        write(&c_tag, 1);
+        blake3_hasher_init_derive_key(&m_hasher, GetTagContext(tag));
+    }
+
+    static const char* GetTagContext(const EHashTag tag)
+    {
+        switch (tag) {
+            case EHashTag::ADDRESS:    return "BurritoCoin MWEB Address";
+            case EHashTag::BLIND:      return "BurritoCoin MWEB Blind";
+            case EHashTag::DERIVE:     return "BurritoCoin MWEB Derive";
+            case EHashTag::NONCE:      return "BurritoCoin MWEB Nonce";
+            case EHashTag::OUT_KEY:    return "BurritoCoin MWEB OutputKey";
+            case EHashTag::SEND_KEY:   return "BurritoCoin MWEB SendKey";
+            case EHashTag::TAG:        return "BurritoCoin MWEB Tag";
+            case EHashTag::NONCE_MASK: return "BurritoCoin MWEB NonceMask";
+            case EHashTag::VALUE_MASK: return "BurritoCoin MWEB ValueMask";
+            default:                   return "BurritoCoin MWEB Unknown";
+        }
     }
 
     int GetType() const { return SER_GETHASH; }
