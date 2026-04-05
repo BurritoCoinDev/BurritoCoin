@@ -171,6 +171,10 @@ bool Node::ConnectBlock(const CBlock& block, const Consensus::Params& consensus_
         // For that special case, this check will be skipped, and its first input will be treated as a pegin.
         const bool is_first_hogex = !IsMWEBEnabled(pindexPrev->pprev, consensus_params);
         if (!is_first_hogex) {
+            // ContextualCheckBlock guarantees vin is non-empty for non-first HogEx
+            // (it rejects blocks where pegin count doesn't account for the prev-HogEx input).
+            // Assert here as a defense-in-depth guard.
+            assert(!pHogEx->vin.empty());
             const COutPoint& prev_hogex_out = pHogEx->vin.front().prevout;
             if (prev_hogex_out.n != 0 || pindexPrev->hogex_hash != prev_hogex_out.hash) {
                 return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "invalid-hogex-input", "First input of HogEx does not point to previous HogEx");

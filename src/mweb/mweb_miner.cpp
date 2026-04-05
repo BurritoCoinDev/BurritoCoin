@@ -176,6 +176,10 @@ void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, C
     pblock->vtx.emplace_back(MakeTransactionRef(std::move(hogExTransaction)));
     pblock->mweb_block = MWEB::Block(mweb_block);
 
+    // Credit HogEx fees (from MWEB-only transactions) to the block's fee total
+    // so they are included in the coinbase reward.
+    nFees += hogex_fees;
+
     pblocktemplate->vTxFees.push_back(hogex_fees);
     pblocktemplate->vTxSigOpsCost.push_back(hogex_sigops);
 }

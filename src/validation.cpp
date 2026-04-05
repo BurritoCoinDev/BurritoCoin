@@ -2295,6 +2295,8 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     // MWEB: Update BlockIndex
     if (!block.mweb_block.IsNull()) {
         auto pHogEx = block.GetHogEx();
+        // ContextualCheckBlock guarantees pHogEx is non-null for any valid MWEB block.
+        assert(pHogEx != nullptr);
         if ((pindex->nStatus & BLOCK_HAVE_MWEB) == 0) {
             pindex->nStatus |= BLOCK_HAVE_MWEB;
             pindex->mweb_header = block.mweb_block.GetMWEBHeader();

@@ -1386,7 +1386,11 @@ void CWallet::blockConnected(const CBlock& block, int height)
                     hogex_wtx->pegout_indices.push_back(iter->second);
                     pegout_kernels.erase(iter);
                 } else {
-                    assert(false);
+                    // Pegout output in HogEx has no matching kernel in the MWEB block.
+                    // This should never happen for a valid block, but handle gracefully
+                    // rather than crashing the node.
+                    LogPrintf("%s: WARNING: HogEx pegout (value=%d) has no matching MWEB kernel — skipping\n",
+                              __func__, hogex_out.nValue);
                 }
             }
 
@@ -1712,7 +1716,7 @@ CAmount CWallet::GetCredit(const CTransaction& tx, const boost::optional<MWEB::W
     if (!has_my_inputs) {
         for (const PegOutCoin& pegout : tx.mweb_tx.GetPegOuts()) {
             LOCK(cs_wallet);
-            if (!(IsMine(DestinationAddr(pegout.GetScriptPubKey())) & filter)) {
+            if (IsMine(DestinationAddr(pegout.GetScriptPubKey())) & filter) {
                 nCredit += pegout.GetAmount();
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error(std::string(__func__) + ": value out of range");
