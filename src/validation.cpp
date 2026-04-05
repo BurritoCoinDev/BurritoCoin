@@ -1516,7 +1516,9 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo &txund
     AddCoins(inputs, tx, nHeight);
 
     if (!tx.mweb_tx.IsNull()) {
-        inputs.GetMWEBCacheView()->AddTx(tx.mweb_tx.m_transaction);
+        auto mweb_view = inputs.GetMWEBCacheView();
+        assert(mweb_view); // MWEB view must be initialized when processing a transaction with MWEB data
+        mweb_view->AddTx(tx.mweb_tx.m_transaction);
     }
 }
 
@@ -1836,8 +1838,13 @@ DisconnectResult CChainState::DisconnectBlock(const CBlock& block, const CBlockI
     }
 
     if (blockUndo.mwundo != nullptr) {
+        auto mweb_view = view.GetMWEBCacheView();
+        if (!mweb_view) {
+            error("DisconnectBlock(): MWEB view is null when attempting to undo MWEB block");
+            return DISCONNECT_FAILED;
+        }
         try {
-            view.GetMWEBCacheView()->UndoBlock(blockUndo.mwundo);
+            mweb_view->UndoBlock(blockUndo.mwundo);
         } catch (const std::exception& e) {
             error("DisconnectBlock(): Failed to disconnect MWEB block");
             return DISCONNECT_FAILED;
@@ -2287,8 +2294,18 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     LogPrint(BCLog::BENCH, "    - Verify %u txins: %.2fms (%.3fms/txin) [%.2fs (%.2fms/blk)]\n", nInputs - 1, MILLI * (nTime4 - nTime2), nInputs <= 1 ? 0 : MILLI * (nTime4 - nTime2) / (nInputs-1), nTimeVerify * MICRO, nTimeVerify * MILLI / nBlocksTotal);
 
     // MWEB: Check activation
-    if (!MWEB::Node::ConnectBlock(block, chainparams.GetConsensus(), pindex->pprev, blockundo, *view.GetMWEBCacheView(), state)) {
-        return false;
+    {
+        auto mweb_view = view.GetMWEBCacheView();
+        if (!mweb_view) {
+            if (!block.mweb_block.IsNull()) {
+                return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "mweb-view-null", "MWEB view not initialized");
+            }
+            // Non-MWEB block with no view: ConnectBlock would be a no-op — skip safely
+        } else {
+            if (!MWEB::Node::ConnectBlock(block, chainparams.GetConsensus(), pindex->pprev, blockundo, *mweb_view, state)) {
+                return false;
+            }
+        }
     }
 
     if (fJustCheck)
