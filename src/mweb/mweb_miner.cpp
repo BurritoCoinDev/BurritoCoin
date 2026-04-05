@@ -133,8 +133,11 @@ void Miner::AddHogExTransaction(const CBlockIndex* pIndexPrev, CBlock* pblock, C
     CMutableTransaction hogExTransaction;
 
     CBlock prevBlock;
-    bool read_success = ReadBlockFromDisk(prevBlock, pIndexPrev, Params().GetConsensus());
-    assert(read_success);
+    if (!ReadBlockFromDisk(prevBlock, pIndexPrev, Params().GetConsensus())) {
+        LogPrintf("%s: ERROR: ReadBlockFromDisk failed for block %s at height %d — cannot build MWEB HogEx\n",
+                  __func__, pIndexPrev->GetBlockHash().ToString(), pIndexPrev->nHeight);
+        return;
+    }
 
     CAmount previous_amount = 0;
 

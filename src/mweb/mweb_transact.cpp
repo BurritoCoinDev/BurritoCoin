@@ -102,7 +102,9 @@ void Transact::AddMWEBTx(InProcessTx& new_tx)
     for (const CRecipient& recipient : new_tx.recipients) {
         CAmount recipient_amount = recipient.nAmount;
         if (recipient.fSubtractFeeFromAmount) {
-            recipient_amount -= new_tx.total_fee;
+            // Divide fee proportionally across all recipients with this flag set,
+            // matching the same split logic used for BRTO outputs in AddRecipientOutputs.
+            recipient_amount -= new_tx.total_fee / new_tx.subtract_fee_from_amount;
         }
 
         if (recipient_amount < 0) {
@@ -199,7 +201,8 @@ mw::Recipient Transact::BuildChangeRecipient(const InProcessTx& new_tx, const bo
     CAmount recipient_amount = std::accumulate(
         new_tx.recipients.cbegin(), new_tx.recipients.cend(), CAmount(0),
         [&new_tx](CAmount amount, const CRecipient& recipient) {
-            return amount + (recipient.nAmount - (recipient.fSubtractFeeFromAmount ? new_tx.total_fee : 0));
+            CAmount share = recipient.fSubtractFeeFromAmount ? new_tx.total_fee / new_tx.subtract_fee_from_amount : 0;
+            return amount + (recipient.nAmount - share);
         }
     );
 
