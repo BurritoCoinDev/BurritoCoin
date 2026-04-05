@@ -1789,7 +1789,13 @@ static void ProcessGetMWEBLeafset(CNode& pfrom, const ChainstateManager& chainma
     }
 
     // Serve leafset to peer
-    MWEBLeafsetMsg leafset_msg(pindex->GetBlockHash(), temp_view.GetMWEBCacheView()->GetLeafSet()->ToBitSet());
+    auto mweb_leafset_view = temp_view.GetMWEBCacheView();
+    if (!mweb_leafset_view) {
+        LogPrint(BCLog::NET, "Ignoring mweb leafset request from peer=%d because MWEB view is not available\n", pfrom.GetId());
+        pfrom.fDisconnect = true;
+        return;
+    }
+    MWEBLeafsetMsg leafset_msg(pindex->GetBlockHash(), mweb_leafset_view->GetLeafSet()->ToBitSet());
     connman.PushMessage(&pfrom, CNetMsgMaker(pfrom.GetCommonVersion()).Make(NetMsgType::MWEBLEAFSET, leafset_msg));
 }
 
@@ -1891,6 +1897,11 @@ static void ProcessGetMWEBUTXOs(CNode& pfrom, const ChainstateManager& chainman,
     }
 
     auto mweb_cache = temp_view.GetMWEBCacheView();
+    if (!mweb_cache) {
+        LogPrint(BCLog::NET, "Ignoring getmwebutxos request from peer=%d because MWEB view is not available\n", pfrom.GetId());
+        pfrom.fDisconnect = true;
+        return;
+    }
 
     mmr::Segment segment = mmr::SegmentFactory::Assemble(
         *mweb_cache->GetOutputPMMR(),
