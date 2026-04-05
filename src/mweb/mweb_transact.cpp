@@ -210,7 +210,9 @@ mw::Recipient Transact::BuildChangeRecipient(const InProcessTx& new_tx, const bo
         [](CAmount amt, const CInputCoin& input) { return amt + (input.IsMWEB() ? input.GetAmount() : 0); }
     );
 
-    CAmount change_amount = (pegin_amount.value_or(0) + mweb_input_amount) - (recipient_amount + new_tx.mweb_fee + brto_change);
+    // pegin_amount is already net of brto_change (= brto_inputs - brto_fee - brto_change),
+    // so do NOT subtract brto_change here — that would double-deduct it.
+    CAmount change_amount = (pegin_amount.value_or(0) + mweb_input_amount) - (recipient_amount + new_tx.mweb_fee);
     if (change_amount < 0) {
         throw CreateTxError(_("MWEB change calculation failed"));
     }
