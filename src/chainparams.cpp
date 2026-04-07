@@ -44,9 +44,10 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * transaction cannot be spent since it did not originally exist in the
  * database.
  *
- * BurritoCoin genesis block (mined 2026-03-18).
+ * BurritoCoin genesis block (mined 2026-04-07, scrypt PoW).
  *
- * CBlock(hash=00000f4b714b973787f41b7bf17002a796a3975b2556a6717f8ab7065c0da822, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a, nTime=1773844916, nBits=0x1e0ffff0, nNonce=457019, vtx=1)
+ * CBlock(hash=<recompute>, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a, nTime=1773844916, nBits=0x1e0ffff0, nNonce=551616, vtx=1)
+ * scrypt PoW hash: 00000a818a629918d2b5344dee71d73f02445b95b3e07fb258f25ce0b7585fd8
  *   CTransaction(ver=1, vin.size=1, vout.size=1, nLockTime=0)
  *     CTxIn(COutPoint(000000, -1), coinbase)
  *     CTxOut(nValue=148000000.00000000, scriptPubKey=04dd6fb3690403f42cc580ad674b7...)
@@ -130,7 +131,8 @@ public:
         m_assumed_chain_state_size = 2;
 
         // Genesis block carries the 148,000,000 BRTO premine.
-        genesis = CreateGenesisBlock(1773844916, 457019, 0x1e0ffff0, 1, 148000000 * COIN);
+        // nNonce=551616 was found by scrypt PoW mining (scrypt hash: 00000a818a629918d2b5344dee71d73f02445b95b3e07fb258f25ce0b7585fd8)
+        genesis = CreateGenesisBlock(1773844916, 551616, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -237,10 +239,8 @@ public:
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
 
-        // Use the same genesis block as mainnet (same nTime/nNonce, already mined).
-        // The networks are distinguished by message-start bytes, ports, and address
-        // prefixes — sharing a genesis block hash is standard practice (cf. Litecoin).
-        genesis = CreateGenesisBlock(1773844916, 457019, 0x1e0ffff0, 1, 148000000 * COIN);
+        // nNonce=399286 was found by scrypt PoW mining (scrypt hash: 00000ee1f4933cdb8d0a3ae049fd84fe13d7a8ef92dd4faa0e23534ce6170b4d)
+        genesis = CreateGenesisBlock(1773844917, 399286, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
