@@ -129,8 +129,7 @@ public:
         m_assumed_chain_state_size = 2;
 
         // Genesis block carries the 148,000,000 BRTO premine.
-        // BRTO-TODO: re-mine genesis (new nNonce/nTime) and update hash assertions below.
-        genesis = CreateGenesisBlock(1317972665, 2084524493, 0x1e0ffff0, 1, 148000000 * COIN);
+        genesis = CreateGenesisBlock(1773844916, 551616, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -227,8 +226,7 @@ public:
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
 
-        // BRTO-TODO: re-mine testnet genesis and update hash assertions below.
-        genesis = CreateGenesisBlock(1486949366, 293345, 0x1e0ffff0, 1, 148000000 * COIN);
+        genesis = CreateGenesisBlock(1773844917, 399286, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
