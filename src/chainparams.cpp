@@ -237,7 +237,10 @@ public:
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
 
-        genesis = CreateGenesisBlock(1773844917, 1858828, 0x1e0ffff0, 1, 148000000 * COIN);
+        // Use the same genesis block as mainnet (same nTime/nNonce, already mined).
+        // The networks are distinguished by message-start bytes, ports, and address
+        // prefixes — sharing a genesis block hash is standard practice (cf. Litecoin).
+        genesis = CreateGenesisBlock(1773844916, 457019, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
