@@ -654,11 +654,18 @@ case $host in
          dnl It's safe to add these paths even if the functionality is disabled by
          dnl the user (--without-wallet or --without-gui for example).
 
-         if test "x$use_bdb" != xno && $BREW list --versions berkeley-db4 >/dev/null && test "x$BDB_CFLAGS" = "x" && test "x$BDB_LIBS" = "x"; then
-           bdb_prefix=$($BREW --prefix berkeley-db4 2>/dev/null)
-           dnl This must precede the call to BURRITOCOIN_FIND_BDB48 below.
-           BDB_CFLAGS="-I$bdb_prefix/include"
-           BDB_LIBS="-L$bdb_prefix/lib -ldb_cxx-4.8"
+         if test "x$use_bdb" != xno && test "x$BDB_CFLAGS" = "x" && test "x$BDB_LIBS" = "x"; then
+           dnl Prefer berkeley-db (5.3) over berkeley-db4 on Homebrew.
+           if $BREW list --versions berkeley-db >/dev/null 2>&1; then
+             bdb_prefix=$($BREW --prefix berkeley-db 2>/dev/null)
+             BDB_CFLAGS="-I$bdb_prefix/include"
+             BDB_LIBS="-L$bdb_prefix/lib -ldb_cxx"
+           elif $BREW list --versions berkeley-db4 >/dev/null 2>&1; then
+             bdb_prefix=$($BREW --prefix berkeley-db4 2>/dev/null)
+             dnl This must precede the call to BURRITOCOIN_FIND_BDB48 below.
+             BDB_CFLAGS="-I$bdb_prefix/include"
+             BDB_LIBS="-L$bdb_prefix/lib -ldb_cxx-4.8"
+           fi
          fi
          openssl_prefix=$($BREW --prefix openssl 2>/dev/null)
          if test x$openssl_prefix != x; then
