@@ -45,13 +45,15 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * database.
  *
  * BurritoCoin genesis block (mined 2026-04-07, scrypt PoW).
+ * hashMerkleRoot is the BurritoCoin txid of the coinbase (differs from a plain
+ * Bitcoin txid because CTransaction serialization includes the MWEB field).
  *
- * CBlock(hash=<recompute>, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a, nTime=1773844916, nBits=0x1e0ffff0, nNonce=551616, vtx=1)
- * scrypt PoW hash: 00000a818a629918d2b5344dee71d73f02445b95b3e07fb258f25ce0b7585fd8
- *   CTransaction(ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase)
- *     CTxOut(nValue=148000000.00000000, scriptPubKey=04dd6fb3690403f42cc580ad674b7...)
- *   vMerkleTree: 5370f1ef9a7a1861b679e158c76bd848d5a6431f9d2d1c805fb2060ff67a4c5a
+ * mainnet: nTime=1773844916, nNonce=1335344
+ *   scrypt PoW hash: 00000c3afee84031d323748205bc7e83f49a7ae5bdb3c5be481915f2f129b5b1
+ *   hashMerkleRoot:  18d490a7619f298f2027a92357672e8482b1809199945887bce12094321ed647
+ * testnet: nTime=1773844917, nNonce=710063
+ *   scrypt PoW hash: 00000e7ec2b699d5a91a64c9d8a7435b87ce433e2a7128c338dcad24325370fc
+ *   hashMerkleRoot:  18d490a7619f298f2027a92357672e8482b1809199945887bce12094321ed647
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -131,8 +133,8 @@ public:
         m_assumed_chain_state_size = 2;
 
         // Genesis block carries the 148,000,000 BRTO premine.
-        // nNonce=551616 was found by scrypt PoW mining (scrypt hash: 00000a818a629918d2b5344dee71d73f02445b95b3e07fb258f25ce0b7585fd8)
-        genesis = CreateGenesisBlock(1773844916, 551616, 0x1e0ffff0, 1, 148000000 * COIN);
+        // nNonce=1335344, scrypt hash=00000c3afee84031d323748205bc7e83f49a7ae5bdb3c5be481915f2f129b5b1
+        genesis = CreateGenesisBlock(1773844916, 1335344, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -240,7 +242,8 @@ public:
         m_assumed_chain_state_size = 1;
 
         // nNonce=399286 was found by scrypt PoW mining (scrypt hash: 00000ee1f4933cdb8d0a3ae049fd84fe13d7a8ef92dd4faa0e23534ce6170b4d)
-        genesis = CreateGenesisBlock(1773844917, 399286, 0x1e0ffff0, 1, 148000000 * COIN);
+        // nNonce=710063, scrypt hash=00000e7ec2b699d5a91a64c9d8a7435b87ce433e2a7128c338dcad24325370fc
+        genesis = CreateGenesisBlock(1773844917, 710063, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
