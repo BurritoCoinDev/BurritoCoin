@@ -41,7 +41,7 @@ Optional dependencies:
  Library     | Purpose          | Description
  ------------|------------------|----------------------
  miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb4.8    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
+ libdb5.3    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
  qt          | GUI              | GUI toolkit (only needed when GUI enabled)
  libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
  univalue    | Utility          | JSON parsing and encoding (bundled version will be used unless --with-system-univalue passed to configure)
@@ -81,20 +81,15 @@ Build requirements:
 
 Now, you can either build from self-compiled [depends](/depends/README.md) or install the required dependencies:
 
-    sudo apt-get install libevent-dev libboost-system-dev libboost-filesystem-dev libboost-test-dev libboost-thread-dev libfmt-dev
+    sudo apt-get install libevent-dev libboost-all-dev libfmt-dev
 
-BerkeleyDB is required for the wallet.
+BerkeleyDB 5.3 is required for the wallet. Install it with:
 
-Ubuntu and Debian have their own `libdb-dev` and `libdb++-dev` packages, but these will install
-BerkeleyDB 5.1 or later. This will break binary wallet compatibility with the distributed executables, which
-are based on BerkeleyDB 4.8. If you do not care about wallet compatibility,
-pass `--with-incompatible-bdb` to configure.
-
-Otherwise, you can build from self-compiled `depends` (see above).
+    sudo apt-get install libdb++-dev
 
 SQLite is required for the wallet:
 
-    sudo apt install libsqlite3-dev
+    sudo apt-get install libsqlite3-dev
 
 To build BurritoCoin Core without wallet, see [*Disable-wallet mode*](/doc/build-unix.md#disable-wallet-mode)
 
@@ -131,7 +126,7 @@ built by default.
 
 Build requirements:
 
-    sudo dnf install gcc-c++ libtool make autoconf automake libevent-devel boost-devel libdb4-devel libdb4-cxx-devel python3 fmt
+    sudo dnf install gcc-c++ libtool make autoconf automake libevent-devel boost-devel libdb-devel libdb-cxx-devel sqlite-devel python3 fmt
 
 Optional (see `--with-miniupnpc` and `--enable-upnp-default`):
 
@@ -173,15 +168,11 @@ turned off by default.  See the configure options for upnp behavior desired:
 
 Berkeley DB
 -----------
-It is recommended to use Berkeley DB 4.8. If you have to build it yourself,
-you can use [the installation script included in contrib/](/contrib/install_db4.sh)
-like so:
+BurritoCoin requires Berkeley DB 5.3. On Ubuntu/Debian, install the system package:
 
-```shell
-./contrib/install_db4.sh `pwd`
-```
+    sudo apt-get install libdb++-dev
 
-from the root of the repository.
+This installs BDB 5.3, which is natively supported — no `--with-incompatible-bdb` flag is needed.
 
 **Note**: You only need Berkeley DB if the wallet is enabled (see [*Disable-wallet mode*](/doc/build-unix.md#disable-wallet-mode)).
 
@@ -247,7 +238,7 @@ disable-wallet mode with:
 
     ./configure --disable-wallet
 
-In this case there is no dependency on Berkeley DB 4.8 and SQLite.
+In this case there is no dependency on Berkeley DB 5.3 and SQLite.
 
 Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
 
@@ -270,11 +261,9 @@ This example lists the steps necessary to setup and build a command line only, n
     make check
 
 Note:
-Enabling wallet support requires either compiling against a Berkeley DB newer than 4.8 (package `db`) using `--with-incompatible-bdb`,
-or building and depending on a local version of Berkeley DB 4.8. The readily available Arch Linux packages are currently built using
-`--with-incompatible-bdb` according to the [PKGBUILD](https://projects.archlinux.org/svntogit/community.git/tree/burritocoin/trunk/PKGBUILD).
-As mentioned above, when maintaining portability of the wallet between the standard BurritoCoin Core distributions and independently built
-node software is desired, Berkeley DB 4.8 must be used.
+Enabling wallet support requires Berkeley DB 5.3 (package `db`). Install it with:
+
+    pacman -S db
 
 
 ARM Cross-compilation
