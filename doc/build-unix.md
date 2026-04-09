@@ -77,30 +77,15 @@ Finally, clang (often less resource hungry) can be used instead of gcc, which is
 
 Build requirements:
 
-    sudo apt-get install build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 libssl-dev
+Install all required dependencies with a single command:
 
-Now, you can either build from self-compiled [depends](/depends/README.md) or install the required dependencies:
+    sudo apt-get install build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev libfmt-dev libdb++-dev libsqlite3-dev
 
-    sudo apt-get install libevent-dev libboost-all-dev libfmt-dev
+Optional (ZMQ, UPnP) — install if needed:
 
-BerkeleyDB 5.3 is required for the wallet. Install it with:
-
-    sudo apt-get install libdb++-dev
-
-SQLite is required for the wallet:
-
-    sudo apt-get install libsqlite3-dev
+    sudo apt-get install libminiupnpc-dev libzmq3-dev
 
 To build BurritoCoin Core without wallet, see [*Disable-wallet mode*](/doc/build-unix.md#disable-wallet-mode)
-
-
-Optional (see `--with-miniupnpc` and `--enable-upnp-default`):
-
-    sudo apt-get install libminiupnpc-dev
-
-ZMQ dependencies (provides ZMQ API):
-
-    sudo apt-get install libzmq3-dev
 
 GUI dependencies:
 
