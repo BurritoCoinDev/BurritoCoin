@@ -37,10 +37,10 @@ BOOST_FIXTURE_TEST_CASE(txindex_initial_sync, TestChain100Setup)
         UninterruptibleSleep(std::chrono::milliseconds{100});
     }
 
-    // Check that txindex excludes genesis block transactions.
+    // Check that txindex includes genesis block transactions (coinbase is spendable).
     const CBlock& genesis_block = Params().GenesisBlock();
     for (const auto& txn : genesis_block.vtx) {
-        BOOST_CHECK(!txindex.FindTx(txn->GetHash(), block_hash, tx_disk));
+        BOOST_CHECK(txindex.FindTx(txn->GetHash(), block_hash, tx_disk));
     }
 
     // Check that txindex has all txs that were in the chain before it started.
