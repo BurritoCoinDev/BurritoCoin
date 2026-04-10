@@ -154,6 +154,8 @@ public:
             printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
             printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
             printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+            fflush(stdout);
+            exit(0);
         }
 #endif
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -281,6 +283,8 @@ public:
             printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
             printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
             printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+            fflush(stdout);
+            exit(0);
         }
 #endif
         consensus.hashGenesisBlock = genesis.GetHash();
