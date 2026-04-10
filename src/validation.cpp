@@ -2287,8 +2287,18 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     LogPrint(BCLog::BENCH, "    - Verify %u txins: %.2fms (%.3fms/txin) [%.2fs (%.2fms/blk)]\n", nInputs - 1, MILLI * (nTime4 - nTime2), nInputs <= 1 ? 0 : MILLI * (nTime4 - nTime2) / (nInputs-1), nTimeVerify * MICRO, nTimeVerify * MILLI / nBlocksTotal);
 
     // MWEB: Check activation
-    if (!MWEB::Node::ConnectBlock(block, chainparams.GetConsensus(), pindex->pprev, blockundo, *view.GetMWEBCacheView(), state)) {
-        return false;
+    {
+        auto mweb_view = view.GetMWEBCacheView();
+        if (!mweb_view) {
+            if (!block.mweb_block.IsNull()) {
+                return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "mweb-view-null", "MWEB view not initialized");
+            }
+            // Non-MWEB block with no view: ConnectBlock would be a no-op — skip safely
+        } else {
+            if (!MWEB::Node::ConnectBlock(block, chainparams.GetConsensus(), pindex->pprev ? pindex->pprev : pindex, blockundo, *mweb_view, state)) {
+                return false;
+            }
+        }
     }
 
     if (fJustCheck)
@@ -3139,6 +3149,11 @@ bool PreciousBlock(BlockValidationState& state, const CChainParams& params, CBlo
 
 bool CChainState::InvalidateBlock(BlockValidationState& state, const CChainParams& chainparams, CBlockIndex *pindex)
 {
+    // Cannot invalidate the genesis block — there is no prior block to revert to.
+    if (!pindex->pprev) {
+        return state.Invalid(BlockValidationResult::BLOCK_CACHED_INVALID, "bad-invalidate-genesis", "Cannot invalidate the genesis block");
+    }
+
     CBlockIndex* to_mark_failed = pindex;
     bool pindex_was_in_chain = false;
     int disconnected = 0;
