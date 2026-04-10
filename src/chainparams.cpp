@@ -13,6 +13,8 @@
 #include <util/strencodings.h>
 #include <versionbitsinfo.h>
 
+#include <arith_uint256.h>
+
 #include <assert.h>
 
 #include <boost/algorithm/string/classification.hpp>
@@ -40,25 +42,25 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
 }
 
 /**
- * Build the genesis block. Note that the output of its generation
- * transaction cannot be spent since it did not originally exist in the
- * database.
+ * Build the genesis block. The genesis coinbase IS spendable — it pays to a
+ * P2PK output whose private key is held by the project founders.
  *
- * BurritoCoin genesis block (mined 2026-04-07, scrypt PoW).
+ * BurritoCoin genesis block (scrypt PoW).
  * hashMerkleRoot is the BurritoCoin txid of the coinbase (differs from a plain
  * Bitcoin txid because CTransaction serialization includes the MWEB field).
  *
- * mainnet: nTime=1773844916, nNonce=1335344
- *   scrypt PoW hash: 00000c3afee84031d323748205bc7e83f49a7ae5bdb3c5be481915f2f129b5b1
- *   hashMerkleRoot:  18d490a7619f298f2027a92357672e8482b1809199945887bce12094321ed647
- * testnet: nTime=1773844917, nNonce=710063
- *   scrypt PoW hash: 00000e7ec2b699d5a91a64c9d8a7435b87ce433e2a7128c338dcad24325370fc
- *   hashMerkleRoot:  18d490a7619f298f2027a92357672e8482b1809199945887bce12094321ed647
+ * The 148,000,000 BRTO genesis premine becomes spendable after 100
+ * confirmations, like any other coinbase output.
+ *
+ * To re-mine the genesis nonces, build with -DMINE_GENESIS:
+ *   ./configure CXXFLAGS="-DMINE_GENESIS" --without-gui --disable-tests --disable-bench
+ *   make -j1
+ *   ./src/burritocoind   # prints nNonce, hashes, then exits
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     const char* pszTimestamp = "WSJ 18/Mar/2026 Finance Bros to Tech Bros: Don’t Mess With My Bloomberg Terminal";
-    const CScript genesisOutputScript = CScript() << ParseHex("04dd6fb3690403f42cc580ad674b72861c9962fc2dd82dda5a7287601b476394afc50de95f27f40411d94056bc1b7c119e33a274ea213ac8af18d319396bb1e00f") << OP_CHECKSIG;
+    const CScript genesisOutputScript = CScript() << ParseHex("047c70e6f341e7dc32dc92a84435cdd3a845f6d242b01b71b1940fe5174f2c054ce2a54c9ce551f31516512fb3bcf2e87e2e1ddff863a332b91f7c9004a74fe8a9") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
@@ -132,9 +134,27 @@ public:
         m_assumed_blockchain_size = 40;
         m_assumed_chain_state_size = 2;
 
-        // Genesis block carries the 148,000,000 BRTO premine.
-        // nNonce=1335344, scrypt hash=00000c3afee84031d323748205bc7e83f49a7ae5bdb3c5be481915f2f129b5b1
-        genesis = CreateGenesisBlock(1773844916, 1335344, 0x1e0ffff0, 1, 148000000 * COIN);
+        // Genesis block carries the 148,000,000 BRTO premine (spendable).
+        genesis = CreateGenesisBlock(1773844916, 0, 0x1e0ffff0, 1, 148000000 * COIN);
+#ifdef MINE_GENESIS
+        {
+            arith_uint256 bnTarget;
+            bool fNeg, fOvf;
+            bnTarget.SetCompact(genesis.nBits, &fNeg, &fOvf);
+            printf("Mining mainnet genesis block...\n");
+            printf("Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+            while (UintToArith256(genesis.GetPoWHash()) > bnTarget) {
+                ++genesis.nNonce;
+                if (genesis.nNonce % 1000000 == 0)
+                    printf("  nNonce=%u ...\n", genesis.nNonce);
+            }
+            printf("MAINNET GENESIS MINED!\n");
+            printf("  nNonce=%u\n", genesis.nNonce);
+            printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
+            printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
+            printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+        }
+#endif
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -241,9 +261,27 @@ public:
         m_assumed_blockchain_size = 4;
         m_assumed_chain_state_size = 1;
 
-        // nNonce=399286 was found by scrypt PoW mining (scrypt hash: 00000ee1f4933cdb8d0a3ae049fd84fe13d7a8ef92dd4faa0e23534ce6170b4d)
-        // nNonce=710063, scrypt hash=00000e7ec2b699d5a91a64c9d8a7435b87ce433e2a7128c338dcad24325370fc
-        genesis = CreateGenesisBlock(1773844917, 710063, 0x1e0ffff0, 1, 148000000 * COIN);
+        // Genesis block carries the 148,000,000 BRTO testnet premine (spendable).
+        genesis = CreateGenesisBlock(1773844917, 0, 0x1e0ffff0, 1, 148000000 * COIN);
+#ifdef MINE_GENESIS
+        {
+            arith_uint256 bnTarget;
+            bool fNeg, fOvf;
+            bnTarget.SetCompact(genesis.nBits, &fNeg, &fOvf);
+            printf("Mining testnet genesis block...\n");
+            printf("Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+            while (UintToArith256(genesis.GetPoWHash()) > bnTarget) {
+                ++genesis.nNonce;
+                if (genesis.nNonce % 1000000 == 0)
+                    printf("  nNonce=%u ...\n", genesis.nNonce);
+            }
+            printf("TESTNET GENESIS MINED!\n");
+            printf("  nNonce=%u\n", genesis.nNonce);
+            printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
+            printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
+            printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
+        }
+#endif
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear();
