@@ -40,9 +40,8 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
 }
 
 /**
- * Build the genesis block. Note that the output of its generation
- * transaction cannot be spent since it did not originally exist in the
- * database.
+ * Build the genesis block. The genesis coinbase is spendable — its outputs
+ * are added to the UTXO set when the block is connected.
  *
  * BurritoCoin genesis block (mined 2026-03-18).
  *
