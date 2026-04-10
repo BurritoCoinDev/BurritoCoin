@@ -43,7 +43,8 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
 
 /**
  * Build the genesis block. The genesis coinbase IS spendable — it pays to a
- * P2PK output whose private key is held by the project founders.
+ * P2PK output whose private key is held by the project founders. Its outputs
+ * are added to the UTXO set when the block is connected.
  *
  * BurritoCoin genesis block (scrypt PoW).
  * hashMerkleRoot is the BurritoCoin txid of the coinbase (differs from a plain
