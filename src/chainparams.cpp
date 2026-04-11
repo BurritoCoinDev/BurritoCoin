@@ -46,12 +46,22 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * P2PK output whose private key is held by the project founders. Its outputs
  * are added to the UTXO set when the block is connected.
  *
- * BurritoCoin mainnet genesis block (scrypt PoW, mined 2026-04-11):
+ * BurritoCoin genesis blocks (scrypt PoW, mined 2026-04-11):
+ *
+ * Mainnet:
  *   nTime       = 1773844916
  *   nNonce      = 1958489
  *   nBits       = 0x1e0ffff0
  *   PoW Hash    = 000001a63fd5f6448e30f1708d19c15c32cee5bb7aeffdd69eca02452e2db11e
  *   Block Hash  = 44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce
+ *   Merkle Root = d347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83
+ *
+ * Testnet:
+ *   nTime       = 1773844917
+ *   nNonce      = 91076
+ *   nBits       = 0x1e0ffff0
+ *   PoW Hash    = 00000cc8ce4bcda38497f80d511025a0aa9b231e2ed3a5c31229054b199a1645
+ *   Block Hash  = b909940074cb31d9b421483f3a65f3f049e20d3448641128bd07c675ba55f53f
  *   Merkle Root = d347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83
  *
  * The 148,000,000 BRTO genesis premine becomes spendable after 100
@@ -250,29 +260,10 @@ public:
         m_assumed_chain_state_size = 1;
 
         // Genesis block carries the 148,000,000 BRTO testnet premine (spendable).
-        genesis = CreateGenesisBlock(1773844917, 0, 0x1e0ffff0, 1, 148000000 * COIN);
-#ifdef MINE_GENESIS
-        {
-            arith_uint256 bnTarget;
-            bool fNeg, fOvf;
-            bnTarget.SetCompact(genesis.nBits, &fNeg, &fOvf);
-            printf("Mining testnet genesis block...\n");
-            printf("Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-            while (UintToArith256(genesis.GetPoWHash()) > bnTarget) {
-                ++genesis.nNonce;
-                if (genesis.nNonce % 1000000 == 0)
-                    printf("  nNonce=%u ...\n", genesis.nNonce);
-            }
-            printf("TESTNET GENESIS MINED!\n");
-            printf("  nNonce=%u\n", genesis.nNonce);
-            printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
-            printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
-            printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-            fflush(stdout);
-            exit(0);
-        }
-#endif
+        genesis = CreateGenesisBlock(1773844917, 91076, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock == uint256S("0xb909940074cb31d9b421483f3a65f3f049e20d3448641128bd07c675ba55f53f"));
+        assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
