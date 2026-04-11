@@ -46,9 +46,13 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * P2PK output whose private key is held by the project founders. Its outputs
  * are added to the UTXO set when the block is connected.
  *
- * BurritoCoin genesis block (scrypt PoW).
- * hashMerkleRoot is the BurritoCoin txid of the coinbase (differs from a plain
- * Bitcoin txid because CTransaction serialization includes the MWEB field).
+ * BurritoCoin mainnet genesis block (scrypt PoW, mined 2026-04-11):
+ *   nTime       = 1773844916
+ *   nNonce      = 1958489
+ *   nBits       = 0x1e0ffff0
+ *   PoW Hash    = 000001a63fd5f6448e30f1708d19c15c32cee5bb7aeffdd69eca02452e2db11e
+ *   Block Hash  = 44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce
+ *   Merkle Root = d347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83
  *
  * The 148,000,000 BRTO genesis premine becomes spendable after 100
  * confirmations, like any other coinbase output.
@@ -136,29 +140,10 @@ public:
         m_assumed_chain_state_size = 2;
 
         // Genesis block carries the 148,000,000 BRTO premine (spendable).
-        genesis = CreateGenesisBlock(1773844916, 0, 0x1e0ffff0, 1, 148000000 * COIN);
-#ifdef MINE_GENESIS
-        {
-            arith_uint256 bnTarget;
-            bool fNeg, fOvf;
-            bnTarget.SetCompact(genesis.nBits, &fNeg, &fOvf);
-            printf("Mining mainnet genesis block...\n");
-            printf("Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-            while (UintToArith256(genesis.GetPoWHash()) > bnTarget) {
-                ++genesis.nNonce;
-                if (genesis.nNonce % 1000000 == 0)
-                    printf("  nNonce=%u ...\n", genesis.nNonce);
-            }
-            printf("MAINNET GENESIS MINED!\n");
-            printf("  nNonce=%u\n", genesis.nNonce);
-            printf("  PoW Hash: %s\n", genesis.GetPoWHash().ToString().c_str());
-            printf("  Block Hash: %s\n", genesis.GetHash().ToString().c_str());
-            printf("  Merkle Root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-            fflush(stdout);
-            exit(0);
-        }
-#endif
+        genesis = CreateGenesisBlock(1773844916, 1958489, 0x1e0ffff0, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock == uint256S("0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce"));
+        assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
