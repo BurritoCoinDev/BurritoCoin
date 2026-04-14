@@ -155,13 +155,7 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce"));
         assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
-        // Note that of those which support the service bits prefix, most only support a subset of
-        // possible options.
-        // This is fine at runtime as we'll fall back to using them as an addrfetch if they don't support the
-        // service bits we want, but we should get them updated to support all service bits wanted by any
-        // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("dnsseed.burritocointools.com");
-        vSeeds.emplace_back("dnsseed.burritocoinpool.org");
+        vSeeds.clear(); // DNS seeds not yet configured — peers connect via fixed seeds.
 
         // BurritoCoin-specific prefixes (unique, not shared with Bitcoin or Litecoin):
         //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
@@ -179,7 +173,7 @@ public:
         bech32_hrp = "brto";
         mweb_hrp = "brtomweb";
 
-        vFixedSeeds.clear(); // No fixed seeds yet — BurritoCoin mainnet has not launched.
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -265,10 +259,8 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0xb909940074cb31d9b421483f3a65f3f049e20d3448641128bd07c675ba55f53f"));
         assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
-        vFixedSeeds.clear();
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
         vSeeds.clear();
-        // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("testnet-seed.burritocointools.com");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
