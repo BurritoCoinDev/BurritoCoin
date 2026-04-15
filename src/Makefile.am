@@ -673,21 +673,13 @@ burritocoind_SOURCES = $(burritocoin_daemon_sources)
 burritocoind_CPPFLAGS = $(burritocoin_bin_cppflags)
 burritocoind_CXXFLAGS = $(burritocoin_bin_cxxflags)
 burritocoind_LDFLAGS = $(burritocoin_bin_ldflags)
-if TARGET_WINDOWS
 burritocoind_LDADD = -Wl,--start-group $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd) -Wl,--end-group
-else
-burritocoind_LDADD = $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd)
-endif
 
 burritocoin_node_SOURCES = $(burritocoin_daemon_sources)
 burritocoin_node_CPPFLAGS = $(burritocoin_bin_cppflags)
 burritocoin_node_CXXFLAGS = $(burritocoin_bin_cxxflags)
 burritocoin_node_LDFLAGS = $(burritocoin_bin_ldflags)
-if TARGET_WINDOWS
 burritocoin_node_LDADD = -Wl,--start-group $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd) -Wl,--end-group
-else
-burritocoin_node_LDADD = $(LIBBURRITOCOIN_SERVER) $(burritocoin_bin_ldadd)
-endif
 
 # burritocoin-cli binary #
 burritocoin_cli_SOURCES = burritocoin-cli.cpp
