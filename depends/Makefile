@@ -38,7 +38,7 @@ NO_WALLET ?=
 NO_ZMQ ?=
 NO_UPNP ?=
 MULTIPROCESS ?=
-FALLBACK_DOWNLOAD_PATH ?= https://burritocoin.org/depends-sources
+FALLBACK_DOWNLOAD_PATH ?= https://burritoco.in/depends-sources
 
 BUILD = $(shell ./config.guess)
 HOST ?= $(BUILD)

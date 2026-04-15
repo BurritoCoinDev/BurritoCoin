@@ -3,7 +3,7 @@ BurritoCoin Core integration/staging tree
 
 [![Build Status](https://travis-ci.org/burritocoin-project/burritocoin.svg?branch=master)](https://travis-ci.org/burritocoin-project/burritocoin)
 
-https://burritocoin.org
+https://burritoco.in
 
 What is BurritoCoin?
 ----------------
@@ -15,7 +15,7 @@ out collectively by the network. BurritoCoin Core is the name of open source
 software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the BurritoCoin Core software, see [https://burritocoin.org](https://burritocoin.org).
+the BurritoCoin Core software, see [https://burritoco.in](https://burritoco.in).
 
 License
 -------

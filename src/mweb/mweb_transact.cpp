@@ -125,7 +125,9 @@ void Transact::AddMWEBTx(InProcessTx& new_tx)
     // Lookup the change paid on the BRTO side
     CAmount brto_change = 0;
     if (new_tx.change_position != -1) {
-        assert(new_tx.tx.vout.size() > (size_t)new_tx.change_position);
+        if (new_tx.tx.vout.size() <= (size_t)new_tx.change_position) {
+            throw CreateTxError(_("Internal error: change_position out of bounds in vout"));
+        }
         brto_change = new_tx.tx.vout[new_tx.change_position].nValue;
     }
 
