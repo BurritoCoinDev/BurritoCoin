@@ -111,6 +111,7 @@ LIBMW_CPPFLAGS = -I$(srcdir) -I$(srcdir)/libmw/include -I$(srcdir)/libmw/deps/cr
 libmw_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES) $(LIBMW_CPPFLAGS)
 libmw_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libmw_a_SOURCES = \
+	support/cleanse.cpp \
 	libmw/src/common/Logger.cpp \
 	libmw/src/crypto/Bulletproofs.cpp \
 	libmw/src/crypto/ConversionUtil.cpp \
