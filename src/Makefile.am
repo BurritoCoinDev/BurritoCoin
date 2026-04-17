@@ -632,6 +632,10 @@ libburritocoin_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
+if TARGET_WINDOWS
+AM_LDFLAGS += -lbcrypt
+endif
+
 # cli: shared between burritocoin-cli and burritocoin-qt
 libburritocoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BURRITOCOIN_INCLUDES)
 libburritocoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
