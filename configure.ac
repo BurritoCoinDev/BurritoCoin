@@ -1419,6 +1419,7 @@ if test "x$use_zmq" = xyes; then
   case $host in
     *mingw*)
       ZMQ_CFLAGS="$ZMQ_CFLAGS -DZMQ_STATIC"
+      ZMQ_LIBS="$ZMQ_LIBS -lsodium"
     ;;
   esac
 fi
