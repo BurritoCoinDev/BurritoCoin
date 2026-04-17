@@ -633,7 +633,7 @@ AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
 if TARGET_WINDOWS
-AM_LDFLAGS += -lbcrypt
+WINDOWS_LIBS = -lbcrypt
 endif
 
 # cli: shared between burritocoin-cli and burritocoin-qt
@@ -672,7 +672,7 @@ burritocoin_bin_ldadd = \
   $(LIBSECP256K1) \
   $(LIBMW)
 
-burritocoin_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(MWEB_LIBS)
+burritocoin_bin_ldadd += $(BOOST_LIBS) $(WINDOWS_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(MWEB_LIBS)
 
 burritocoind_SOURCES = $(burritocoin_daemon_sources)
 burritocoind_CPPFLAGS = $(burritocoin_bin_cppflags)
@@ -702,7 +702,7 @@ burritocoin_cli_LDADD = \
   $(LIBBURRITOCOIN_UTIL) \
   $(LIBBURRITOCOIN_CRYPTO)
 
-burritocoin_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS) $(MWEB_LIBS)
+burritocoin_cli_LDADD += $(BOOST_LIBS) $(WINDOWS_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS) $(MWEB_LIBS)
 #
 
 # burritocoin-tx binary #
@@ -724,7 +724,7 @@ burritocoin_tx_LDADD = \
   $(LIBSECP256K1) \
   $(LIBMW)
 
-burritocoin_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(MWEB_LIBS)
+burritocoin_tx_LDADD += $(BOOST_LIBS) $(WINDOWS_LIBS) $(CRYPTO_LIBS) $(MWEB_LIBS)
 
 # burritocoin-wallet binary #
 burritocoin_wallet_SOURCES = burritocoin-wallet.cpp
