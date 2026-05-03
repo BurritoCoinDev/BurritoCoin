@@ -85,8 +85,7 @@ To contribute a patch, the workflow is as follows:
   1. Create topic branch
   1. Commit patches
 
-For GUI-related issues or pull requests, the https://github.com/burritocoin-core/gui repository should be used.
-For all other issues and pull requests, the https://github.com/burritocoin/burritocoin node repository should be used.
+All issues and pull requests (including GUI-related ones) should be filed against the main repository at https://github.com/burritocoindev/burritocoin.
 
 The master branch for all monotree repositories is identical.
 
@@ -416,11 +415,9 @@ Github-Pull: #<PR number>
 Rebased-From: <commit hash of the original commit>
 ```
 
-Have a look at [an example backport PR](
-https://github.com/burritocoin/burritocoin/pull/16189).
-
-Also see the [backport.py script](
-https://github.com/burritocoin-core/burritocoin-maintainer-tools#backport).
+Backports follow the standard Bitcoin Core / Litecoin process: cherry-pick the
+upstream commit onto the appropriate stable branch and open a PR titled
+`[X.Y] Backport: <upstream commit subject>`.
 
 Release Policy
 --------------

@@ -1,9 +1,11 @@
-0.21.2 Release Notes
-====================
+Upstream Bitcoin Core 0.21.2 Release Notes (historical)
+=======================================================
 
-BurritoCoin Core version 0.21.2 is now available from:
-
-  <https://bitcoincore.org/bin/burritocoin-core-0.21.2/>
+> **Note:** This document is the verbatim Bitcoin Core 0.21.2 release notes,
+> kept for historical reference of the upstream codebase BurritoCoin was
+> forked from. The download URL and bug-tracker URL below refer to the
+> original upstream project. BurritoCoin Core releases are tracked on
+> <https://github.com/burritocoindev/burritocoin/releases>.
 
 This minor release includes various bug fixes and performance
 improvements, as well as updated translations.

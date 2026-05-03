@@ -1,13 +1,10 @@
 <!-- This issue tracker is only for technical issues related to BurritoCoin Core.
 
-General burritocoin questions and/or support requests and are best directed to the [burritocointalk.io forums](https://burritocointalk.io/).
+General questions and support requests are best directed to the project website at https://burritoco.in/.
 
-For reporting security issues, please contact the BurritoCoin developers on the #burritocoin-dev Freenode IRC channel or alternatively you can email us at contact@burritoco.in.
+For reporting security issues, please email contact@burritoco.in.
 
 If the node is "stuck" during sync or giving "block checksum mismatch" errors, please ensure your hardware is stable by running memtest and observe CPU temperature with a load-test tool such as linpack before creating an issue!
-
-Any report, issue or feature request related to the GUI should be reported at
-https://github.com/burritocoin-core/gui/issues/
 -->
 
 <!-- Describe the issue -->

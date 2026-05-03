@@ -1,12 +1,13 @@
-BurritoCoin Core version 0.21.4 is now available from:
+Upstream Litecoin 0.21.4 Release Notes (historical)
+===================================================
 
- <https://download.bitcoin.org/burritocoin-0.21.4/>.
+> **Note:** This document is the verbatim Litecoin Core 0.21.4 release notes,
+> kept for historical reference of the upstream codebase BurritoCoin was
+> forked from. The download URL and issue tracker referenced below point at
+> the upstream project. BurritoCoin Core releases are tracked on
+> <https://github.com/burritocoindev/burritocoin/releases>.
 
-This is a new patch version release that includes, new features and important security updates.
-
-Please report bugs using the issue tracker at GitHub:
-
-  <https://github.com/litecoin-project/litecoin/issues>
+This is a new patch version release that includes new features and important security updates.
 
 Notable changes
 ===============

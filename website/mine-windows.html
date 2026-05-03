@@ -48,9 +48,9 @@
   <div class="hero-sm">
     <div class="breadcrumb"><a href="/mine.html">← Mine</a></div>
     <h1>🪟 Mining on Windows</h1>
-    <p>About 15 minutes. Works on Windows 10 and Windows 11 (64-bit). No
+    <p>About 20 minutes. Works on Windows 10 and Windows 11 (64-bit). No
        compilers, no WSL — just download two zips, edit one text file, and run
-       two programs.</p>
+       a few commands.</p>
   </div>
 
   <hr class="divider" />
@@ -201,9 +201,12 @@ burritocoind.exe</code></pre>
     <div class="step">
       <span class="step-number">3</span>
       <h3>Back up your wallet</h3>
-      <p>Make sure the node is running again from the previous step (you should
-         see logs scrolling in its window — if not, start it before continuing).
-         Then in your second Command Prompt:</p>
+      <p>Make sure the node is running again from the previous step. Quick check
+         in your second Command Prompt — this should return JSON, not "Connection
+         refused":</p>
+      <pre><code>burritocoin-cli.exe getblockchaininfo</code></pre>
+      <p>If you get "Connection refused", restart the node as in Step 2. Once
+         it's responding:</p>
       <pre><code>burritocoin-cli.exe backupwallet "%USERPROFILE%\Desktop\wallet-backup.dat"</code></pre>
       <p>Copy <code>wallet-backup.dat</code> off this machine — USB stick, cloud
          drive, anywhere. If your drive dies without it, you lose every BRTO in
