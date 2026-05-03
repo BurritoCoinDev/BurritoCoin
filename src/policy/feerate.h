@@ -1,0 +1,87 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2019 The BurritoCoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef BURRITOCOIN_POLICY_FEERATE_H
+#define BURRITOCOIN_POLICY_FEERATE_H
+
+#include <amount.h>
+#include <serialize.h>
+
+#include <string>
+
+const std::string CURRENCY_UNIT = "BRTO"; // One formatted unit
+const std::string CURRENCY_ATOM = "burrioshi"; // One indivisible minimum value unit
+
+/* Used to determine type of fee estimation requested */
+enum class FeeEstimateMode {
+    UNSET,        //!< Use default settings based on other criteria
+    ECONOMICAL,   //!< Force estimateSmartFee to use non-conservative estimates
+    CONSERVATIVE, //!< Force estimateSmartFee to use conservative estimates
+    BRTO_KVB,      //!< Use BRTO/kvB fee rate unit
+    BURRIOSHI_VB, //!< Use burrioshi/vB fee rate unit
+};
+
+/**
+ * Fee rate in burrioshi per kilobyte: CAmount / kB
+ */
+class CFeeRate
+{
+private:
+    CAmount nBurrioshisPerK; // unit is burrioshi-per-1,000-bytes
+    CAmount m_nFeePaid;
+    size_t m_nBytes;
+    uint64_t m_weight;
+
+public:
+    /** Fee rate of 0 burrioshi per kB */
+    CFeeRate() : nBurrioshisPerK(0) { }
+    template<typename I>
+    explicit CFeeRate(const I _nBurrioshisPerK): nBurrioshisPerK(_nBurrioshisPerK) {
+        // We've previously had bugs creep in from silent double->int conversion...
+        static_assert(std::is_integral<I>::value, "CFeeRate should be used without floats");
+    }
+    /** Constructor for a fee rate in burrioshi per kvB (burrioshi/kvB). The size in bytes must not exceed (2^63 - 1).
+     *
+     *  Passing an nBytes value of COIN (1e8) returns a fee rate in burrioshi per vB (burrioshi/vB),
+     *  e.g. (nFeePaid * 1e8 / 1e3) == (nFeePaid / 1e5),
+     *  where 1e5 is the ratio to convert from BRTO/kvB to burrioshi/vB.
+     *
+     *  @param[in] nFeePaid  CAmount fee rate to construct with
+     *  @param[in] nBytes    size_t bytes (units) to construct with
+     *  @returns   fee rate
+     */
+    CFeeRate(const CAmount& nFeePaid, size_t nBytes_, uint64_t mweb_weight);
+    /**
+     * Return the fee in burrioshi for the given size in bytes.
+     */
+    CAmount GetFee(size_t nBytes_) const;
+    /**
+     * Return the fee in burrioshi for the given MWEB weight.
+     */
+    CAmount GetMWEBFee(uint64_t mweb_weight) const;
+    /**
+     * Return the fee in burrioshi for the given size in bytes & MWEB weight.
+     */
+    CAmount GetTotalFee(size_t nBytes, uint64_t mweb_weight) const;
+    /**
+     * Return the fee in burrioshi for a size of 1000 bytes
+     */
+    CAmount GetFeePerK() const { return GetFee(1000); }
+
+    bool MeetsFeePerK(const CAmount& min_fee_per_k) const;
+
+    friend bool operator<(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK < b.nBurrioshisPerK; }
+    friend bool operator>(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK > b.nBurrioshisPerK; }
+    friend bool operator==(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK == b.nBurrioshisPerK; }
+    friend bool operator<=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK <= b.nBurrioshisPerK; }
+    friend bool operator>=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK >= b.nBurrioshisPerK; }
+    friend bool operator!=(const CFeeRate& a, const CFeeRate& b) { return a.nBurrioshisPerK != b.nBurrioshisPerK; }
+    CFeeRate& operator+=(const CFeeRate& a) { nBurrioshisPerK += a.nBurrioshisPerK; return *this; }
+    std::string ToString(const FeeEstimateMode& fee_estimate_mode = FeeEstimateMode::BRTO_KVB) const;
+
+    SERIALIZE_METHODS(CFeeRate, obj) { READWRITE(obj.nBurrioshisPerK); }
+};
+
+#endif //  BURRITOCOIN_POLICY_FEERATE_H

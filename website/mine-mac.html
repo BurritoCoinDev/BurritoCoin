@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine BurritoCoin on macOS — Setup Guide</title>
+  <meta name="description" content="Step-by-step guide to mining BurritoCoin (BRTO) on macOS using cpuminer-opt. Works on Intel and Apple Silicon." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#worth">Worth</a>
+      <a href="/mine.html" class="active">Mine</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <div class="hero-sm">
+    <div class="breadcrumb"><a href="/mine.html">← Mine</a></div>
+    <h1>🍎 Mining on macOS</h1>
+    <p>About 30 minutes. Works on both Intel and Apple Silicon (M1, M2, M3, M4).
+       You'll use Terminal and Homebrew. No Xcode needed beyond the command-line tools.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 1 of 5</div>
+    <h2>Install BurritoCoin Core</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Open Terminal</h3>
+      <p>Press <code>⌘ + Space</code>, type "Terminal", press Enter.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Install Homebrew (if you don't already have it)</h3>
+      <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+      <p>If it's already installed, this command will tell you so. Skip if so.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Install build dependencies</h3>
+      <pre><code>brew install automake libtool boost pkg-config libevent sqlite miniupnpc zeromq fmt</code></pre>
+      <p>Berkeley DB 4.8 (needed for the wallet) isn't available in Homebrew anymore, so
+         we'll build it from a script the BurritoCoin repo ships with — see the next step.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">4</span>
+      <h3>Clone the repo and build Berkeley DB 4.8</h3>
+      <pre><code>git clone https://github.com/burritocoindev/burritocoin.git
+cd burritocoin
+./contrib/install_db4.sh .</code></pre>
+      <p>This downloads and builds BDB 4.8 into a <code>db4/</code> subfolder. Takes about
+         3-5 minutes. When it's done, it prints the exact <code>BDB_*</code> flags to use.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">5</span>
+      <h3>Build BurritoCoin Core</h3>
+      <pre><code>./autogen.sh
+./configure --without-gui --disable-tests --disable-bench \
+  BDB_LIBS="-L$(pwd)/db4/lib -ldb_cxx-4.8" \
+  BDB_CFLAGS="-I$(pwd)/db4/include"
+make -j$(sysctl -n hw.ncpu)
+sudo make install</code></pre>
+      <p>This takes 10-20 minutes. The build produces <code>burritocoind</code> and
+         <code>burritocoin-cli</code>, installed into <code>/usr/local/bin/</code>.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Full build instructions</strong> (including troubleshooting) are in
+      <a href="https://github.com/burritocoindev/burritocoin/blob/master/doc/build-osx.md" target="_blank" rel="noopener">doc/build-osx.md</a>.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 2 of 5</div>
+    <h2>Configure the Node</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Create the config file</h3>
+      <pre><code>mkdir -p ~/Library/Application\ Support/BurritoCoin
+nano ~/Library/Application\ Support/BurritoCoin/burritocoin.conf</code></pre>
+      <p>Paste in:</p>
+      <pre><code>server=1
+daemon=1
+rpcport=9226
+rpcuser=burritouser
+rpcpassword=CHANGE_THIS_TO_SOMETHING_RANDOM
+rpcallowip=127.0.0.1
+rpcbind=127.0.0.1</code></pre>
+      <p>Replace the password with something strong and random.
+         Save: <code>Ctrl+O</code>, <code>Enter</code>, <code>Ctrl+X</code>.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Start the node</h3>
+      <pre><code>burritocoind</code></pre>
+      <p>You'll see "BurritoCoin server starting". Sync should be quick.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 3 of 5</div>
+    <h2>Get a Wallet Address</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Create a wallet and get an address</h3>
+      <pre><code>burritocoin-cli createwallet "mining"
+burritocoin-cli getnewaddress</code></pre>
+      <p><strong>Copy the address</strong> that prints — you'll need it in step 5.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Encrypt the wallet (recommended)</h3>
+      <p>The wallet is unencrypted by default — anyone with access to your Mac can
+         spend your BRTO. Lock it with a passphrase:</p>
+      <pre><code>burritocoin-cli encryptwallet "PICK_A_LONG_RANDOM_PASSPHRASE"</code></pre>
+      <p>The node <strong>shuts down automatically</strong> after this command. Restart it:</p>
+      <pre><code>burritocoind</code></pre>
+      <p>Mining still works without unlocking — rewards go to the address you copied.
+         To <em>spend</em> later, unlock first:</p>
+      <pre><code>burritocoin-cli walletpassphrase "your_passphrase" 60</code></pre>
+      <p>(60 = seconds before it auto-locks again.)</p>
+    </div>
+
+    <div class="callout">
+      <strong>Wallet passphrase ≠ RPC password.</strong> You now have two different
+      secrets. The <strong>RPC password</strong> (in <code>burritocoin.conf</code>)
+      lets cpuminer talk to the node — that's the one you put in the cpuminer
+      command. The <strong>wallet passphrase</strong> (just set above) only protects
+      spending your coins. Don't mix them up.
+    </div>
+
+    <div class="callout warn">
+      <strong>Write the passphrase down somewhere safe.</strong> If you forget it,
+      every BRTO in this wallet is gone forever. There's no recovery, and the
+      backup file is encrypted with the same passphrase.
+    </div>
+
+    <div class="callout warn">
+      <strong>Back up your wallet.</strong> Run
+      <code>burritocoin-cli backupwallet ~/Desktop/wallet-backup.dat</code> and put a copy on
+      a USB drive or somewhere off your laptop.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 4 of 5</div>
+    <h2>Install cpuminer-opt</h2>
+    <p>There's no Homebrew formula for cpuminer-opt with Scrypt support, so we'll build it
+       from source. It's quick.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Install cpuminer-opt's build dependencies</h3>
+      <pre><code>brew install curl openssl gmp jansson</code></pre>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Clone and build</h3>
+      <pre><code>cd ~
+git clone https://github.com/JayDDee/cpuminer-opt.git
+cd cpuminer-opt
+./build.sh</code></pre>
+      <p>If <code>build.sh</code> fails (it uses <code>nproc</code> which doesn't exist on
+         macOS, so this is common), build manually:</p>
+      <pre><code>./autogen.sh
+./configure CFLAGS="-O3" --with-curl
+make -j$(sysctl -n hw.ncpu)</code></pre>
+      <p>The result is a binary called <code>cpuminer</code> in the current folder.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Apple Silicon (M1/M2/M3/M4):</strong> cpuminer-opt is primarily tuned for x86,
+      but Scrypt works fine on ARM. The build above produces a working ARM binary. If you hit
+      issues, an alternative is the original
+      <a href="https://github.com/pooler/cpuminer" target="_blank" rel="noopener">pooler/cpuminer</a>,
+      which is simpler and supports Scrypt cleanly.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 5 of 5</div>
+    <h2>Start Mining</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Verify the node is ready</h3>
+      <p>Sanity-check before launching cpuminer:</p>
+      <pre><code>burritocoin-cli getblockchaininfo
+burritocoin-cli listwallets</code></pre>
+      <p>The first should return JSON with <code>"initialblockdownload": false</code>
+         and <code>blocks ≈ headers</code>. The second should print
+         <code>["mining"]</code> — if it shows <code>[]</code>, run
+         <code>burritocoin-cli loadwallet "mining"</code>. If <code>initialblockdownload</code>
+         is <code>true</code>, wait for sync to finish before mining.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Run the miner</h3>
+      <p>From the <code>cpuminer-opt</code> folder, replace <code>YOUR_PASSWORD</code>
+         with the <em>RPC password</em> from <code>burritocoin.conf</code> and
+         <code>YOUR_BRTO_ADDRESS</code> with the address you copied in Step 3:</p>
+      <pre><code>./cpuminer -a scrypt \
+  -o http://127.0.0.1:9226 \
+  -O burritouser:YOUR_PASSWORD \
+  --coinbase-addr=YOUR_BRTO_ADDRESS</code></pre>
+      <p>You should see lines like:</p>
+      <pre><code>[2026-05-03 14:22:01] 4 of 4 miner threads started using 'scrypt' algorithm
+[2026-05-03 14:22:05] CPU #0: 11.20 kH/s
+[2026-05-03 14:22:05] CPU #1: 11.18 kH/s
+...</code></pre>
+      <p>You're mining. The kH/s lines repeat continuously — that's normal idle
+         hashing.</p>
+    </div>
+
+    <div class="callout">
+      <strong>"accepted" never appears — is something wrong?</strong> No.
+      In <em>solo</em> mining, the <code>accepted: N/N</code> line you may have
+      seen in pool-mining tutorials only appears when you actually find a full
+      block, which on a tiny chain at low difficulty might still be minutes to
+      hours apart. When a block is found, 10 BRTO is added to your wallet —
+      verify with <code>burritocoin-cli getbalance</code>.
+    </div>
+
+    <div class="callout warn">
+      <strong>Heads up — your Mac will get warm.</strong> Mining uses 100% of your CPU. The
+      fans will spin up and the case will get hot. This is normal but you should not run a
+      laptop on battery this way for long. Plug in.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Troubleshooting</div>
+    <h2>Common Problems</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>"Connection refused"</h3>
+        <p>The node isn't running. Run <code>burritocoind</code> first, then verify with
+           <code>burritocoin-cli getblockchaininfo</code>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>"command not found: burritocoind"</h3>
+        <p>The binary didn't make it onto your PATH. Try the full path:
+           <code>/usr/local/bin/burritocoind</code>. On Apple Silicon Homebrew, also check
+           <code>/opt/homebrew/bin/</code>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>cpuminer build fails with "library not found for -lcrypto"</h3>
+        <p>OpenSSL isn't on the linker path. Try:
+           <code>./configure CFLAGS="-O3" LDFLAGS="-L$(brew --prefix openssl)/lib" CPPFLAGS="-I$(brew --prefix openssl)/include"</code></p>
+      </div>
+      <div class="faq-item">
+        <h3>How do I stop mining?</h3>
+        <p>Press <code>Ctrl+C</code> in the Terminal window running cpuminer. Stop the node
+           with <code>burritocoin-cli stop</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="/mine.html">All mining guides</a>
+      · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      · <a href="https://github.com/burritocoindev/burritocoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/burritocoin/.burritocoin" ]; then
+	BURRITOCOIND_DEFAULT_DATADIR="/var/lib/burritocoin/.burritocoin"
+else
+	BURRITOCOIND_DEFAULT_DATADIR="/var/lib/burritocoind"
+fi
+
+BURRITOCOIND_CONFIGFILE=${BURRITOCOIND_CONFIGFILE:-/etc/burritocoin/burritocoin.conf}
+BURRITOCOIND_PIDDIR=${BURRITOCOIND_PIDDIR:-/var/run/burritocoind}
+BURRITOCOIND_PIDFILE=${BURRITOCOIND_PIDFILE:-${BURRITOCOIND_PIDDIR}/burritocoind.pid}
+BURRITOCOIND_DATADIR=${BURRITOCOIND_DATADIR:-${BURRITOCOIND_DEFAULT_DATADIR}}
+BURRITOCOIND_USER=${BURRITOCOIND_USER:-${BURRITOCOIN_USER:-burritocoin}}
+BURRITOCOIND_GROUP=${BURRITOCOIND_GROUP:-burritocoin}
+BURRITOCOIND_BIN=${BURRITOCOIND_BIN:-/usr/bin/burritocoind}
+BURRITOCOIND_NICE=${BURRITOCOIND_NICE:-${NICELEVEL:-0}}
+BURRITOCOIND_OPTS="${BURRITOCOIND_OPTS:-${BURRITOCOIN_OPTS}}"
+
+name="BurritoCoin Core Daemon"
+description="BurritoCoin cryptocurrency P2P network daemon"
+
+command="/usr/bin/burritocoind"
+command_args="-pid=\"${BURRITOCOIND_PIDFILE}\" \
+		-conf=\"${BURRITOCOIND_CONFIGFILE}\" \
+		-datadir=\"${BURRITOCOIND_DATADIR}\" \
+		-daemon \
+		${BURRITOCOIND_OPTS}"
+
+required_files="${BURRITOCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${BURRITOCOIND_USER} \
+			-N ${BURRITOCOIND_NICE} -w 2000"
+pidfile="${BURRITOCOIND_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${BURRITOCOIND_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP}" \
+	"${BURRITOCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP}" \
+	"${BURRITOCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o ${BURRITOCOIND_USER}:${BURRITOCOIND_GROUP} \
+	-m 0660 \
+	${BURRITOCOIND_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${BURRITOCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run burritocoind."
+		eerror "The setting must appear in ${BURRITOCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"BurritoCoin Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

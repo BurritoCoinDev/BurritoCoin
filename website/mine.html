@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine BurritoCoin — Setup Guide</title>
+  <meta name="description" content="How to mine BurritoCoin (BRTO) on Windows, Mac, and Linux. Plain-English setup guide for solo CPU mining with cpuminer-opt." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#worth">Worth</a>
+      <a href="/mine.html" class="active">Mine</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <div class="hero-sm">
+    <h1>Mine BurritoCoin</h1>
+    <p>
+      Turn your computer's spare cycles into freshly-minted BRTO. The chain is brand new
+      and difficulty is low — right now mining is realistic on a normal laptop or desktop.
+      Pick your operating system to get started.
+    </p>
+  </div>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Before You Start</div>
+    <h2>What You Should Know</h2>
+    <p>
+      Mining is the process of running a program that does math problems for the network.
+      When your computer solves one, the network rewards you with newly-created BurritoCoin
+      and you've also helped confirm transactions for everyone else.
+    </p>
+    <p>BurritoCoin uses the same mining algorithm as Litecoin, called <strong>Scrypt</strong>.
+      That means any standard Scrypt mining software (like cpuminer-opt) will work. You don't
+      need special hardware — a regular CPU works fine, especially while the network is small.
+    </p>
+
+    <div class="callout">
+      <strong>Reality check:</strong> Right now there are essentially no other miners on the
+      network. Difficulty is at the floor. A single laptop has a real chance of finding blocks.
+      That also means the chain only moves when someone is mining, so by mining you're
+      keeping it alive.
+    </div>
+
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Choose Your OS</div>
+    <h2>Pick Your Platform</h2>
+    <p>The setup is similar on every operating system, but the specific commands differ.
+      Choose yours below for a step-by-step guide.</p>
+
+    <div class="os-picker">
+      <a href="/mine-windows.html" class="os-card">
+        <span class="os-icon">🪟</span>
+        <h3>Windows</h3>
+        <p>Windows 10 or 11, 64-bit</p>
+      </a>
+      <a href="/mine-mac.html" class="os-card">
+        <span class="os-icon">🍎</span>
+        <h3>macOS</h3>
+        <p>Intel or Apple Silicon</p>
+      </a>
+      <a href="/mine-linux.html" class="os-card">
+        <span class="os-icon">🐧</span>
+        <h3>Linux</h3>
+        <p>Ubuntu, Debian, Fedora, etc.</p>
+      </a>
+    </div>
+
+    <div class="callout">
+      <strong>Got a GPU or ASIC?</strong> BurritoCoin uses standard Scrypt
+      (N=1024), the same parameters as Litecoin and Dogecoin. Any Litecoin-compatible
+      miner works — point ccminer or sgminer (GPU) or an Antminer L7 / Goldshell
+      Mini-Doge (ASIC) at your node's RPC port the same way <code>cpuminer-opt</code>
+      does in the guides above. We don't ship a dedicated GPU/ASIC walkthrough
+      because the GPU scrypt tooling is largely abandoned (ASICs displaced it years
+      ago) and ASIC setups vary too much per model. If you have either, you probably
+      already know what you're doing. If you're just curious, start with CPU.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">The Big Picture</div>
+    <h2>What You'll Be Setting Up</h2>
+    <p>Every OS guide walks you through the same five steps:</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Install BurritoCoin Core (the node)</h3>
+      <p>This is the software that connects you to the BurritoCoin network and holds your wallet. Your miner will talk to it locally.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Configure the node for mining</h3>
+      <p>Add a few lines to a config file so your miner can connect to the node and submit found blocks.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Get a wallet address</h3>
+      <p>This is where your mining rewards will be sent. The node generates one for you.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">4</span>
+      <h3>Install a mining program</h3>
+      <p>We recommend <code>cpuminer-opt</code> — it's free, open-source, and runs on every major OS.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">5</span>
+      <h3>Start mining</h3>
+      <p>Run a single command. Your computer starts hashing. When you find a block, 10 BRTO appears in your wallet.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Block Explorer</a>
+      · <a href="https://github.com/burritocoindev/burritocoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>

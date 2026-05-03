@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine BurritoCoin on Linux — Setup Guide</title>
+  <meta name="description" content="Step-by-step guide to mining BurritoCoin (BRTO) on Linux using cpuminer-opt. Works on Ubuntu, Debian, Fedora, and other distributions." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#worth">Worth</a>
+      <a href="/mine.html" class="active">Mine</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <div class="hero-sm">
+    <div class="breadcrumb"><a href="/mine.html">← Mine</a></div>
+    <h1>🐧 Mining on Linux</h1>
+    <p>About 20-30 minutes. Tested on Ubuntu/Debian and Fedora — adapt the package commands
+       to your distro. The commands below assume Ubuntu/Debian; Fedora notes are inline.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 1 of 5</div>
+    <h2>Install BurritoCoin Core</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Install build dependencies</h3>
+      <p><strong>Ubuntu / Debian:</strong></p>
+      <pre><code>sudo apt update
+sudo apt install -y build-essential libtool autotools-dev automake \
+  pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev \
+  libsqlite3-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev \
+  libfmt-dev git curl</code></pre>
+      <p><strong>Fedora / RHEL:</strong></p>
+      <pre><code>sudo dnf install -y gcc-c++ make autoconf automake libtool pkgconfig \
+  openssl-devel libevent-devel boost-devel sqlite-devel libdb-devel \
+  libdb-cxx-devel miniupnpc-devel zeromq-devel fmt-devel git curl python3</code></pre>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Clone and build</h3>
+      <pre><code>git clone https://github.com/burritocoindev/burritocoin.git
+cd burritocoin
+./autogen.sh
+./configure --without-gui --disable-tests --disable-bench --with-incompatible-bdb
+make -j$(nproc)
+sudo make install</code></pre>
+      <p>The build takes 15-30 minutes. The binaries <code>burritocoind</code> and
+         <code>burritocoin-cli</code> end up in <code>/usr/local/bin/</code>.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Want a system-managed setup?</strong> The repo includes
+      <code>contrib/vps/setup.sh</code> which installs BurritoCoin as a systemd service with
+      a dedicated user. Run it with <code>sudo ./contrib/vps/setup.sh mainnet</code> after
+      building. See <a href="https://github.com/burritocoindev/burritocoin/blob/master/doc/build-unix.md" target="_blank" rel="noopener">doc/build-unix.md</a> for details.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 2 of 5</div>
+    <h2>Configure the Node</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Create the config file</h3>
+      <pre><code>mkdir -p ~/.burritocoin
+nano ~/.burritocoin/burritocoin.conf</code></pre>
+      <p>Paste in:</p>
+      <pre><code>server=1
+daemon=1
+rpcport=9226
+rpcuser=burritouser
+rpcpassword=CHANGE_THIS_TO_SOMETHING_RANDOM
+rpcallowip=127.0.0.1
+rpcbind=127.0.0.1</code></pre>
+      <p>Replace the password with something strong and random.
+         Save: <code>Ctrl+O</code>, <code>Enter</code>, <code>Ctrl+X</code>.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Start the node</h3>
+      <pre><code>burritocoind</code></pre>
+      <p>You'll see "BurritoCoin server starting". Sync should be quick since the chain is
+         small. Verify it's running:</p>
+      <pre><code>burritocoin-cli getblockchaininfo</code></pre>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 3 of 5</div>
+    <h2>Get a Wallet Address</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Create a wallet and address</h3>
+      <pre><code>burritocoin-cli createwallet "mining"
+burritocoin-cli getnewaddress</code></pre>
+      <p><strong>Copy the address</strong> — you'll need it in step 5.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Encrypt the wallet (recommended)</h3>
+      <p>The wallet is unencrypted by default — anyone with shell access can spend
+         your BRTO. Lock it with a passphrase:</p>
+      <pre><code>burritocoin-cli encryptwallet "PICK_A_LONG_RANDOM_PASSPHRASE"</code></pre>
+      <p>The node <strong>shuts down automatically</strong> after this command. Restart it:</p>
+      <pre><code>burritocoind</code></pre>
+      <p>Mining still works without unlocking — rewards go to the address you copied.
+         To <em>spend</em> later, unlock first:</p>
+      <pre><code>burritocoin-cli walletpassphrase "your_passphrase" 60</code></pre>
+      <p>(60 = seconds before it auto-locks again.)</p>
+    </div>
+
+    <div class="callout">
+      <strong>Wallet passphrase ≠ RPC password.</strong> You now have two different
+      secrets. The <strong>RPC password</strong> (in <code>burritocoin.conf</code>)
+      lets cpuminer talk to the node — that's the one you put in the cpuminer
+      command. The <strong>wallet passphrase</strong> (just set above) only protects
+      spending your coins. Don't mix them up.
+    </div>
+
+    <div class="callout warn">
+      <strong>Write the passphrase down somewhere safe.</strong> If you forget it,
+      every BRTO in this wallet is gone forever. There's no recovery, and the
+      backup file is encrypted with the same passphrase.
+    </div>
+
+    <div class="callout warn">
+      <strong>Back up your wallet:</strong>
+      <code>burritocoin-cli backupwallet ~/wallet-backup.dat</code>. Copy that file off your
+      machine. If you lose it, you lose your BRTO.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 4 of 5</div>
+    <h2>Install cpuminer-opt</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Install build dependencies</h3>
+      <p><strong>Ubuntu / Debian:</strong></p>
+      <pre><code>sudo apt install -y libcurl4-openssl-dev libssl-dev libgmp-dev libjansson-dev</code></pre>
+      <p><strong>Fedora / RHEL:</strong></p>
+      <pre><code>sudo dnf install -y libcurl-devel openssl-devel gmp-devel jansson-devel</code></pre>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Clone and build cpuminer-opt</h3>
+      <pre><code>cd ~
+git clone https://github.com/JayDDee/cpuminer-opt.git
+cd cpuminer-opt
+chmod +x build.sh
+./build.sh</code></pre>
+      <p>This produces a binary called <code>cpuminer</code> in the current folder.</p>
+    </div>
+
+    <div class="callout">
+      <strong>On a server (no GUI)?</strong> Skip the build and grab a static binary from
+      the <a href="https://github.com/JayDDee/cpuminer-opt/releases" target="_blank" rel="noopener">cpuminer-opt releases page</a>.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 5 of 5</div>
+    <h2>Start Mining</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Verify the node is ready</h3>
+      <p>Sanity-check before launching cpuminer:</p>
+      <pre><code>burritocoin-cli getblockchaininfo
+burritocoin-cli listwallets</code></pre>
+      <p>The first should return JSON with <code>"initialblockdownload": false</code>
+         and <code>blocks ≈ headers</code>. The second should print
+         <code>["mining"]</code> — if it shows <code>[]</code>, run
+         <code>burritocoin-cli loadwallet "mining"</code>. If <code>initialblockdownload</code>
+         is <code>true</code>, wait for sync to finish before mining.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Run the miner</h3>
+      <p>From the <code>cpuminer-opt</code> folder, replace <code>YOUR_PASSWORD</code>
+         with the <em>RPC password</em> from <code>burritocoin.conf</code> and
+         <code>YOUR_BRTO_ADDRESS</code> with the address you copied in Step 3:</p>
+      <pre><code>./cpuminer -a scrypt \
+  -o http://127.0.0.1:9226 \
+  -O burritouser:YOUR_PASSWORD \
+  --coinbase-addr=YOUR_BRTO_ADDRESS</code></pre>
+      <p>You should see lines like:</p>
+      <pre><code>[2026-05-03 14:22:01] 8 of 8 miner threads started using 'scrypt' algorithm
+[2026-05-03 14:22:05] CPU #0: 14.20 kH/s
+[2026-05-03 14:22:05] CPU #1: 14.18 kH/s
+...</code></pre>
+      <p>You're mining. The kH/s lines repeat continuously — that's normal idle
+         hashing.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Optional: run mining in the background</h3>
+      <p>To keep the miner running after you log out, use <code>screen</code> or
+         <code>tmux</code>:</p>
+      <pre><code>sudo apt install -y tmux
+tmux new -s mining
+# (run cpuminer command here)
+# detach with: Ctrl+B, then D
+# come back later: tmux attach -t mining</code></pre>
+    </div>
+
+    <div class="callout">
+      <strong>"accepted" never appears — is something wrong?</strong> No.
+      In <em>solo</em> mining, the <code>accepted: N/N</code> line you may have
+      seen in pool-mining tutorials only appears when you actually find a full
+      block, which on a tiny chain at low difficulty might still be minutes to
+      hours apart. When a block is found, 10 BRTO is added to your wallet —
+      verify with <code>burritocoin-cli getbalance</code>.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Troubleshooting</div>
+    <h2>Common Problems</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>"Connection refused" or "JSON-RPC error"</h3>
+        <p>The node isn't running, or the RPC password doesn't match. Check that
+           <code>burritocoin-cli getblockchaininfo</code> works, and that the password in
+           your cpuminer command matches <code>~/.burritocoin/burritocoin.conf</code>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>"./build.sh: Permission denied"</h3>
+        <p>Make it executable: <code>chmod +x build.sh</code>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>cpuminer-opt build fails on older CPUs</h3>
+        <p>The default build targets modern x86. For older CPUs:
+           <code>./configure CFLAGS="-O3 -march=native" --with-curl &amp;&amp; make -j$(nproc)</code></p>
+      </div>
+      <div class="faq-item">
+        <h3>How do I stop mining?</h3>
+        <p>Press <code>Ctrl+C</code> in the cpuminer window. Stop the node with
+           <code>burritocoin-cli stop</code>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I mine on a Raspberry Pi?</h3>
+        <p>Yes — cpuminer-opt builds on ARM. Hash rate will be modest (a few kH/s) but the
+           Pi sips power, so it's actually a reasonable always-on mining setup while the
+           network is small.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="/mine.html">All mining guides</a>
+      · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      · <a href="https://github.com/burritocoindev/burritocoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+# /etc/conf.d/burritocoind: config file for /etc/init.d/burritocoind
+
+# Config file location
+#BURRITOCOIND_CONFIGFILE="/etc/burritocoin/burritocoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $BURRITOCOIND_USER)
+#BURRITOCOIND_PIDDIR="/var/run/burritocoind"
+
+# What filename to give the pidfile
+#BURRITOCOIND_PIDFILE="${BURRITOCOIND_PIDDIR}/burritocoind.pid"
+
+# Where to write burritocoind data (be mindful that the blockchain is large)
+#BURRITOCOIND_DATADIR="/var/lib/burritocoind"
+
+# User and group to own burritocoind process
+#BURRITOCOIND_USER="burritocoin"
+#BURRITOCOIND_GROUP="burritocoin"
+
+# Path to burritocoind executable
+#BURRITOCOIND_BIN="/usr/bin/burritocoind"
+
+# Nice value to run burritocoind under
+#BURRITOCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#BURRITOCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for burritocoind to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+BURRITOCOIND_SIGTERM_TIMEOUT=600

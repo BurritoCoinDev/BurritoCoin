@@ -1,0 +1,95 @@
+// Copyright (c) 2020 The BurritoCoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <key.h>
+#include <key_io.h>
+#include <script/standard.h>
+#include <test/util/setup_common.h>
+#include <wallet/scriptpubkeyman.h>
+#include <wallet/wallet.h>
+
+#include <boost/test/unit_test.hpp>
+
+struct RegBasicTestingSetup : public BasicTestingSetup {
+    RegBasicTestingSetup() : BasicTestingSetup(CBaseChainParams::REGTEST) {}
+};
+
+BOOST_FIXTURE_TEST_SUITE(scriptpubkeyman_tests, RegBasicTestingSetup)
+
+// Test LegacyScriptPubKeyMan::CanProvide behavior, making sure it returns true
+// for recognized scripts even when keys may not be available for signing.
+BOOST_AUTO_TEST_CASE(CanProvide)
+{
+    // Set up wallet and keyman variables.
+    NodeContext node;
+    std::unique_ptr<interfaces::Chain> chain = interfaces::MakeChain(node);
+    CWallet wallet(chain.get(), "", CreateDummyWalletDatabase());
+    LegacyScriptPubKeyMan& keyman = *wallet.GetOrCreateLegacyScriptPubKeyMan();
+
+    // Make a 1 of 2 multisig script
+    std::vector<CKey> keys(2);
+    std::vector<CPubKey> pubkeys;
+    for (CKey& key : keys) {
+        key.MakeNewKey(true);
+        pubkeys.emplace_back(key.GetPubKey());
+    }
+    CScript multisig_script = GetScriptForMultisig(1, pubkeys);
+    CScript p2sh_script = GetScriptForDestination(ScriptHash(multisig_script));
+    SignatureData data;
+
+    // Verify the p2sh(multisig) script is not recognized until the multisig
+    // script is added to the keystore to make it solvable
+    BOOST_CHECK(!keyman.CanProvide(p2sh_script, data));
+    keyman.AddCScript(multisig_script);
+    BOOST_CHECK(keyman.CanProvide(p2sh_script, data));
+}
+
+BOOST_AUTO_TEST_CASE(StealthAddresses)
+{
+    // Set up wallet and keyman variables.
+    NodeContext node;
+    std::unique_ptr<interfaces::Chain> chain = interfaces::MakeChain(node);
+    CWallet wallet(chain.get(), "", CreateMockWalletDatabase());
+    wallet.SetMinVersion(WalletFeature::FEATURE_HD_SPLIT);
+    LegacyScriptPubKeyMan& keyman = *wallet.GetOrCreateLegacyScriptPubKeyMan();
+
+    // Set HD seed
+    CKey key = DecodeSecret("cUkG8i1RFfWGWy5ziR11zJ5V4U4W3viSFCfyJmZnvQaUsd1xuF3T"); // Regtest WIF (prefix 239)
+    CPubKey seed = keyman.DeriveNewSeed(key);
+    keyman.SetHDSeed(seed);
+    keyman.TopUp();
+
+    // Check generated MWEB keychain
+    mw::Keychain::Ptr mweb_keychain = keyman.GetMWEBKeychain();
+    BOOST_CHECK(mweb_keychain != nullptr);
+    // key.cpp uses "BurritoCoin seed" as the BIP32 HMAC key; the secrets
+    // are deterministic but not pinned to specific hex values here.
+    BOOST_CHECK(mweb_keychain->GetSpendSecret().size() == 32);
+    BOOST_CHECK(mweb_keychain->GetScanSecret().size() == 32);
+
+    // Check "change" (idx=0) address is USED
+    StealthAddress change_address = mweb_keychain->GetStealthAddress(0);
+    BOOST_CHECK(EncodeDestination(change_address).substr(0, 9) == "rbrtomweb");
+    BOOST_CHECK(keyman.IsMine(change_address) == ISMINE_SPENDABLE);
+    BOOST_CHECK(keyman.GetAllReserveKeys().find(change_address.B().GetID()) == keyman.GetAllReserveKeys().end());
+    BOOST_CHECK(*keyman.GetMetadata(change_address)->mweb_index == 0);
+
+    // Check "peg-in" (idx=1) address is USED
+    StealthAddress pegin_address = mweb_keychain->GetStealthAddress(1);
+    BOOST_CHECK(EncodeDestination(pegin_address).substr(0, 9) == "rbrtomweb");
+    BOOST_CHECK(keyman.IsMine(pegin_address) == ISMINE_SPENDABLE);
+    BOOST_CHECK(keyman.GetAllReserveKeys().find(pegin_address.B().GetID()) == keyman.GetAllReserveKeys().end());
+    BOOST_CHECK(*keyman.GetMetadata(pegin_address)->mweb_index == 1);
+
+    // Check first receive (idx=2) address is UNUSED
+    StealthAddress receive_address = mweb_keychain->GetStealthAddress(2);
+    BOOST_CHECK(EncodeDestination(receive_address).substr(0, 9) == "rbrtomweb");
+    BOOST_CHECK(keyman.IsMine(receive_address) == ISMINE_SPENDABLE);
+    BOOST_CHECK(keyman.GetAllReserveKeys().find(receive_address.B().GetID()) != keyman.GetAllReserveKeys().end());
+    BOOST_CHECK(*keyman.GetMetadata(receive_address)->mweb_index == 2);
+
+    BOOST_CHECK(keyman.GetHDChain().nMWEBIndexCounter == 1002);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
