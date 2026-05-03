@@ -5,7 +5,7 @@ Setup
 ---------------------
 BurritoCoin Core is the original BurritoCoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of BurritoCoin transactions, which requires approximately 22 gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
 
-To download BurritoCoin Core, visit [burritocoin.org](https://bitcoin.org/).
+To download BurritoCoin Core, visit [burritoco.in](https://burritoco.in/).
 
 Running
 ---------------------
@@ -28,9 +28,8 @@ Drag BurritoCoin Core to your applications folder, and then run BurritoCoin Core
 
 ### Need Help?
 
-* See the documentation at the [BurritoCoin Wiki](https://bitcoin.info/) for help and more information.
-* Ask for help on [#burritocoin](https://webchat.freenode.net/#burritocoin) on Freenode. If you don't have an IRC client, use [webchat here](https://webchat.freenode.net/#burritocoin).
-* Ask for help on the [BurritoCoinTalk](https://bitcointalk.io/) forums, in the [Technical Support board](https://bitcointalk.io/c/technical-support).
+* See the project website at [burritoco.in](https://burritoco.in/) for help and more information.
+* File issues or ask questions on the [BurritoCoin GitHub repository](https://github.com/burritocoindev/burritocoin/issues).
 
 Building
 ---------------------
@@ -43,7 +42,7 @@ The following are developer notes on how to build BurritoCoin Core on your nativ
 - [FreeBSD Build Notes](build-freebsd.md)
 - [OpenBSD Build Notes](build-openbsd.md)
 - [NetBSD Build Notes](build-netbsd.md)
-- [Gitian Building Guide (External Link)](https://github.com/burritocoin-core/docs/blob/master/gitian-building.md)
+- [Gitian Building Guide](gitian-building.md)
 
 Development
 ---------------------
