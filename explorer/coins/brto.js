@@ -40,7 +40,7 @@ module.exports = {
     feeSatoshiPerByteBucketMaxima:[1,2,3,4,5,6,7,8,9,10,15,20,25,50,75,100,150],
     halvingBlockIntervalsByNetwork:{ "main":1042600000, "test":1042600000, "regtest":1042600000 },
     terminalHalvingCountByNetwork:{ "main":32, "test":32, "regtest":32 },
-    coinSupplyCheckpointsByNetwork:{ "main":[0,new Decimal(148000000)], "test":[0,new Decimal(0)], "regtest":[0,new Decimal(0)] },
+    coinSupplyCheckpointsByNetwork:{ "main":[0,new Decimal(148000000)], "test":[0,new Decimal(148000000)], "regtest":[0,new Decimal(148000000)] },
     genesisBlockHashesByNetwork:{
         "main":"44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce",
         "test":"b909940074cb31d9b421483f3a65f3f049e20d3448641128bd07c675ba55f53f",

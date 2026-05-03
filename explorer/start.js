@@ -48,7 +48,7 @@ try {
 // 3. Inject BRTO coin definition at runtime
 //    Handles both the v3.x app/coins.js and the directory-based layout.
 // ---------------------------------------------------------------------------
-const brtoCoinDef = require("./coins/BRTO.js");
+const brtoCoinDef = require("./coins/brto.js");
 
 const candidateCoinsModules = [
 	path.join(btcExpRoot, "app", "coins.js"),

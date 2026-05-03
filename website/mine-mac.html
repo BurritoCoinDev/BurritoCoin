@@ -161,10 +161,15 @@ burritocoin-cli getnewaddress</code></pre>
       backup file is encrypted with the same passphrase.
     </div>
 
-    <div class="callout warn">
-      <strong>Back up your wallet.</strong> Run
-      <code>burritocoin-cli backupwallet ~/Desktop/wallet-backup.dat</code> and put a copy on
-      a USB drive or somewhere off your laptop.
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Back up your wallet</h3>
+      <p>Make sure the node is running again (the <code>encryptwallet</code> step
+         shut it down — restart with <code>burritocoind</code> if you haven't).
+         Then:</p>
+      <pre><code>burritocoin-cli backupwallet ~/Desktop/wallet-backup.dat</code></pre>
+      <p>Copy <code>wallet-backup.dat</code> off this laptop — USB drive, cloud,
+         anywhere. Without it, a dead drive means your BRTO is gone.</p>
     </div>
   </section>
 
@@ -219,10 +224,11 @@ make -j$(sysctl -n hw.ncpu)</code></pre>
       <pre><code>burritocoin-cli getblockchaininfo
 burritocoin-cli listwallets</code></pre>
       <p>The first should return JSON with <code>"initialblockdownload": false</code>
-         and <code>blocks ≈ headers</code>. The second should print
-         <code>["mining"]</code> — if it shows <code>[]</code>, run
-         <code>burritocoin-cli loadwallet "mining"</code>. If <code>initialblockdownload</code>
-         is <code>true</code>, wait for sync to finish before mining.</p>
+         and <code>blocks ≈ headers</code>. The second is a JSON array — it should
+         contain <code>"mining"</code>. If the array is empty (<code>[]</code>),
+         run <code>burritocoin-cli loadwallet "mining"</code>. If
+         <code>initialblockdownload</code> is <code>true</code>, wait for sync to
+         finish before mining.</p>
     </div>
 
     <div class="step">
@@ -236,11 +242,12 @@ burritocoin-cli listwallets</code></pre>
   -O burritouser:YOUR_PASSWORD \
   --coinbase-addr=YOUR_BRTO_ADDRESS</code></pre>
       <p>You should see lines like:</p>
-      <pre><code>[2026-05-03 14:22:01] 4 of 4 miner threads started using 'scrypt' algorithm
+      <pre><code>[2026-05-03 14:22:01] 8 of 8 miner threads started using 'scrypt' algorithm
 [2026-05-03 14:22:05] CPU #0: 11.20 kH/s
 [2026-05-03 14:22:05] CPU #1: 11.18 kH/s
 ...</code></pre>
-      <p>You're mining. The kH/s lines repeat continuously — that's normal idle
+      <p>You're mining. The thread count matches your CPU's logical cores (yours
+         may differ). The kH/s lines repeat continuously — that's normal idle
          hashing.</p>
     </div>
 

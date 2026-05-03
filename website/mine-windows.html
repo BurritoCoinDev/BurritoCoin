@@ -92,9 +92,8 @@
     <div class="callout">
       <strong>Windows SmartScreen warning?</strong> The binaries aren't code-signed
       yet, so on first launch Windows may show "Windows protected your PC". Click
-      <strong>More info</strong> → <strong>Run anyway</strong>. (If you'd rather not
-      trust an unsigned binary, you can build from source instead — see
-      <a href="https://github.com/burritocoindev/burritocoin/blob/master/doc/build-windows.md" target="_blank" rel="noopener">doc/build-windows.md</a>.)
+      <strong>More info</strong> → <strong>Run anyway</strong>. The official SHA256
+      from Step 2 lets you verify the zip is untampered before you reach this point.
     </div>
   </section>
 
@@ -300,11 +299,11 @@ burritocoind.exe</code></pre>
     </div>
 
     <div class="callout">
-      <strong>Don't trust an unsigned binary?</strong> That's a fair instinct. Two
-      alternatives: (1) build cpuminer-opt from source inside WSL/Ubuntu using the
-      same steps as the <a href="/mine-linux.html">Linux guide</a>, then run it from
-      WSL — Defender doesn't scan inside WSL; or (2) verify the checksum of the zip
-      against the SHA256 published on the GitHub release page before extracting.
+      <strong>Don't trust an unsigned binary?</strong> That's a fair instinct.
+      Verify the checksum of the zip against the SHA256 published on the GitHub
+      release page before extracting, or build cpuminer-opt from source on a Linux
+      machine (see the <a href="/mine-linux.html">Linux guide</a>) and copy the
+      resulting binary over.
     </div>
   </section>
 
@@ -331,7 +330,8 @@ burritocoin-cli.exe getblockchaininfo</code></pre>
       </ul>
       <p>Also confirm your wallet is loaded:</p>
       <pre><code>burritocoin-cli.exe listwallets</code></pre>
-      <p>You should see <code>["mining"]</code>. If you see <code>[]</code>, run
+      <p>The output is a JSON array — it should contain <code>"mining"</code>. If
+         the array is empty (<code>[]</code>), run
          <code>burritocoin-cli.exe loadwallet "mining"</code>.</p>
     </div>
 

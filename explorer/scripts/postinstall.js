@@ -28,9 +28,12 @@ try {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Copy BRTO.js into btc-rpc-explorer's coins directory
+// 1. Copy brto.js into btc-rpc-explorer's coins directory
 // ---------------------------------------------------------------------------
-const srcCoinFile  = path.join(__dirname, "..", "coins", "BRTO.js");
+// Source filename is lowercase (brto.js) to match start.js's require path.
+// Destination filename is uppercase (BRTO.js) to match btc-rpc-explorer's
+// convention (LTC.js, BTC.js, DOGE.js, …).
+const srcCoinFile  = path.join(__dirname, "..", "coins", "brto.js");
 const coinsDir     = path.join(btcExpRoot, "app", "coins");
 const destCoinFile = path.join(coinsDir, "BRTO.js");
 
@@ -43,7 +46,7 @@ if (!fs.existsSync(coinsDir)) {
 }
 
 fs.copyFileSync(srcCoinFile, destCoinFile);
-console.log(`[BRTO postinstall] Copied BRTO.js → ${destCoinFile}`);
+console.log(`[BRTO postinstall] Copied brto.js → ${destCoinFile}`);
 
 // ---------------------------------------------------------------------------
 // 2. Register BRTO in btc-rpc-explorer's coins index
@@ -60,7 +63,7 @@ let indexFile = candidateIndexFiles.find(f => fs.existsSync(f));
 if (!indexFile) {
 	console.warn(
 		"[BRTO postinstall] Could not find btc-rpc-explorer coins index file.\n" +
-		"BRTO.js was copied but may not be auto-loaded; start.js will patch at runtime instead."
+		"brto.js was copied but may not be auto-loaded; start.js will patch at runtime instead."
 	);
 	process.exit(0);
 }
