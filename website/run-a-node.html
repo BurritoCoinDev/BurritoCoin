@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run a BurritoCoin Node — Join the Network</title>
+  <meta name="description" content="How to run a BurritoCoin (BRTO) full node and connect to the network. Install the daemon, add a peer, and start relaying blocks and transactions." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#worth">Worth</a>
+      <a href="/mine.html">Mine</a>
+      <a href="/run-a-node.html" class="active">Run a Node</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <div class="hero-sm">
+    <h1>Run a BurritoCoin Node</h1>
+    <p>
+      A node is a copy of the BurritoCoin blockchain that talks to other copies and
+      keeps everyone in sync. Running one helps the network stay decentralized — and
+      it's the prerequisite for mining, building wallets, or hosting your own block
+      explorer.
+    </p>
+  </div>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Why Bother</div>
+    <h2>What a Node Actually Does</h2>
+    <p>
+      Your node downloads every block, verifies every transaction with its own copy of
+      the rules, and relays valid messages to its peers. It doesn't trust anyone —
+      it checks. The more independent nodes there are, the harder it is for any one
+      party to censor, rewrite, or fork the chain unilaterally.
+    </p>
+    <p>
+      You don't need permission to run one. You don't need to register. You just need
+      a computer with a few gigabytes of disk space and a working internet connection.
+    </p>
+
+    <div class="callout">
+      <strong>The network is small right now.</strong> A handful of nodes total. If
+      you're reading this in the early days, your node materially improves the
+      network's resilience.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 1 of 3</div>
+    <h2>Install the Daemon</h2>
+    <p>
+      Building from source is the same on every platform — clone the repo, run
+      <code>./configure &amp;&amp; make</code>, install. The mining guides walk through
+      this in detail with the right dependencies for each OS:
+    </p>
+
+    <div class="os-picker">
+      <a href="/mine-windows.html#step-1" class="os-card">
+        <span class="os-icon">🪟</span>
+        <h3>Windows</h3>
+        <p>WSL2 + Ubuntu build</p>
+      </a>
+      <a href="/mine-mac.html#step-1" class="os-card">
+        <span class="os-icon">🍎</span>
+        <h3>macOS</h3>
+        <p>Homebrew + clang</p>
+      </a>
+      <a href="/mine-linux.html#step-1" class="os-card">
+        <span class="os-icon">🐧</span>
+        <h3>Linux</h3>
+        <p>Most distros</p>
+      </a>
+    </div>
+
+    <p>
+      Follow Step 1 on whichever guide matches your OS. Stop after you have
+      <code>burritocoind</code> and <code>burritocoin-cli</code> installed and the
+      node starts cleanly. You don't need the mining bits — just the daemon.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 2 of 3</div>
+    <h2>Connect to the Network</h2>
+    <p>
+      A fresh node has no idea where other nodes are. You bootstrap it by pointing
+      it at one known peer, and from there it discovers the rest automatically.
+    </p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Find your config file</h3>
+      <p>Default locations:</p>
+      <ul>
+        <li><strong>Linux:</strong> <code>~/.burritocoin/burritocoin.conf</code></li>
+        <li><strong>macOS:</strong> <code>~/Library/Application Support/BurritoCoin/burritocoin.conf</code></li>
+        <li><strong>Windows:</strong> <code>%APPDATA%\BurritoCoin\burritocoin.conf</code></li>
+      </ul>
+      <p>If it doesn't exist yet, create it.</p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Add the bootstrap peer</h3>
+      <p>Open the file and add this line:</p>
+      <pre><code>addnode=50.116.17.170:9227</code></pre>
+      <p>
+        That's the IP and P2P port of the current bootstrap node. Once your daemon
+        connects to it, peer-exchange takes over and you'll automatically learn about
+        every other node on the network.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>Restart the daemon</h3>
+      <pre><code>burritocoin-cli stop
+burritocoind</code></pre>
+      <p>
+        On macOS and Linux, you can also restart the GUI version (<code>burritocoin-qt</code>)
+        — same effect.
+      </p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Step 3 of 3</div>
+    <h2>Verify You're Connected</h2>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Check peer count</h3>
+      <pre><code>burritocoin-cli getconnectioncount</code></pre>
+      <p>
+        Should return <code>1</code> or higher within a minute or two. If it stays
+        at <code>0</code>, your node can't reach the bootstrap — most likely a firewall
+        blocking outbound port 9227, or the bootstrap is temporarily down.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Check sync progress</h3>
+      <pre><code>burritocoin-cli getblockchaininfo</code></pre>
+      <p>
+        Watch <code>blocks</code> tick up until it matches <code>headers</code>. The
+        chain is small right now so full sync should take seconds, not hours.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">3</span>
+      <h3>See who you're connected to</h3>
+      <pre><code>burritocoin-cli getpeerinfo</code></pre>
+      <p>
+        A JSON array, one entry per peer. Look at <code>addr</code>, <code>subver</code>
+        (should say something like <code>/Satoshi:0.21.4/</code>), and
+        <code>synced_blocks</code>.
+      </p>
+    </div>
+
+    <div class="callout">
+      <strong>Want to help other nodes find <em>you</em>?</strong> Open inbound port
+      <code>9227/tcp</code> on your firewall and router. Other nodes will discover you
+      via peer-exchange and connect — your machine becomes part of the bootstrap pool.
+      Skip this if you're behind a restrictive NAT or just running a private node;
+      outbound-only connections work fine.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">For the Curious</div>
+    <h2>What Actually Makes This "BurritoCoin"</h2>
+    <p>
+      The port (9227) is just a convention — anyone can run anything on it.
+      What actually identifies the network is two things baked into the daemon:
+    </p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>Network magic bytes</h3>
+      <p>
+        Every P2P message starts with four bytes that act as a network ID. BurritoCoin's
+        mainnet magic is <code>0x42 0x52 0x54 0x4f</code> — the ASCII letters
+        <strong>"BRTO"</strong>. (Bitcoin uses <code>0xf9 0xbe 0xb4 0xd9</code>;
+        Litecoin uses <code>0xfb 0xc0 0xb6 0xdb</code>.) If a peer sends anything else,
+        the connection is dropped instantly. You can't accidentally connect a Bitcoin
+        node to a BurritoCoin node, even if they're on the same port.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>Genesis block hash</h3>
+      <p>
+        Every chain has a "block zero" — a hard-coded first block that everyone agrees
+        on. BurritoCoin's mainnet genesis hash is:
+      </p>
+      <pre><code>0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce</code></pre>
+      <p>
+        After the magic-byte handshake, two peers verify they're on the same chain by
+        comparing block headers starting from genesis. Different genesis = different
+        chain = no connection.
+      </p>
+    </div>
+
+    <p>
+      So even if someone forks the source code and runs a node on port 9227, it's a
+      different network unless they keep the same magic bytes <em>and</em> the same
+      genesis. That's how Bitcoin, Litecoin, BurritoCoin, and every other Bitcoin-fork
+      coexist on the public internet without ever stepping on each other.
+    </p>
+  </section>
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="/mine.html">Mining guides</a>
+      · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      · <a href="https://github.com/burritocoindev/burritocoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>
