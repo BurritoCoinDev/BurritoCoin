@@ -5,7 +5,7 @@
 To quickly get started fuzzing BurritoCoin Core using [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
 
 ```sh
-$ git clone https://github.com/litecoin-project/litecoin
+$ git clone https://github.com/burritocoindev/burritocoin
 $ cd burritocoin/
 $ ./autogen.sh
 $ CC=clang CXX=clang++ ./configure --enable-fuzz --with-sanitizers=address,fuzzer,undefined
@@ -18,7 +18,7 @@ $ src/test/fuzz/process_message
 
 ## Fuzzing harnesses, fuzzing output and fuzzing corpora
 
-[`process_message`](https://github.com/litecoin-project/litecoin/blob/master/src/test/fuzz/process_message.cpp) is a fuzzing harness for the [`ProcessMessage(...)` function (`net_processing`)](https://github.com/litecoin-project/litecoin/blob/master/src/net_processing.cpp). The available fuzzing harnesses are found in [`src/test/fuzz/`](https://github.com/litecoin-project/litecoin/tree/master/src/test/fuzz).
+[`process_message`](https://github.com/burritocoindev/burritocoin/blob/master/src/test/fuzz/process_message.cpp) is a fuzzing harness for the [`ProcessMessage(...)` function (`net_processing`)](https://github.com/burritocoindev/burritocoin/blob/master/src/net_processing.cpp). The available fuzzing harnesses are found in [`src/test/fuzz/`](https://github.com/burritocoindev/burritocoin/tree/master/src/test/fuzz).
 
 The fuzzer will output `NEW` every time it has created a test input that covers new areas of the code under test. For more information on how to interpret the fuzzer output, see the [libFuzzer documentation](https://llvm.org/docs/LibFuzzer.html).
 
@@ -93,7 +93,7 @@ example using `brew install llvm`.
 
 Should you run into problems with the address sanitizer, it is possible you
 may need to run `./configure` with `--disable-asm` to avoid errors
-with certain assembly code from BurritoCoin Core's code. See [developer notes on sanitizers](https://github.com/litecoin-project/litecoin/blob/master/doc/developer-notes.md#sanitizers)
+with certain assembly code from BurritoCoin Core's code. See [developer notes on sanitizers](https://github.com/burritocoindev/burritocoin/blob/master/doc/developer-notes.md#sanitizers)
 for more information.
 
 You may also need to take care of giving the correct path for `clang` and
@@ -115,7 +115,7 @@ Read the [libFuzzer documentation](https://llvm.org/docs/LibFuzzer.html) for mor
 To quickly get started fuzzing BurritoCoin Core using [`afl-fuzz`](https://github.com/google/afl):
 
 ```sh
-$ git clone https://github.com/litecoin-project/litecoin
+$ git clone https://github.com/burritocoindev/burritocoin
 $ cd burritocoin/
 $ git clone https://github.com/google/afl
 $ make -C afl/
@@ -143,7 +143,7 @@ Read the [`afl-fuzz` documentation](https://github.com/google/afl) for more info
 To quickly get started fuzzing BurritoCoin Core using [Honggfuzz](https://github.com/google/honggfuzz):
 
 ```sh
-$ git clone https://github.com/bitcoin/bitcoin
+$ git clone https://github.com/burritocoindev/burritocoin
 $ cd burritocoin/
 $ ./autogen.sh
 $ git clone https://github.com/google/honggfuzz

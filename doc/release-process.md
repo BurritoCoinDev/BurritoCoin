@@ -5,8 +5,8 @@ Release Process
 
 ### Before every release candidate
 
-* Update translations (ping wumpus on IRC) see [translation_process.md](https://github.com/bitcoin/bitcoin/blob/master/doc/translation_process.md#synchronising-translations).
-* Update manpages, see [gen-manpages.sh](https://github.com/bitcoin/bitcoin/blob/master/contrib/devtools/README.md#gen-manpagessh).
+* Update translations, see [translation_process.md](https://github.com/burritocoindev/burritocoin/blob/master/doc/translation_process.md#synchronising-translations).
+* Update manpages, see [gen-manpages.sh](https://github.com/burritocoindev/burritocoin/blob/master/contrib/devtools/README.md#gen-manpagessh).
 * Update release candidate version in `configure.ac` (`CLIENT_VERSION_RC`).
 
 ### Before every major and minor release
@@ -61,10 +61,10 @@ If you're using the automated script (found in [contrib/gitian-build.py](/contri
 Check out the source code in the following directory hierarchy.
 
     cd /path/to/your/toplevel/build
-    git clone https://github.com/litecoin-project/gitian.sigs.ltc.git
-    git clone https://github.com/litecoin-project/litecoin-detached-sigs.git
+    git clone https://github.com/burritocoindev/gitian.sigs.brto.git
+    git clone https://github.com/burritocoindev/burritocoin-detached-sigs.git
     git clone https://github.com/devrandom/gitian-builder.git
-    git clone https://github.com/litecoin-project/litecoin.git
+    git clone https://github.com/burritocoindev/burritocoin.git
 
 ### BurritoCoin maintainers/release engineers, suggestion for writing release notes
 
@@ -253,7 +253,7 @@ Codesigner only: Commit the detached codesign payloads:
 Non-codesigners: wait for Windows/macOS detached signatures:
 
 - Once the Windows/macOS builds each have 3 matching signatures, they will be signed with their respective release keys.
-- Detached signatures will then be committed to the [burritocoin-detached-sigs](https://github.com/litecoin-project/litecoin-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
+- Detached signatures will then be committed to the [burritocoin-detached-sigs](https://github.com/burritocoindev/burritocoin-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
 
 Create (and optionally verify) the signed macOS binary:
 
@@ -316,57 +316,21 @@ rm SHA256SUMS
 (the digest algorithm is forced to sha256 to avoid confusion of the `Hash:` header that GPG adds with the SHA256 used for the files)
 Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spurious/nonsensical entry.
 
-- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the burritocoin.org server.
+- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the burritoco.in download host.
 
-- Update burritocoin.org version
-
-- Update other repositories and websites for new version
-
-  - bitcoincore.org blog post
-
-  - bitcoincore.org maintained versions update:
-    [table](https://github.com/burritocoin-core/bitcoincore.org/commits/master/_includes/posts/maintenance-table.md)
-
-  - bitcoincore.org RPC documentation update
-
-  - Update packaging repo
-
-      - Push the flatpak to flathub, e.g. https://github.com/flathub/org.bitcoincore.burritocoin-qt/pull/2
-
-      - Push the latest version to master (if applicable), e.g. https://github.com/burritocoin-core/packaging/pull/32
-
-      - Create a new branch for the major release "0.xx" from master (used to build the snap package) and request the
-        track (if applicable), e.g. https://forum.snapcraft.io/t/track-request-for-burritocoin-core-snap/10112/7
-
-      - Notify MarcoFalke so that he can start building the snap package
-
-        - https://code.launchpad.net/~burritocoin-core/burritocoin-core-snap/+git/packaging (Click "Import Now" to fetch the branch)
-        - https://code.launchpad.net/~burritocoin-core/burritocoin-core-snap/+git/packaging/+ref/0.xx (Click "Create snap package")
-        - Name it "burritocoin-core-snap-0.xx"
-        - Leave owner and series as-is
-        - Select architectures that are compiled via gitian
-        - Leave "automatically build when branch changes" unticked
-        - Tick "automatically upload to store"
-        - Put "burritocoin-core" in the registered store package name field
-        - Tick the "edge" box
-        - Put "0.xx" in the track field
-        - Click "create snap package"
-        - Click "Request builds" for every new release on this branch (after updating the snapcraft.yml in the branch to reflect the latest gitian results)
-        - Promote release on https://snapcraft.io/burritocoin-core/releases if it passes sanity checks
+- Update the website (`burritoco.in`) with the new version and download links.
 
 - Announce the release:
 
-  - burritocoin-dev mailing list
+  - Reddit /r/BurritoCoin (or successor community channel)
 
-  - blog.burritocoin.org blog post
-
-  - Update title of #burritocoin and #burritocoin-dev on Freenode IRC
-
-  - Optionally twitter, reddit /r/BurritoCoin, ... but this will usually sort out itself
+  - Project Twitter/X account, if one is established
 
   - Archive release notes for the new version to `doc/release-notes/` (branch `master` and branch of the release)
 
-  - Create a [new GitHub release](https://github.com/litecoin-project/litecoin/releases/new) with a link to the archived release notes.
+  - Create a [new GitHub release](https://github.com/burritocoindev/burritocoin/releases/new) with a link to the archived release notes.
+
+  - TODO: stand up a `blog.burritoco.in` and a packaging/flathub/snap pipeline once the project has the audience to justify them. The Bitcoin Core release process originally documented those steps; they're omitted here until the equivalents exist for BurritoCoin.
 
   - Celebrate
 

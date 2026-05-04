@@ -155,7 +155,8 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce"));
         assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
-        vSeeds.clear(); // DNS seeds not yet configured — peers connect via fixed seeds.
+        vSeeds.clear();
+        vSeeds.emplace_back("seed.burritoco.in"); // A record → 50.116.17.170; replace with a proper DNS seeder once one is deployed.
 
         // BurritoCoin-specific prefixes (unique, not shared with Bitcoin or Litecoin):
         //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
