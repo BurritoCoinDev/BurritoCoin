@@ -66,7 +66,7 @@ fi
 
 # -------- 4. Inject BurritoCoin Coin class --------------------------------
 green "[4/6] Patching coins.py with BurritoCoin class..."
-COINS_PY="$ELECTRUMX_DIR/electrumx/lib/coins.py"
+COINS_PY="$ELECTRUMX_DIR/src/electrumx/lib/coins.py"
 [[ -f "$COINS_PY" ]] || die "ElectrumX layout changed — coins.py not at $COINS_PY."
 
 if ! grep -q "^class BurritoCoin" "$COINS_PY"; then
@@ -97,6 +97,18 @@ class BurritoCoin(Coin):
     RPC_PORT = 9226
     REORG_LIMIT = 800
     PEERS: list = []
+
+    @classmethod
+    def genesis_block(cls, block):
+        # The 148M BRTO premine sits in this coinbase. Do NOT strip it the way
+        # Bitcoin's default Coin.genesis_block() does, otherwise any later tx
+        # spending the premine fails with "UTXO not found in h table".
+        from electrumx.lib.hash import hash_to_hex_str
+        header = cls.block_header(block, 0)
+        header_hex_hash = hash_to_hex_str(cls.header_hash(header))
+        if header_hex_hash != cls.GENESIS_HASH:
+            raise CoinError(f"genesis hash {header_hex_hash} expected {cls.GENESIS_HASH}")
+        return block
 PYEOF
 fi
 

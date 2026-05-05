@@ -43,7 +43,7 @@ die()    { red "ERROR: $*"; exit 1; }
 install -d -m 0700 "$SECONDARY_DATADIR"
 
 if [[ ! -f "$SECONDARY_CONF" ]]; then
-    SECONDARY_RPC_PASS="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32)"
+    SECONDARY_RPC_PASS="$(openssl rand -hex 16)"
     cat > "$SECONDARY_CONF" <<EOF
 # Sibling peer for the primary BurritoCoin daemon. Keeps the primary's peer
 # count above zero so getblocktemplate works for external miners.

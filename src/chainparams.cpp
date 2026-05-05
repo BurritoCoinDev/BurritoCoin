@@ -95,12 +95,12 @@ public:
         consensus.nSubsidyHalvingInterval = 1042600000;
         // Enforce all pre-Taproot soft forks from genesis on a new chain.
         consensus.BIP16Height = 0;  // P2SH always enforced
-        consensus.BIP34Height = 0;  // coinbase height always required
+        consensus.BIP34Height = 1;  // coinbase height always required
         consensus.BIP34Hash = uint256{};
-        consensus.BIP65Height = 0;  // OP_CHECKLOCKTIMEVERIFY always active
-        consensus.BIP66Height = 0;  // strict DER always required
-        consensus.CSVHeight = 0;    // BIP68/112/113 CSV always active
-        consensus.SegwitHeight = 0; // SegWit always active (required for MWEB)
+        consensus.BIP65Height = 1;  // OP_CHECKLOCKTIMEVERIFY always active
+        consensus.BIP66Height = 1;  // strict DER always required
+        consensus.CSVHeight = 1;    // BIP68/112/113 CSV always active
+        consensus.SegwitHeight = 1; // SegWit always active (required for MWEB)
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 3.5 * 24 * 60 * 60; // 3.5 days
@@ -209,12 +209,12 @@ public:
         consensus.nSubsidyHalvingInterval = 1042600000;
         // Enforce all pre-Taproot soft forks from genesis on testnet.
         consensus.BIP16Height = 0;
-        consensus.BIP34Height = 0;
+        consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256{};
-        consensus.BIP65Height = 0;
-        consensus.BIP66Height = 0;
-        consensus.CSVHeight = 0;
-        consensus.SegwitHeight = 0;
+        consensus.BIP65Height = 1;
+        consensus.BIP66Height = 1;
+        consensus.CSVHeight = 1;
+        consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 3.5 * 24 * 60 * 60; // 3.5 days
@@ -310,7 +310,7 @@ public:
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in functional tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in functional tests)
         consensus.CSVHeight = 432; // CSV activated on regtest (Used in rpc activation tests)
-        consensus.SegwitHeight = 0; // SEGWIT is always activated on regtest unless overridden
+        consensus.SegwitHeight = 1; // SEGWIT is always activated on regtest unless overridden
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 3.5 * 24 * 60 * 60; // 3.5 days
