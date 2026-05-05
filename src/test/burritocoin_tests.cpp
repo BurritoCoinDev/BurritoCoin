@@ -162,20 +162,22 @@ BOOST_AUTO_TEST_CASE(pow_limit_matches_genesis_nbits)
 }
 
 // ---------------------------------------------------------------------------
-// Soft-fork activation heights (all enforced from genesis on BurritoCoin)
+// Soft-fork activation heights: genesis is exempt from the BIP34
+// coinbase-height check, so BIP34/65/66/CSV/SegWit activate at height 1.
+// BIP16 (P2SH) is always active.
 // ---------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(softforks_active_from_genesis)
+BOOST_AUTO_TEST_CASE(softforks_active_from_height_one)
 {
     const auto chainParams = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
     const Consensus::Params& consensus = chainParams->GetConsensus();
 
     BOOST_CHECK_EQUAL(consensus.BIP16Height,  0);
-    BOOST_CHECK_EQUAL(consensus.BIP34Height,  0);
-    BOOST_CHECK_EQUAL(consensus.BIP65Height,  0);
-    BOOST_CHECK_EQUAL(consensus.BIP66Height,  0);
-    BOOST_CHECK_EQUAL(consensus.CSVHeight,    0);
-    BOOST_CHECK_EQUAL(consensus.SegwitHeight, 0);
+    BOOST_CHECK_EQUAL(consensus.BIP34Height,  1);
+    BOOST_CHECK_EQUAL(consensus.BIP65Height,  1);
+    BOOST_CHECK_EQUAL(consensus.BIP66Height,  1);
+    BOOST_CHECK_EQUAL(consensus.CSVHeight,    1);
+    BOOST_CHECK_EQUAL(consensus.SegwitHeight, 1);
 }
 
 // ---------------------------------------------------------------------------
