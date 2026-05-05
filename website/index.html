@@ -20,7 +20,7 @@
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#specs">Specs</a>
-      <a href="#worth">Worth</a>
+      <a href="#network">Network</a>
       <a href="/mine.html">Mine</a>
       <a href="/run-a-node.html">Run a Node</a>
       <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
@@ -142,38 +142,47 @@
 
   <hr class="divider" />
 
-  <!-- WORTH -->
-  <section id="worth">
-    <div class="section-label">Price &amp; Value</div>
-    <h2>What Is BurritoCoin Actually Worth?</h2>
+  <!-- NETWORK IDENTITY -->
+  <section id="network">
+    <div class="section-label">Integrator Reference</div>
+    <h2>Network Identity</h2>
     <p>
-      Great question. We're glad you asked. Here is our honest, unhedged, legally-non-binding
-      assessment of BurritoCoin's current market value:
+      If you're building a wallet, an explorer, an exchange listing, a block parser, or
+      anything else that needs to talk to the chain, here's what defines BurritoCoin's
+      mainnet. None of these values are secret — they're all baked into the daemon source
+      and visible to anyone running a node.
     </p>
 
-    <div class="worth-box">
-      <div class="worth-price">$0.00 <span>USD per BRTO</span></div>
-      <p>
-        Correction: approximately $0.00. We haven't checked any exchange because it isn't on any exchange.
-        It may never be on any exchange. The closest thing to a price discovery mechanism
-        is you and a friend agreeing that one burrito is worth 10 BRTO, which honestly seems fair.
-      </p>
-      <p>
-        Financially speaking, you would achieve a better return on investment by buying an actual burrito.
-        That burrito will appreciate — in flavor, in your stomach, in memory. BRTO will appreciate in
-        neither flavor nor dollars, but it <em>will</em> exist on a blockchain forever, which is
-        arguably more than most things can claim.
-      </p>
-      <p>
-        There are no venture capitalists. No pre-sale rounds. No whitepaper promising 10,000x returns.
-        This is a coin. It goes on a chain. The chain keeps going. That's the whole pitch.
-      </p>
-    </div>
-
-    <p class="disclaimer">
-      * Nothing on this website constitutes financial advice. Buying BRTO does not constitute an investment.
-      Mining BRTO probably costs more in electricity than the BRTO is worth. This is fine.
-    </p>
+    <table class="spec-table">
+      <tr>
+        <th>P2P Port</th>
+        <td>9227</td>
+      </tr>
+      <tr>
+        <th>RPC Port</th>
+        <td>9226</td>
+      </tr>
+      <tr>
+        <th>Network magic bytes</th>
+        <td><code>0x42 0x52 0x54 0x4f</code> <span class="spec-note">(ASCII "BRTO")</span></td>
+      </tr>
+      <tr>
+        <th>Genesis block hash</th>
+        <td><code>0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce</code></td>
+      </tr>
+      <tr>
+        <th>Algorithm</th>
+        <td>Scrypt (N=1024)</td>
+      </tr>
+      <tr>
+        <th>Block reward</th>
+        <td>10 BRTO per block</td>
+      </tr>
+      <tr>
+        <th>Total supply</th>
+        <td>21,000,000,000 BRTO</td>
+      </tr>
+    </table>
   </section>
 
   <hr class="divider" />

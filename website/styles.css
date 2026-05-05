@@ -461,6 +461,55 @@ section li { margin-bottom: 0.4rem; }
   margin-bottom: 0.8rem;
 }
 
+/* ── SPEC TABLE ── */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.spec-table th,
+.spec-table td {
+  text-align: left;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.spec-table tr:last-child th,
+.spec-table tr:last-child td {
+  border-bottom: none;
+}
+.spec-table th {
+  font-weight: 600;
+  color: var(--muted);
+  width: 32%;
+  white-space: nowrap;
+}
+.spec-table td {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  word-break: break-all;
+  font-size: 0.92rem;
+}
+.spec-table td code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--gold-light);
+  font-size: inherit;
+}
+.spec-table .spec-note {
+  color: var(--muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-left: 0.5rem;
+}
+@media (max-width: 600px) {
+  .spec-table th { white-space: normal; width: 38%; }
+  .spec-table th, .spec-table td { padding: 0.625rem 0.875rem; font-size: 0.82rem; }
+}
+
 /* ── CODE ── */
 code {
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
