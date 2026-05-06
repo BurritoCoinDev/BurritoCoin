@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: BurritoCoin
 Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
  irc://#burritocoin@freenode.net
-Source: https://github.com/burritocoin/burritocoin
+Source: https://github.com/BurritoCoinDev/BurritoCoin
 
 Files: *
 Copyright: 2009-2020, BurritoCoin Core Developers

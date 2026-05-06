@@ -950,13 +950,13 @@ Current subtrees include:
   - Upstream at https://github.com/google/crc32c ; Maintained by Google.
 
 - src/secp256k1
-  - Upstream at https://github.com/burritocoin-core/secp256k1/ ; actively maintained by Core contributors.
+  - Upstream at https://github.com/BurritoCoinDev/secp256k1/ ; actively maintained by Core contributors.
 
 - src/crypto/ctaes
-  - Upstream at https://github.com/burritocoin-core/ctaes ; actively maintained by Core contributors.
+  - Upstream at https://github.com/BurritoCoinDev/ctaes ; actively maintained by Core contributors.
 
 - src/univalue
-  - Upstream at https://github.com/burritocoin-core/univalue ; actively maintained by Core contributors, deviates from upstream https://github.com/jgarzik/univalue
+  - Upstream at https://github.com/BurritoCoinDev/univalue ; actively maintained by Core contributors, deviates from upstream https://github.com/jgarzik/univalue
 
 Upgrading LevelDB
 ---------------------

@@ -66,7 +66,7 @@ brew install berkeley-db4
 
 1. Clone the BurritoCoin Core source code:
     ```shell
-    git clone https://github.com/burritocoindev/burritocoin
+    git clone https://github.com/BurritoCoinDev/BurritoCoin
     cd burritocoin
     ```
 

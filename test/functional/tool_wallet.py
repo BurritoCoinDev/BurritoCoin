@@ -247,7 +247,7 @@ class ToolWalletTest(BurritoCoinTestFramework):
         self.log.debug('Wallet file shasum unchanged\n')
 
     def test_salvage(self):
-        # TODO: Check salvage actually salvages and doesn't break things. https://github.com/burritocoin/burritocoin/issues/7463
+        # TODO: Check salvage actually salvages and doesn't break things. https://github.com/BurritoCoinDev/BurritoCoin/issues/7463
         self.log.info('Check salvage')
         self.start_node(0)
         self.nodes[0].createwallet("salvage")

@@ -16,7 +16,7 @@ GIT = os.getenv('GIT', 'git')
 def tree_sha512sum(commit='HEAD'):
     """Calculate the Tree-sha512 for the commit.
 
-    This is copied from github-merge.py. See https://github.com/burritocoin-core/burritocoin-maintainer-tools."""
+    This is copied from github-merge.py. See https://github.com/BurritoCoinDev/burritocoin-maintainer-tools."""
 
     # request metadata for entire tree, recursively
     files = []

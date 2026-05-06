@@ -29,7 +29,7 @@ Drag BurritoCoin Core to your applications folder, and then run BurritoCoin Core
 ### Need Help?
 
 * See the project website at [burritoco.in](https://burritoco.in/) for help and more information.
-* File issues or ask questions on the [BurritoCoin GitHub repository](https://github.com/burritocoindev/burritocoin/issues).
+* File issues or ask questions on the [BurritoCoin GitHub repository](https://github.com/BurritoCoinDev/BurritoCoin/issues).
 
 Building
 ---------------------

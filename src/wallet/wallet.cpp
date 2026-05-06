@@ -1341,7 +1341,7 @@ void CWallet::transactionRemovedFromMempool(const CTransactionRef& tx, MemPoolRe
         // when improving this code in the future. The wallet's heuristics for
         // distinguishing between conflicted and unconfirmed transactions are
         // imperfect, and could be improved in general, see
-        // https://github.com/burritocoin-core/burritocoin-devwiki/wiki/Wallet-Transaction-Conflict-Tracking
+        // https://github.com/BurritoCoinDev/burritocoin-devwiki/wiki/Wallet-Transaction-Conflict-Tracking
         SyncTransaction(tx, boost::none, {CWalletTx::Status::UNCONFIRMED, /* block height */ 0, /* block hash */ {}, /* index */ 0});
     }
 }
