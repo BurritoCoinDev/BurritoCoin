@@ -212,7 +212,7 @@ Codesigner only: Sign the macOS binary:
 
     Notarize the disk image:
 
-    $   xcrun altool --notarize-app --primary-bundle-id "org.burritocoin.BurritoCoin-Qt" -u "<apple-id-email>" -p "@keychain:<apple-id-notarisation-app-specific-password>" --asc-provider <team-id-shortcode> -t osx -f burritocoin-${VERSION}-osx.dmg
+    $   xcrun altool --notarize-app --primary-bundle-id "in.burritoco.BurritoCoin-Qt" -u "<apple-id-email>" -p "@keychain:<apple-id-notarisation-app-specific-password>" --asc-provider <team-id-shortcode> -t osx -f burritocoin-${VERSION}-osx.dmg
 
     The notarization takes a few minutes. Check the status:
 

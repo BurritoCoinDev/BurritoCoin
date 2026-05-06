@@ -5,7 +5,7 @@ Upstart: burritocoind.conf
 OpenRC:  burritocoind.openrc
          burritocoind.openrcconf
 CentOS:  burritocoind.init
-macOS:   org.burritocoin.burritocoind.plist
+macOS:   in.burritoco.burritocoind.plist
 ```
 have been made available to assist packagers in creating node packages here.
 

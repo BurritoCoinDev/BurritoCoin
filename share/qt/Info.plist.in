@@ -38,7 +38,7 @@
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>org.burritocoin.BurritoCoin-Qt</string>
+  <string>in.burritoco.BurritoCoin-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -46,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>org.burritocoin.BurritoCoinPayment</string>
+      <string>in.burritoco.BurritoCoinPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>burritocoin</string>
