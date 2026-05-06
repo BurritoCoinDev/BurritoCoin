@@ -50,9 +50,10 @@ The BurritoCoin repo's [root README](/README.md) contains relevant information o
 
 - [Developer Notes](developer-notes.md)
 - [Productivity Notes](productivity.md)
-- [Release Notes](release-notes.md)
+- [Release Notes](release-notes/) (archive of tagged-release notes; empty until v0.1.0)
+- [Historical Release Notes (upstream Bitcoin / Litecoin)](historical-release-notes/)
 - [Release Process](release-process.md)
-- [Source Code Documentation (upstream Bitcoin Core)](https://doxygen.bitcoincore.org/)
+- [Source Code Documentation (upstream Bitcoin Core — reference only; BurritoCoin's source layout is identical)](https://doxygen.bitcoincore.org/)
 - [Translation Process](translation_process.md)
 - [Translation Strings Policy](translation_strings_policy.md)
 - [JSON-RPC Interface](JSON-RPC-interface.md)
@@ -63,8 +64,11 @@ The BurritoCoin repo's [root README](/README.md) contains relevant information o
 - [Benchmarking](benchmarking.md)
 
 ### Resources
-* Discuss on the [BurritoCoinTalk](https://bitcointalk.io/) forums.
-* Discuss general BurritoCoin development on #burritocoin-dev on Freenode. If you don't have an IRC client, use [webchat here](https://webchat.freenode.net/#burritocoin-dev).
+* General development discussion happens in
+  [GitHub Issues](https://github.com/BurritoCoinDev/BurritoCoin/issues) and
+  [Pull Requests](https://github.com/BurritoCoinDev/BurritoCoin/pulls).
+  Dedicated chat / forum channels will be announced once the project has the
+  contributor base to justify them.
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

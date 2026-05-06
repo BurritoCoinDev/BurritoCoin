@@ -328,9 +328,9 @@ Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spur
 
   - Archive release notes for the new version to `doc/release-notes/` (branch `master` and branch of the release)
 
-  - Create a [new GitHub release](https://github.com/burritocoindev/burritocoin/releases/new) with a link to the archived release notes.
+  - Create a [new GitHub release](https://github.com/BurritoCoinDev/BurritoCoin/releases/new) with a link to the archived release notes.
 
-  - TODO: stand up a `blog.burritoco.in` and a packaging/flathub/snap pipeline once the project has the audience to justify them. The Bitcoin Core release process originally documented those steps; they're omitted here until the equivalents exist for BurritoCoin.
+  - Future work: stand up a `blog.burritoco.in` and a packaging pipeline (Flathub, Snap, Homebrew, etc.) once the project has the audience to justify them. Steps will be added here when those channels exist.
 
   - Celebrate
 

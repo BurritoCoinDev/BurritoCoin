@@ -1074,8 +1074,8 @@ Release notes should be written for any PR that:
 
 Release notes should be added to a PR-specific release note file at
 `/doc/release-notes-<PR number>.md` to avoid conflicts between multiple PRs.
-All `release-notes*` files are merged into a single
-[/doc/release-notes.md](/doc/release-notes.md) file prior to the release.
+All draft `release-notes*` snippets accumulated under [/doc/release-notes/](/doc/release-notes/)
+are merged into a single `release-notes-X.Y.Z.md` file at release time.
 
 RPC interface guidelines
 --------------------------
