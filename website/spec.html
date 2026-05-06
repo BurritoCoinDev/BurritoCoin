@@ -68,7 +68,7 @@
       <tr><th>Target block time</th><td>2.5 minutes</td></tr>
       <tr><th>Difficulty retarget</th><td>Every 2016 blocks (~3.5 days at target)</td></tr>
       <tr><th>Block reward</th><td>10 BRTO per block</td></tr>
-      <tr><th>Halving interval</th><td>1,042,600,000 blocks (effectively non-halving)</td></tr>
+      <tr><th>Halving interval</th><td>1,042,600,000 blocks (~4,960 years; effectively non-halving)</td></tr>
       <tr><th>Total supply cap</th><td>21,000,000,000 BRTO</td></tr>
       <tr><th>Genesis premine</th><td>148,000,000 BRTO (genesis coinbase output, P2PK)</td></tr>
       <tr><th>BIP34 / 65 / 66 height</th><td>1 (genesis exempt; enforced from height 1)</td></tr>
@@ -102,7 +102,7 @@
         <th>P2SH</th>
         <td>
           version byte <code>5</code> · starts with <code>3</code><br />
-          <span class="spec-note">{TODO: paste a real example P2SH mainnet address}</span>
+          <span class="spec-note">example coming soon</span>
         </td>
       </tr>
       <tr>
@@ -123,14 +123,14 @@
         <th>Bech32 v0 P2WSH (segwit)</th>
         <td>
           HRP <code>brto</code> · 62 chars total<br />
-          <span class="spec-note">{TODO: paste a real example P2WSH mainnet address}</span>
+          <span class="spec-note">example coming soon</span>
         </td>
       </tr>
       <tr>
         <th>MWEB stealth address</th>
         <td>
           HRP <code>brtomweb</code><br />
-          <span class="spec-note">{TODO: paste a real example MWEB stealth address}</span>
+          <span class="spec-note">example coming soon</span>
         </td>
       </tr>
       <tr>
@@ -323,9 +323,7 @@ make -j$(nproc)
       <tr><th>Coin name</th><td>BurritoCoin</td></tr>
       <tr><th>Ticker</th><td>BRTO</td></tr>
       <tr><th>Logo (SVG)</th><td><a href="/logo.svg" target="_blank">/logo.svg</a> — vector master</td></tr>
-      <tr><th>Logo (PNG, 256×256)</th><td><span class="spec-note">{TODO: produce and link /logo-256.png}</span></td></tr>
-      <tr><th>Logo (PNG, 128×128)</th><td><span class="spec-note">{TODO: produce and link /logo-128.png}</span></td></tr>
-      <tr><th>Logo (PNG, 64×64)</th><td><span class="spec-note">{TODO: produce and link /logo-64.png}</span></td></tr>
+      <tr><th>Logo (PNG, multiple sizes)</th><td><span class="spec-note">coming soon — for now, render <a href="/logo.svg">/logo.svg</a> at the size you need</span></td></tr>
       <tr><th>Favicon (PNG, 32×32)</th><td><a href="/favicon-32.png" target="_blank">/favicon-32.png</a></td></tr>
       <tr><th>Apple touch icon (256×256)</th><td><a href="/apple-touch-icon.png" target="_blank">/apple-touch-icon.png</a></td></tr>
       <tr><th>Primary color</th><td><code>#f5a623</code> <span class="spec-note">(BurritoCoin gold)</span></td></tr>
@@ -344,7 +342,11 @@ make -j$(nproc)
       For exchange listing applications, wallet integration support, and partnership inquiries:
     </p>
     <p style="font-size: 1.1rem; margin-top: 1rem;">
-      <strong>Email:</strong> <code>{TODO: listings@burritoco.in or your preferred address}</code>
+      <strong>GitHub Issues:</strong> <a href="https://github.com/BurritoCoinDev/BurritoCoin/issues" target="_blank" rel="noopener">github.com/BurritoCoinDev/BurritoCoin/issues</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      A dedicated listings email is forthcoming. In the meantime, open a GitHub issue tagged
+      <code>listing</code> or <code>integration</code> and we'll respond there.
     </p>
     <p style="margin-top: 1.5rem;">
       For technical bugs and code-level questions, open an issue at
