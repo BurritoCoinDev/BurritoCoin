@@ -1,13 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: BurritoCoin
-Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
- irc://#burritocoin@freenode.net
+Upstream-Contact: BurritoCoin Core developers (via https://github.com/BurritoCoinDev/BurritoCoin/issues)
+ https://github.com/BurritoCoinDev/BurritoCoin
 Source: https://github.com/BurritoCoinDev/BurritoCoin
 
 Files: *
 Copyright: 2009-2020, BurritoCoin Core Developers
 License: Expat
-Comment: The BurritoCoin Core Developers encompasses the current developers listed on burritocoin.org,
+Comment: The BurritoCoin Core Developers encompasses the current developers listed in the GitHub repository,
          as well as the numerous contributors to the project.
 
 Files: debian/*

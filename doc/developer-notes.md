@@ -280,7 +280,7 @@ run-time checks to keep track of which locks are held and adds warnings to the
 
 Valgrind is a programming tool for memory debugging, memory leak detection, and
 profiling. The repo contains a Valgrind suppressions file
-([`valgrind.supp`](https://github.com/litecoin-project/litecoin/blob/master/contrib/valgrind.supp))
+([`valgrind.supp`](https://github.com/BurritoCoinDev/BurritoCoin/blob/master/contrib/valgrind.supp))
 which includes known Valgrind warnings in our dependencies that cannot be fixed
 in-tree. Example use:
 
@@ -423,7 +423,7 @@ and its `cs_KeyStore` lock for example).
 Threads
 -------
 
-- [Main thread (`burritocoind`)](https://doxygen.bitcoincore.org/burritocoind_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
+- [Main thread (`burritocoind`)](https://doxygen.bitcoincore.org/bitcoind_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
   : Started from `main()` in `burritocoind.cpp`. Responsible for starting up and
   shutting down the application.
 
