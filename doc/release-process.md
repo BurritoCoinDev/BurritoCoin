@@ -72,9 +72,6 @@ Write the release notes. `git shortlog` helps a lot, for example:
 
     git shortlog --no-merges v(current version, e.g. 0.19.2)..v(new version, e.g. 0.20.0)
 
-(or ping @wumpus on IRC, he has specific tooling to generate the list of merged pulls
-and sort them into categories based on labels).
-
 Generate list of authors:
 
     git log --format='- %aN' v(current version, e.g. 0.20.0)..v(new version, e.g. 0.20.1) | sort -fiu
@@ -90,7 +87,7 @@ If you're using the automated script (found in [contrib/gitian-build.py](/contri
 Setup Gitian descriptors:
 
     pushd ./burritocoin
-    export SIGNER="(your Gitian key, ie bluematt, sipa, etc)"
+    export SIGNER="(your Gitian release-signing key identity)"
     export VERSION=(new version, e.g. 0.20.0)
     git fetch
     git checkout v${VERSION}
