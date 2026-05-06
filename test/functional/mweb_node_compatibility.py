@@ -8,7 +8,7 @@ import shutil
 import time
 
 from test_framework.test_framework import BurritoCoinTestFramework
-from test_framework.ltc_util import setup_mweb_chain
+from test_framework.brto_util import setup_mweb_chain
 
 from test_framework.util import (
     assert_equal,
