@@ -31,9 +31,9 @@ BurritoCoin Core and how to run the unit tests, functional tests, and fuzz tests
 
 There are many open issues of varying difficulty waiting to be fixed.
 If you're looking for somewhere to start contributing, check out the
-[good first issue](https://github.com/burritocoin/burritocoin/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+[good first issue](https://github.com/BurritoCoinDev/BurritoCoin/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 list or changes that are
-[up for grabs](https://github.com/burritocoin/burritocoin/issues?utf8=%E2%9C%93&q=label%3A%22Up+for+grabs%22).
+[up for grabs](https://github.com/BurritoCoinDev/BurritoCoin/issues?utf8=%E2%9C%93&q=label%3A%22Up+for+grabs%22).
 Some of them might no longer be applicable. So if you are interested, but
 unsure, you might want to leave a comment on the issue first.
 
@@ -85,7 +85,7 @@ To contribute a patch, the workflow is as follows:
   1. Create topic branch
   1. Commit patches
 
-All issues and pull requests (including GUI-related ones) should be filed against the main repository at https://github.com/burritocoindev/burritocoin.
+All issues and pull requests (including GUI-related ones) should be filed against the main repository at https://github.com/BurritoCoinDev/BurritoCoin.
 
 The master branch for all monotree repositories is identical.
 
@@ -175,7 +175,7 @@ subsequent comment to the PR.
 ### Translation changes
 
 Note that translations should not be submitted as pull requests. Please see
-[Translation Process](https://github.com/burritocoin/burritocoin/blob/master/doc/translation_process.md)
+[Translation Process](https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/translation_process.md)
 for more information on helping with translations.
 
 ### Work in Progress Changes and Requests for Comments
@@ -415,8 +415,8 @@ Github-Pull: #<PR number>
 Rebased-From: <commit hash of the original commit>
 ```
 
-Backports follow the standard Bitcoin Core / Litecoin process: cherry-pick the
-upstream commit onto the appropriate stable branch and open a PR titled
+Backports use the standard cherry-pick workflow: cherry-pick the upstream
+commit onto the appropriate stable branch and open a PR titled
 `[X.Y] Backport: <upstream commit subject>`.
 
 Release Policy

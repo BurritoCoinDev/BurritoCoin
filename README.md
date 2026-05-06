@@ -1,8 +1,6 @@
 BurritoCoin Core integration/staging tree
 =====================================
 
-[![Build Status](https://travis-ci.org/burritocoin-project/burritocoin.svg?branch=master)](https://travis-ci.org/burritocoin-project/burritocoin)
-
 https://burritoco.in
 
 What is BurritoCoin?
@@ -27,22 +25,16 @@ Development Process
 -------------------
 
 The `master` branch is regularly built (see `doc/build-*.md` for instructions) and tested, but it is not guaranteed to be
-completely stable. [Tags](https://github.com/burritocoin-project/burritocoin/tags) are created
+completely stable. [Tags](https://github.com/BurritoCoinDev/BurritoCoin/tags) are created
 regularly from release branches to indicate new official, stable release versions of BurritoCoin Core.
-
-The https://github.com/burritocoin-project/gui repository is used exclusively for the
-development of the GUI. Its master branch is identical in all monotree
-repositories. Release branches and tags do not exist, so please do not fork
-that repository unless it is for development reasons.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
 and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
 
-The developer [mailing list](https://groups.google.com/forum/#!forum/burritocoin-dev)
-should be used to discuss complicated or controversial changes before working
-on a patch set.
-
-Developer IRC can be found on Freenode at #burritocoin-dev.
+For now, complicated or controversial changes should be discussed in a GitHub
+issue at <https://github.com/BurritoCoinDev/BurritoCoin/issues> before a patch
+set is opened. A dedicated mailing list / chat channel will be announced once
+the project has the contributor base to justify them.
 
 Testing
 -------
@@ -60,10 +52,10 @@ submit new unit tests for old code. Unit tests can be compiled and run
 and extending unit tests can be found in [/src/test/README.md](/src/test/README.md).
 
 There are also [regression and integration tests](/test), written
-in Python, that are run automatically on the build server.
-These tests can be run (if the [test dependencies](/test) are installed) with: `test/functional/test_runner.py`
-
-The Travis CI system makes sure that every pull request is built for Windows, Linux, and macOS, and that unit/sanity tests are run automatically.
+in Python, that can be run (if the [test dependencies](/test) are installed)
+with: `test/functional/test_runner.py`. Note: a `burritocoin_scrypt` Python
+extension module is required to run the full functional suite; see
+[/test/README.md](/test/README.md) for build instructions when that lands.
 
 ### Manual Quality Assurance (QA) Testing
 
