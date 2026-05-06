@@ -158,7 +158,7 @@ public:
         vSeeds.clear();
         vSeeds.emplace_back("seed.burritoco.in"); // A record → 50.116.17.170; replace with a proper DNS seeder once one is deployed.
 
-        // BurritoCoin-specific prefixes (unique, not shared with Bitcoin or Litecoin):
+        // BurritoCoin Base58 prefixes:
         //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
         //   SECRET_KEY     = 153 → WIF private keys start with 'P' (compressed)
         //   SCRIPT_ADDRESS2 = 28 → Legacy P2SH-2 addresses start with 'C'

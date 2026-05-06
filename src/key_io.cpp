@@ -92,7 +92,7 @@ CTxDestination DecodeDestination(const std::string& str, const CChainParams& par
             std::copy(data.begin() + pubkey_prefix.size(), data.end(), hash.begin());
             return PKHash(hash);
         }
-        // Legacy P2SH backward-compat decode only: version 5 (produces Bitcoin-style '3' prefix).
+        // Legacy P2SH backward-compat decode only: version byte 5 (produces a '3' first character).
         // SCRIPT_ADDRESS=5 is kept so that any legacy '3'-prefix addresses can still be decoded;
         // new P2SH addresses are encoded with SCRIPT_ADDRESS2=28 ('C' prefix on mainnet).
         // The data vector contains RIPEMD160(SHA256(cscript)), where cscript is the serialized redemption script.
