@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2019 The BurritoCoin Core developers
+# Copyright (c) 2017-2019 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Combine logs from multiple burritocoin nodes as well as the test_framework log.
