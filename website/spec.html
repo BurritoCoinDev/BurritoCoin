@@ -29,16 +29,15 @@
   </nav>
 
   <!-- HERO -->
-  <section style="padding-top: 4rem;">
-    <div class="section-label">Integrator Reference</div>
-    <h1 style="margin-bottom: 1rem;">BurritoCoin Spec</h1>
-    <p style="max-width: 720px; font-size: 1.05rem;">
+  <div class="hero-sm">
+    <h1>BurritoCoin Spec</h1>
+    <p>
       Everything an exchange, wallet developer, block explorer, or mining pool needs to
       integrate BurritoCoin. This page is the canonical source — when in doubt, the C++ in
       <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/src/chainparams.cpp" target="_blank" rel="noopener"><code>src/chainparams.cpp</code></a>
       is the absolute truth, but everything below is mirrored from there.
     </p>
-  </section>
+  </div>
 
   <hr class="divider" />
 
@@ -274,7 +273,8 @@ burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
     </p>
 
     <h3>Building from source (Linux)</h3>
-    <pre><code>git clone https://github.com/BurritoCoinDev/BurritoCoin
+    <pre><code># Daemon + CLI only (headless server build)
+git clone https://github.com/BurritoCoinDev/BurritoCoin
 cd BurritoCoin
 sudo apt install -y build-essential libtool autotools-dev automake \
                     pkg-config bsdmainutils python3 libssl-dev libevent-dev \
@@ -282,10 +282,16 @@ sudo apt install -y build-essential libtool autotools-dev automake \
                     libboost-thread-dev libboost-test-dev \
                     libdb-dev libdb++-dev libminiupnpc-dev libfmt-dev
 ./autogen.sh
-./configure --with-incompatible-bdb
+./configure --without-gui --with-incompatible-bdb
 make -j$(nproc)
-# Output binaries land in src/burritocoind, src/burritocoin-cli,
-# src/qt/burritocoin-qt (if Qt is installed)</code></pre>
+# Output: src/burritocoind, src/burritocoin-cli, src/burritocoin-tx,
+# src/burritocoin-wallet
+
+# Add Qt deps for the GUI wallet (burritocoin-qt)
+sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools libqrencode-dev
+./configure --with-incompatible-bdb     # without --without-gui this time
+make -j$(nproc)
+# Output additionally: src/qt/burritocoin-qt</code></pre>
 
     <h3>Cross-compilation</h3>
     <p>
