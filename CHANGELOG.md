@@ -9,6 +9,14 @@ git client. Newest commits at the top.
 
 ---
 
+## `8ecac5f` — Add HANDOFF.md and CHANGELOG.md (recoverable handoff documents)
+
+**Date:** 2026-05-08 21:23:36 +0000  
+**Author:** Your Name  
+**Full hash:** `8ecac5f0af92ecbab8e1a0e687dd9ba8f6299ef6`
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
 ## `4142687` — Round 6 fixes: COPYRIGHT_YEAR + translation unit-name sync
 
 **Date:** 2026-05-06 15:41:42 +0000  
