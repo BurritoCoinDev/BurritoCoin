@@ -23,39 +23,40 @@ python3 <<'PYEOF'
 import subprocess
 import os
 
+# Use ASCII control characters as delimiters. RS (0x1e) separates commit
+# records and FS (0x1f) separates fields within a record. These bytes
+# never appear in human-authored commit messages, so — unlike text
+# markers such as "===COMMIT===" — they cannot collide with commit body
+# content (which in this repo includes markdown "---" rules and code).
+RS = '\x1e'
+FS = '\x1f'
+
+fmt = '%H' + FS + '%ad' + FS + '%an' + FS + '%s' + FS + '%b' + RS
 log = subprocess.check_output([
     'git', 'log',
-    '--pretty=format:===COMMIT===%n%H%n%ad%n%an%n%s%n---BODY---%n%b%n---END---',
+    '--pretty=format:' + fmt,
     '--date=iso',
-    '--since=2026-01-01', '--since=2026-01-01', '--reverse',
+    '--since=2026-01-01',
+    '--reverse',
 ]).decode()
 
 commits = []
-current = None
-state = None
-for line in log.split('\n'):
-    if line == '===COMMIT===':
-        if current:
-            commits.append(current)
-        current = {'hash': '', 'date': '', 'author': '', 'subject': '', 'body': []}
-        state = 'hash'
-    elif state == 'hash':
-        current['hash'] = line.strip(); state = 'date'
-    elif state == 'date':
-        current['date'] = line.strip(); state = 'author'
-    elif state == 'author':
-        current['author'] = line.strip(); state = 'subject'
-    elif state == 'subject':
-        current['subject'] = line.strip(); state = 'body_start'
-    elif line == '---BODY---':
-        state = 'body'
-    elif line == '---END---':
-        state = None
-    elif state == 'body':
-        current['body'].append(line)
-
-if current:
-    commits.append(current)
+for record in log.split(RS):
+    # git joins records with a newline; strip the leading/trailing ones.
+    record = record.strip('\n')
+    if not record.strip():
+        continue
+    parts = record.split(FS)
+    if len(parts) < 5:
+        continue
+    commits.append({
+        'hash': parts[0].strip(),
+        'date': parts[1].strip(),
+        'author': parts[2].strip(),
+        'subject': parts[3].strip(),
+        # Re-join in the unlikely event a body contained a stray FS.
+        'body': [FS.join(parts[4:]).strip('\n')],
+    })
 
 lines = []
 lines.append('# CHANGELOG')

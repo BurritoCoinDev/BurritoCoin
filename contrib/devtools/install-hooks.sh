@@ -16,6 +16,13 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 HOOK="${REPO_ROOT}/.git/hooks/post-commit"
 
+# Don't silently clobber a pre-existing hook; back it up first.
+if [ -e "$HOOK" ] && ! grep -q 'Auto-regenerate CHANGELOG.md' "$HOOK" 2>/dev/null; then
+    backup="${HOOK}.backup.$(date +%s)"
+    echo "Existing post-commit hook found; backing it up to ${backup}"
+    mv "$HOOK" "$backup"
+fi
+
 cat > "$HOOK" <<'EOF'
 #!/usr/bin/env bash
 # Auto-regenerate CHANGELOG.md after every commit.
@@ -26,6 +33,16 @@ cat > "$HOOK" <<'EOF'
 if git log -1 --pretty=%s | grep -q '^Auto-update CHANGELOG\.md$'; then
     exit 0
 fi
+
+# Don't create commits in the middle of an in-progress git operation
+# (merge / rebase / cherry-pick / bisect) — doing so corrupts the sequence.
+GIT_DIR_PATH="$(git rev-parse --git-dir)"
+for marker in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG \
+              rebase-merge rebase-apply; do
+    if [ -e "${GIT_DIR_PATH}/${marker}" ]; then
+        exit 0
+    fi
+done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
