@@ -37,8 +37,8 @@ list or changes that are
 Some of them might no longer be applicable. So if you are interested, but
 unsure, you might want to leave a comment on the issue first.
 
-You may also participate in the weekly
-[BurritoCoin Core PR Review Club](https://burritocoincore.reviews/) meeting.
+Once the project has the contributor base to support it, a weekly PR review
+club will be set up; for now, code review happens directly on pull requests.
 
 ### Good First Issue Label
 
