@@ -2411,7 +2411,7 @@ Podpisovanje je možno le s podedovanimi ("legacy") naslovi.</translation>
 Note:  Since the fee is calculated on a per-byte basis, a fee of "100 burrioshi per kB" for a transaction size of 500 bytes (half of 1 kB) would ultimately yield a fee of only 50 burrioshi.</source>
         <translation>Določite poljubno provizijo na kB (1000 bajtov) navidezne velikosti transakcije.
 
-Opomba: Ker se provizija izračuna na bajt, bi provizija "100 satoshijev na kB" za transakcijo velikosti 500 bajtov (polovica enega kB) znašala 50 satošijev.</translation>
+Opomba: Ker se provizija izračuna na bajt, bi provizija "100 burrioshijev na kB" za transakcijo velikosti 500 bajtov (polovica enega kB) znašala 50 burriošijev.</translation>
     </message>
     <message>
         <source>per kilobyte</source>

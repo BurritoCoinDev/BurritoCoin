@@ -57,7 +57,10 @@ require_root() {
 }
 
 gen_password() {
-    tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32
+    # openssl avoids the SIGPIPE-under-pipefail problem that
+    # `tr ... | head` exhibits — head closes the pipe early and tr
+    # exits 141, killing the whole script under `set -euo pipefail`.
+    openssl rand -hex 32
 }
 
 # ---------------------------------------------------------------------------
@@ -126,10 +129,20 @@ else
     RPC_USER="${BRTO_RPC_USER:-brtonode}"
     RPC_PASS="${BRTO_RPC_PASS:-$(gen_password)}"
 
-    sed \
-        -e "s|__RPC_USER__|$RPC_USER|" \
-        -e "s|__RPC_PASS__|$RPC_PASS|" \
-        "$CONF_TEMPLATE" > "$CONF_DEST"
+    # Substitute via python3, which performs literal string replacement
+    # with NO metachar interpretation. sed, awk's gsub, and even bash's
+    # `${var//pat/repl}` all treat `&` (and others) specially in the
+    # replacement — that means an unsanitized `BRTO_RPC_PASS` env override
+    # could inject artifacts into the generated config. Python's str.replace
+    # is genuinely literal, so this is safe for arbitrary password values.
+    python3 -c '
+import sys
+with open(sys.argv[1]) as f:
+    txt = f.read()
+txt = txt.replace("__RPC_USER__", sys.argv[2])
+txt = txt.replace("__RPC_PASS__", sys.argv[3])
+sys.stdout.write(txt)
+' "$CONF_TEMPLATE" "$RPC_USER" "$RPC_PASS" > "$CONF_DEST"
 
     chown root:"$SERVICE_GROUP" "$CONF_DEST"
     chmod 0640 "$CONF_DEST"

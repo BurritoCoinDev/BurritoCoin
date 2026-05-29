@@ -9,6 +9,49 @@ git client. Newest commits at the top.
 
 ---
 
+## `7cedb2f` — Fix real bugs in VPS/devtools scripts (round 7 audit)
+
+**Date:** 2026-05-28 20:32:32 +0000  
+**Author:** Claude  
+**Full hash:** `7cedb2ffe51f273d0bd3c6e9af7eeccc8ebece69`
+
+Found by a fresh bug-hunt pass with deterministic verification:
+
+- contrib/vps/setup.sh: the RPC password was generated with
+  `head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 32`.
+  Under the script's own `set -euo pipefail`, the trailing `head`
+  closes the pipe early and the upstream `tr`/`base64` die with
+  SIGPIPE (exit 141), aborting the whole provision. Measured failure
+  rate: 47/200 (~23%) — roughly one in four fresh installs would die
+  at this line. Replaced with `openssl rand -hex 32` (0/200 failures).
+  Added `openssl` to the apt install list defensively.
+
+- contrib/vps/setup.sh: `systemctl enable --now burritocoind.service`
+  ran without a preceding `systemctl daemon-reload`. The script's own
+  header says re-runs overwrite the unit file, so on any re-run systemd
+  would act on a stale cached unit. Added `daemon-reload` first — this
+  matches what setup-second-peer.sh already does correctly.
+
+- contrib/devtools/update-changelog.sh: hardened the git-log parser to
+  use ASCII control-character delimiters (RS 0x1e / FS 0x1f) instead of
+  the text markers ===COMMIT===/---BODY---/---END---, which could
+  collide with commit-body content (our commit messages contain
+  markdown `---` rules). Also removed a duplicated `--since=2026-01-01`
+  flag.
+
+- contrib/devtools/install-hooks.sh: the generated post-commit hook now
+  (a) refuses to run during an in-progress merge/rebase/cherry-pick/
+  revert/bisect (creating an auto-commit mid-operation corrupts the
+  sequence), and (b) backs up any pre-existing post-commit hook instead
+  of silently clobbering it.
+
+Note: setup-electrumx.sh was inspected and is correct — an earlier
+visual read suggested an indented heredoc terminator, but `bash -n`
+confirmed it parses fine; the apparent indentation was a terminal
+render artifact.
+
+All five scripts pass `bash -n`.
+
 ## `a59e8f8` — Auto-update CHANGELOG.md
 
 **Date:** 2026-05-08 21:23:36 +0000  

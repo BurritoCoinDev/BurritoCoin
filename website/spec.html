@@ -6,7 +6,7 @@
   <title>BurritoCoin — Integrator Spec &amp; Reference</title>
   <meta name="description" content="Network identity, address formats, RPC interface, and brand assets for integrating BurritoCoin (BRTO) into wallets, exchanges, and explorers." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="BurritoCoin — Integrator Spec & Reference" />
+  <meta property="og:title" content="BurritoCoin — Integrator Spec &amp; Reference" />
   <meta property="og:description" content="Network identity, address formats, RPC interface, and brand assets for integrating BurritoCoin (BRTO) into wallets, exchanges, and explorers." />
   <meta property="og:url" content="https://burritoco.in/spec.html" />
   <meta property="og:image" content="https://burritoco.in/apple-touch-icon.png" />
@@ -60,7 +60,8 @@
       running node.
     </p>
 
-    <table class="spec-table">
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
       <tr><th>Coin name</th><td>BurritoCoin</td></tr>
       <tr><th>Ticker</th><td>BRTO</td></tr>
       <tr><th>P2P Port</th><td>9227</td></tr>
@@ -79,6 +80,7 @@
       <tr><th>MWEB</th><td>Supported (MimbleWimble Extension Blocks)</td></tr>
       <tr><th>DNS seed</th><td><code>seed.burritoco.in</code></td></tr>
     </table>
+    </div>
   </section>
 
   <hr class="divider" />
@@ -93,7 +95,8 @@
       for backwards compatibility.
     </p>
 
-    <table class="spec-table">
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
       <tr>
         <th>P2PKH (legacy)</th>
         <td>
@@ -118,14 +121,14 @@
       <tr>
         <th>Bech32 v0 P2WPKH (segwit)</th>
         <td>
-          HRP <code>brto</code> · 42 chars total<br />
+          HRP <code>brto</code> · 44 chars total<br />
           example: <code>brto1q675hvplaa9udwt8uplvfv4cndt8z9x87sk324w</code>
         </td>
       </tr>
       <tr>
         <th>Bech32 v0 P2WSH (segwit)</th>
         <td>
-          HRP <code>brto</code> · 62 chars total<br />
+          HRP <code>brto</code> · 64 chars total<br />
           <span class="spec-note">example coming soon</span>
         </td>
       </tr>
@@ -155,6 +158,7 @@
         </td>
       </tr>
     </table>
+    </div>
 
     <div class="callout">
       <strong>Default address format:</strong> wallets created by BurritoCoin Core generate
@@ -175,7 +179,8 @@
       consensus rules as mainnet but with separate genesis blocks, address spaces, and ports.
     </p>
 
-    <table class="spec-table">
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
       <tr><th>Testnet P2P / RPC ports</th><td>19227 / 19226</td></tr>
       <tr><th>Testnet bech32 HRP</th><td><code>tbrto</code> (P2WPKH/P2WSH), <code>tbrtomweb</code> (MWEB)</td></tr>
       <tr><th>Testnet P2PKH / P2SH bytes</th><td><code>111</code> / <code>196</code></td></tr>
@@ -183,6 +188,7 @@
       <tr><th>Regtest bech32 HRP</th><td><code>rbrto</code> (P2WPKH/P2WSH), <code>rbrtomweb</code> (MWEB)</td></tr>
       <tr><th>Regtest P2PKH / P2SH bytes</th><td><code>111</code> / <code>196</code></td></tr>
     </table>
+    </div>
   </section>
 
   <hr class="divider" />
@@ -322,7 +328,8 @@ make -j$(nproc)
       as you don't recolor or modify the wordmark.
     </p>
 
-    <table class="spec-table">
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
       <tr><th>Coin name</th><td>BurritoCoin</td></tr>
       <tr><th>Ticker</th><td>BRTO</td></tr>
       <tr><th>Logo (SVG)</th><td><a href="/logo.svg" target="_blank">/logo.svg</a> — vector master</td></tr>
@@ -333,6 +340,7 @@ make -j$(nproc)
       <tr><th>Background color</th><td><code>#1a0f05</code> <span class="spec-note">(warm dark brown)</span></td></tr>
       <tr><th>Accent color</th><td><code>#3b1f0a</code> <span class="spec-note">(brown)</span></td></tr>
     </table>
+    </div>
   </section>
 
   <hr class="divider" />

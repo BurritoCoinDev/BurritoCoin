@@ -808,7 +808,7 @@ Allekirjoitus on mahdollista vain 'legacy'-tyyppisillä osoitteilla.</translatio
     </message>
     <message>
         <source>Can vary +/- %1 burrioshi(s) per input.</source>
-        <translation>Saattaa vaihdella +/- %1 satoshia per syöte.</translation>
+        <translation>Saattaa vaihdella +/- %1 burrioshia per syöte.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -2411,7 +2411,7 @@ Allekirjoitus on mahdollista vain 'legacy'-tyyppisillä osoitteilla.</translatio
 Note:  Since the fee is calculated on a per-byte basis, a fee of "100 burrioshi per kB" for a transaction size of 500 bytes (half of 1 kB) would ultimately yield a fee of only 50 burrioshi.</source>
         <translation>Määrittele siirtotapahtuman näennäiskooksi siirtomaksu kilotavua (1,000 tavua) kohti.
 
-Huom: Koska siirtomaksu lasketaan tavujen mukaan, niin määrittelemällä 500 tavun (puoli kt) siirrolle "100 sat / kt", johtaa tämä lopulta vain 50 satoshin maksuun.</translation>
+Huom: Koska siirtomaksu lasketaan tavujen mukaan, niin määrittelemällä 500 tavun (puoli kt) siirrolle "100 sat / kt", johtaa tämä lopulta vain 50 burrioshin maksuun.</translation>
     </message>
     <message>
         <source>per kilobyte</source>

@@ -273,37 +273,6 @@ section li { margin-bottom: 0.4rem; }
 }
 
 /* ── WORTH BOX ── */
-.worth-box {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--gold);
-  border-radius: 0 12px 12px 0;
-  padding: 1.5rem 1.8rem;
-  margin-top: 1.5rem;
-}
-
-.worth-price {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.worth-price span {
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--muted);
-  margin-left: 0.5rem;
-}
-
-.worth-box p {
-  font-size: 0.95rem;
-  color: var(--muted);
-  margin-bottom: 0.5rem;
-}
-
-.worth-box p:last-child { margin-bottom: 0; }
 
 .disclaimer {
   font-size: 0.75rem;
