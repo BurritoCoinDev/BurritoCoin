@@ -2947,7 +2947,7 @@ bool CConnman::OutboundTargetReached(bool historicalBlockServingLimit)
     {
         // keep a large enough buffer to at least relay each block once
         uint64_t timeLeftInCycle = GetMaxOutboundTimeLeftInCycle();
-        uint64_t buffer = timeLeftInCycle / 600 * MAX_BLOCK_SERIALIZED_SIZE_WITH_MWEB;
+        uint64_t buffer = timeLeftInCycle / Params().GetConsensus().nPowTargetSpacing * MAX_BLOCK_SERIALIZED_SIZE_WITH_MWEB;
         if (buffer >= nMaxOutboundLimit || nMaxOutboundTotalBytesSentInCycle >= nMaxOutboundLimit - buffer)
             return true;
     }
