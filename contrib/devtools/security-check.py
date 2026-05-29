@@ -323,7 +323,7 @@ CHECKS = {
 ]
 }
 
-def identify_executable(executable) -> Optional[str]:
+def identify_executable(filename) -> Optional[str]:
     with open(filename, 'rb') as f:
         magic = f.read(4)
     if magic.startswith(b'MZ'):
