@@ -149,8 +149,10 @@ public:
         pchMessageStart[3] = 0x4f; // 'O'
         nDefaultPort = 9227;
         nPruneAfterHeight = 100000;
-        m_assumed_blockchain_size = 40;
-        m_assumed_chain_state_size = 2;
+        // BurritoCoin mainnet launched 2026-04-11. These sizes are forward-looking
+        // estimates for new-node disk planning; revise upward as the chain grows.
+        m_assumed_blockchain_size = 1;
+        m_assumed_chain_state_size = 1;
 
         // Genesis block carries the 148,000,000 BRTO premine (spendable).
         genesis = CreateGenesisBlock(1773844916, 1958489, 0x1e0ffff0, 1, 148000000 * COIN);
@@ -254,7 +256,8 @@ public:
         pchMessageStart[3] = 0x4e; // 'N' (BurriTo testNet)
         nDefaultPort = 19227;
         nPruneAfterHeight = 1000;
-        m_assumed_blockchain_size = 4;
+        // Testnet is small and resets periodically; 1 GB is a generous upper bound.
+        m_assumed_blockchain_size = 1;
         m_assumed_chain_state_size = 1;
 
         // Genesis block carries the 148,000,000 BRTO testnet premine (spendable).
