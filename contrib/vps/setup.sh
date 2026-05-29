@@ -160,7 +160,14 @@ step "Installing systemd service"
 
 # Patch the service file to use our binary location instead of /usr/bin/.
 SERVICE_DEST="/etc/systemd/system/burritocoind.service"
-sed "s|/usr/bin/burritocoind|$BINARY_DEST|g" "$SERVICE_SRC" > "$SERVICE_DEST"
+# Literal string substitution via python — see the explanation above the
+# config-template substitution for why we don't use sed here either.
+python3 -c '
+import sys
+with open(sys.argv[1]) as f:
+    txt = f.read()
+sys.stdout.write(txt.replace("/usr/bin/burritocoind", sys.argv[2]))
+' "$SERVICE_SRC" "$BINARY_DEST" > "$SERVICE_DEST"
 chmod 0644 "$SERVICE_DEST"
 
 systemctl daemon-reload

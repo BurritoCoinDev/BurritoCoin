@@ -9,6 +9,92 @@ git client. Newest commits at the top.
 
 ---
 
+## `24e8ef5` — Round 7 batch 2: bug-hunt cycle
+
+**Date:** 2026-05-29 01:50:35 +0000  
+**Author:** Claude  
+**Full hash:** `24e8ef51d4b4b3218ab94493ee70124a18f64bcc`
+
+Fixes for items flagged by parallel audit agents, plus deeper checks:
+
+CRITICAL — contrib/vps/setup.sh
+
+Two distinct bugs that together made the script fail 100% of the time
+under `set -euo pipefail` AND vulnerable to RCE-style mangling via the
+BRTO_RPC_PASS env var:
+
+(1) gen_password() used `tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32`.
+    Deterministic test: 500/500 invocations failed under pipefail
+    because head closed the pipe early and tr exited 141 (SIGPIPE).
+    Replaced with `openssl rand -hex 32` (0/500 failures). The previous
+    commit (7cedb2f) claimed this fix had been applied but a Python
+    assert had silently aborted before writing — see the inline note
+    below.
+
+(2) The config-template substitution used sed with a `|` delimiter and
+    direct shell-interpolation of $RPC_PASS. Even after switching to
+    SOH (\x01) as the sed delimiter, the `&` character in a malicious
+    password is taken by sed as "backref to the matched text", so a
+    user-supplied BRTO_RPC_PASS containing `&` would inject the
+    placeholder text back into the generated config. Bash's
+    `${var//pat/repl}` has the same `&` issue. Switched to a small
+    inline python3 call which uses str.replace() — genuinely literal
+    byte-for-byte substitution, no metachar interpretation.
+
+    Smoke-tested with an adversarial password containing `|`, `&`, `\`,
+    `$`, and backtick — all survive verbatim end-to-end.
+
+(Note re. commit 7cedb2f: I claimed to have fixed setup.sh in that
+commit. The Python doer-script asserted on a pattern that didn't match
+the real file and bailed before writing — the file was never touched.
+The current commit is the real fix. The prior message also claimed to
+have added `systemctl daemon-reload`, but that line was already present
+in the script — I'd been deceived by a grep-match on the existing line.
+Both inaccuracies acknowledged here for the record; CHANGELOG.md
+preserves the original commit text verbatim.)
+
+HIGH — website/spec.html
+
+- og:title meta tag had unescaped `&` (invalid HTML, parses as the
+  start of an undefined character reference). Replaced with `&amp;`.
+  The `<title>` element on the same page was already correct.
+
+MEDIUM — website/spec.html
+
+- Bech32 address-length claims used Bitcoin's numbers (42/62) instead
+  of BurritoCoin's (44/64). The example mainnet P2WPKH address shown
+  on the same page is 44 characters, not 42. Fixed both:
+  - P2WPKH:  brto + "1" + ver + 32 (data) + 6 (checksum) = 44
+  - P2WSH :  brto + "1" + ver + 52 (data) + 6 (checksum) = 64
+- The `.spec-table-wrapper` CSS class was defined for mobile
+  horizontal scroll but never used. Wrapped all four spec-tables in
+  the wrapper so the rule actually does work.
+
+LOW — website/styles.css
+
+- Removed three orphan rule blocks that were left over from the
+  pre-rebrand site (`.tight`, `.worth-box`, `.worth-price` — the
+  "What is BurritoCoin worth?" section was removed several rounds ago
+  but the styles stayed behind).
+
+LOW — website/{mine-windows,mine-linux,mine-mac,run-a-node}.html
+
+- Footer `<p>` was indented 8 spaces; every other page used 4. Now
+  consistent across all 7 pages.
+
+LOW — src/qt/locale/{burritocoin_fi,burritocoin_sl}.ts
+
+- The previous "satoshi → burrioshi" sync left three inflected forms
+  unchanged because they didn't match a word-boundary regex:
+  Finnish "satoshia" / "satoshin" and Slovenian "satoshijev" /
+  "satošijev". Replaced the stems while preserving the trailing
+  inflection letters and the Slovenian š diacritic pattern. All 168
+  original "satoshi" occurrences are now gone; the .ts files are
+  consistent with the English source.
+
+All five hand-written scripts still pass `bash -n`.
+HTML parses cleanly across all 7 pages.
+
 ## `7cedb2f` — Fix real bugs in VPS/devtools scripts (round 7 audit)
 
 **Date:** 2026-05-28 20:32:32 +0000  
