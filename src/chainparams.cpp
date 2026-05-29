@@ -47,7 +47,9 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * P2PK output whose private key is held by the project founders. Its outputs
  * are added to the UTXO set when the block is connected.
  *
- * BurritoCoin genesis blocks (scrypt PoW, mined 2026-04-11):
+ * BurritoCoin genesis blocks (scrypt PoW). The chain first went live
+ * 2026-04-11; the genesis nTime (1773844916 / 2026-03-18 14:41:56 UTC) is
+ * back-dated to match the WSJ headline in the coinbase message below.
  *
  * Mainnet:
  *   nTime       = 1773844916
@@ -109,7 +111,7 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 6048; // 75% of 8064
-        consensus.nMinerConfirmationWindow = 8064; // ~3.5 days at 2.5 min/block
+        consensus.nMinerConfirmationWindow = 8064; // ~14 days at 2.5 min/block
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
