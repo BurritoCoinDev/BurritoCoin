@@ -9,6 +9,368 @@ git client. Newest commits at the top.
 
 ---
 
+## `bfb08c0` — Round 7 batch 16: copyright manifest references missing SVG
+
+**Date:** 2026-05-29 02:35:09 +0000  
+**Author:** Claude  
+**Full hash:** `bfb08c060889bdda5eb0474f9e60aa608c10f346`
+
+contrib/debian/copyright listed 'src/qt/res/src/burritocoin.svg' as a
+file attributed to Bitboy/Jonas Schnelli, but no such file exists in
+src/qt/res/src/. The SVG source that the .ico/.png/.icns icons were
+rendered from was never carried over from upstream. The legal
+attribution for the rendered icon files (which DO exist as
+src/qt/res/icons/burritocoin.* and share/pixmaps/burritocoin*) is
+preserved; only the dangling SVG-source line was removed so the
+copyright manifest no longer references a missing file (some debian
+package linters fail on this).
+
+## `c40734d` — Round 7 batch 15: missing share/pixmaps/burritocoin.ico
+
+**Date:** 2026-05-29 02:32:39 +0000  
+**Author:** Claude  
+**Full hash:** `c40734d0b5e791223884c444f5e49bb0a8ea397f`
+
+Makefile.am WINDOWS_PACKAGING expects share/pixmaps/burritocoin.ico
+(referenced by share/setup.nsi.in line 17 as MUI_ICON), and
+contrib/debian/copyright line 79 lists 'share/pixmaps/burritocoin*' as
+part of the project's iconography assets. The file did not exist —
+the rebrand renamed src/qt/res/icons/bitcoin.ico to burritocoin.ico
+but never created the share/pixmaps copy. Running `make` for a Windows
+build would fail with 'No rule to make target burritocoin.ico'.
+
+Copied the existing icon from src/qt/res/icons/ so the Windows
+installer build resolves and the Debian copyright glob has something
+to point at.
+
+## `5ddf5d6` — Round 7 batch 14: missing doxygen logo file
+
+**Date:** 2026-05-29 02:32:05 +0000  
+**Author:** Claude  
+**Full hash:** `5ddf5d6c7377a2c356be2aebcf983bda6992b466`
+
+doc/Doxyfile.in line 54 set PROJECT_LOGO to doc/burritocoin_logo_doxygen.png
+but the file on disk was named doc/bitcoin_logo_doxygen.png — the
+rebrand updated the Doxyfile.in reference without renaming the asset.
+Running 'make docs' would emit a "could not find image" warning and
+build doxygen documentation without the project logo. Renamed the file
+to match what Doxyfile.in expects. The image content is still the
+inherited Bitcoin logo (55x55, the size Doxygen wants) — replacing it
+with a proper BurritoCoin logo at the same resolution is a separate
+follow-up.
+
+## `af3b49c` — Round 7 batch 13: gitian + release-fetcher GitHub paths
+
+**Date:** 2026-05-29 02:29:54 +0000  
+**Author:** Claude  
+**Full hash:** `af3b49c4f5812cfa22734cf7c10ef39e332cc74d`
+
+Six files referenced 'https://github.com/burritocoin-project/...' but
+that GitHub organisation does not exist — the project lives at
+github.com/BurritoCoinDev/. Anyone running gitian builds would fail
+with HTTP 404 from the very first git fetch.
+
+Updated:
+- contrib/gitian-descriptors/gitian-linux.yml
+- contrib/gitian-descriptors/gitian-win.yml
+- contrib/gitian-descriptors/gitian-osx.yml
+- contrib/gitian-descriptors/gitian-osx-signer.yml  (detached-sigs repo)
+- contrib/gitian-descriptors/gitian-win-signer.yml  (detached-sigs repo)
+- test/get_previous_releases.py
+to point at BurritoCoinDev/BurritoCoin and
+BurritoCoinDev/burritocoin-detached-sigs (the latter matches the
+repo URL contrib/macdeploy/README.md was already pointing at).
+
+## `78aae06` — Round 7 batch 12: fee-estimator decay comments
+
+**Date:** 2026-05-29 02:28:15 +0000  
+**Author:** Claude  
+**Full hash:** `78aae062e51208140cb025d88e984f86f3580c1e`
+
+src/policy/fees.h: the inline comments next to SHORT_DECAY, MED_DECAY,
+and LONG_DECAY described the half-lives in wall-clock time using
+Bitcoin's 10-minute block spacing ("3 hours", "1 day", "1 week"). With
+BurritoCoin's 2.5-minute spacing those translate to ~45 min, ~6 h, and
+~1.75 d. The decay constants themselves are block-count-based and are
+correct as-is; only the explanatory comments were misleading anyone
+reading the BurritoCoin source for the first time.
+
+## `9185c50` — Round 7 batch 11: aspirational URL cleanup
+
+**Date:** 2026-05-29 02:26:02 +0000  
+**Author:** Claude  
+**Full hash:** `9185c5023f023f71fd23fb6dfe28e2cd9aeb5831`
+
+CONTRIBUTING.md line 41: referenced 'BurritoCoin Core PR Review Club'
+at burritocoincore.reviews — that domain does not exist and there is
+no active review club. Replaced with a note that review currently
+happens directly on pull requests.
+
+contrib/testgen/base58.py line 8: the public-domain base58 module
+credited 'https://burritocointalk.org/index.php?topic=1026.0'. The
+original source is the bitcointalk.org forum thread; the rebrand
+text-replaced 'bitcointalk' -> 'burritocointalk' but no
+burritocointalk.org site exists. Restored the original bitcointalk.org
+URL so the attribution actually points to the source.
+
+contrib/debian/copyright line 83: same — the Bitcoin logo attribution
+pointed at burritocointalk.org/?topic=1756.0. Restored to bitcointalk.org.
+
+## `cdea74c` — Round 7 batch 10: seed-script bugs
+
+**Date:** 2026-05-29 02:25:01 +0000  
+**Author:** Claude  
+**Full hash:** `cdea74cede9345fe84ac1f022508f9fc48f9d86b`
+
+contrib/seeds/makeseeds.py PATTERN_AGENT regex listed Bitcoin Core
+versions 0.14.x-0.18.x plus 0.21.99. BurritoCoin's CLIENT_NAME is
+'BurritoCoinCore' and its current release is 0.21.4 — no 0.14-0.18
+BurritoCoinCore subver has ever existed. The regex would reject every
+real mainnet peer except the dev branch (0.21.99), so makeseeds.py
+would return ~empty seed lists every time it ran. Tightened the regex
+to the current 0.21.x series (0/1/2/3/4/99). Per the README comment
+above the regex, this list will need updating as new versions ship.
+
+contrib/seeds/README.md: replaced the placeholder pool URL
+'www.burritocoinpool.org' (the domain doesn't exist — burritoco.in is
+the only project domain) with a generic example, and documented the
+current manual fallback workflow (edit nodes_main.txt by hand) since
+no public pool is online yet.
+
+## `cb6f758` — Round 7 batch 9: nonexistent burritocoin.org references
+
+**Date:** 2026-05-29 02:23:31 +0000  
+**Author:** Claude  
+**Full hash:** `cb6f7584d1ed4b3dac7725356bc56ac7290aa396`
+
+The project's only domain is burritoco.in (per HANDOFF.md). The rebrand
+left "burritocoin.org" references in a few places, claiming a download
+host that doesn't exist.
+
+contrib/verifybinaries/verify.sh: the script's purpose is to fetch
+SHA256SUMS.asc from two independent hosts (originally bitcoin.org and
+bitcoincore.org) and compare the signatures to defend against a single
+host being compromised. Both HOST1 and HOST2 are currently burritoco.in,
+so the comparison is a no-op until a second host exists. Updated the
+header comment to be honest about the single-host setup, and replaced
+the "burritocoin.org failed but burritoco.in did" error messages with
+generic HOST1/HOST2 forms so users see the actual hostnames if they
+ever differ.
+
+contrib/README.md line 48: pointed at burritocoin.org. Replaced with
+the actual download host.
+
+doc/release-process.md line 306: same. Updated to burritoco.in.
+
+## `3076c67` — Round 7 batch 8: Qt launch year, dev-tools bugs, signet cleanup
+
+**Date:** 2026-05-29 02:21:09 +0000  
+**Author:** Claude  
+**Full hash:** `3076c67bde62b55c1b3a5efd8f0f3fca98e7e36c`
+
+src/qt/intro.cpp: lblExplanation1 substituted .arg(2011), Litecoin's
+launch year, into the welcome dialog. Result on screen: "...earliest
+transactions in 2011 when BurritoCoin initially launched". BurritoCoin
+launched 2026-04-11, not 2011. Changed to .arg(2026).
+
+contrib/devtools/security-check.py: identify_executable(executable)
+referenced an undefined name 'filename' in its body. It only "worked"
+because the main loop happens to use 'filename' as the iteration
+variable, so Python's late-binding lookup at call time found one in the
+enclosing scope. Any refactor that renames the loop variable, or any
+call from a different scope, would NameError. Renamed the parameter to
+'filename' to match the body.
+
+contrib/devtools/symbol-check.py: identical bug, identical fix.
+
+contrib/testgen/gen_key_io_test_vectors.py: every bech32 HRP in the
+templates was Litecoin's ('ltc'/'tltc'/'rltc'); is_valid_bech32() also
+checked validity against that triple. Regenerating the committed test
+fixtures (src/test/data/key_io_valid.json — already in brto/tbrto form)
+would have produced Litecoin-format vectors that fail key_io_tests on a
+BurritoCoin build. Renamed to brto/tbrto/rbrto, and removed all four
+signet entries (BurritoCoin's CreateChainParams throws on signet — the
+generator should not produce vectors for an unsupported network).
+
+src/chainparams.cpp regtest: added the genesis hashMerkleRoot assertion
+mainnet and testnet already have. All three genesis blocks share the
+same coinbase tx (same pszTimestamp, genesisOutputScript, 148M reward,
+nVersion=1), so the merkle root is identical across networks. The
+assertion catches accidental drift in any of those inputs.
+
+share/examples/burritocoin.conf: removed mentions of signet from the
+[Sections] documentation block and the network-options paragraph, and
+deleted the placeholder '#signet=0' line. signet is rejected by
+CreateChainParams; documenting it as an option misleads users. Added a
+short note explaining that signet is not yet supported.
+
+## `526f213` — Round 7 batch 7: MSVC config version drift (0.21.3 -> 0.21.4)
+
+**Date:** 2026-05-29 02:16:49 +0000  
+**Author:** Claude  
+**Full hash:** `526f213af2d7d8e24d81d6f26b9d93bbd73d60c0`
+
+build_msvc/burritocoin_config.h had CLIENT_VERSION_REVISION=3 and
+PACKAGE_STRING/PACKAGE_VERSION="0.21.3", but the canonical configure.ac
+defines _CLIENT_VERSION_REVISION as 4 and the source-of-truth version is
+0.21.4 (matches the Windows binary on the download page). Without this
+fix, Windows binaries built via the MSVC project files would report a
+stale version in -version output, ClientVersionString(), HTTP user-agent
+("/BurritoCoin Core:0.21.3/"), peer subver in inv/addr, and the about
+dialog — confusing users and breaking version-specific behavior checks.
+
+## `c9b2776` — Round 7 batch 6: net.cpp 10-min block assumption + spec.html prefixes
+
+**Date:** 2026-05-29 02:14:44 +0000  
+**Author:** Claude  
+**Full hash:** `c9b2776088364fd41fa31966489ddc5cefe97539`
+
+src/net.cpp OutboundTargetReached(): the historical-block bandwidth
+reservation buffer divided 'timeLeftInCycle' by 600 (Bitcoin's 10-min
+block target) to count blocks per cycle. BurritoCoin's nPowTargetSpacing
+is 150 seconds, so the formula was reserving only 1/4 of the bytes
+actually needed to relay each block in the remaining cycle window. Use
+Params().GetConsensus().nPowTargetSpacing instead of the literal 600 so
+the buffer scales with the chain's actual block time. Also matches the
+pattern used by every other Params() call site in this file. net.h
+already includes chainparams.h, so no new include is needed.
+
+website/spec.html section 3 (Testnet & Regtest): the legacy address
+rows listed the P2PKH/P2SH version bytes (111 / 196) but omitted the
+ASCII character a user actually sees on screen. Integrators building
+address validators had to consult chainparams.cpp to learn 111 → m/n
+and 196 → 2. Appended the human-readable prefixes to both rows.
+
+## `fd24be2` — Round 7 batch 5: stale Litecoin/Bitcoin constants in contrib/
+
+**Date:** 2026-05-29 02:10:23 +0000  
+**Author:** Claude  
+**Full hash:** `fd24be2b8001c76dbc1d4afd47820a54df476d27`
+
+contrib/qos/tc.sh + README.md: replace port 9333 (Litecoin) with 9227
+(BurritoCoin mainnet P2P). The iptables rules would have been a no-op on
+BurritoCoin traffic, defeating the bandwidth limiter's whole purpose.
+
+contrib/linearize/example-linearize.cfg: every constant in the sample
+config was Litecoin's (netmagic fbc0b6db, genesis 12a765e3..., regtest
+RPC 19443, signet 38332). Replaced with BurritoCoin's authoritative
+values from chainparamsbase.cpp and chainparams.cpp:
+  mainnet  netmagic=4252544f  genesis=44615751d966...  port=9226
+  testnet  netmagic=4252544e  genesis=b909940074cb...  port=19226
+  regtest  netmagic=42525447  genesis=c85abc7b5671...  port=19553
+Updated testnet data-dir path testnet3 -> testnet4 (chainparamsbase.cpp
+line 46). Signet block stubbed out — BurritoCoin does not yet support
+signet (per chainparamsbase.cpp SetupChainParamsBaseOptions).
+
+contrib/linearize/linearize-data.py: fallback netmagic + genesis when
+the cfg omits them were still Bitcoin mainnet (f9beb4d9 / 000000...26f).
+Changed to BurritoCoin mainnet so the script does the right thing by
+default rather than parsing the Bitcoin block format on disk.
+
+depends/packages.md: 'bitcoin binaries/libraries' -> 'burritocoin
+binaries/libraries' in the depends-system docs (2 occurrences).
+
+src/chainparams.cpp: line 50 comment said 'mined 2026-04-11' but the
+genesis nTime (1773844916) decodes to 2026-03-18 14:41:56 UTC, matching
+the WSJ headline in the coinbase message. Rewrote the comment to make
+both dates explicit: chain first went live 2026-04-11, nTime back-dated
+to 2026-03-18.
+
+src/chainparams.cpp: line 114 comment said '~3.5 days at 2.5 min/block'
+for nMinerConfirmationWindow=8064. 8064 * 2.5 = 20160 min = 14 days, not
+3.5 days (the line 130 MWEB comment already says ~14 days correctly).
+
+## `577d2db` — Round 7 batch 4: copyright tool + test runner bugs
+
+**Date:** 2026-05-29 02:05:24 +0000  
+**Author:** Claude  
+**Full hash:** `577d2dbfb998dbae990f970f24baf8b9391e2746`
+
+contrib/devtools/copyright_header.py: add 'The Bitcoin Core developers'
+and 'The Litecoin Core developers' back to EXPECTED_HOLDER_NAMES list.
+The rebrand removed them, but round-5 attribution restoration put both
+back into 1,051 source files. Without this fix the tool would flag every
+layered-attribution file as having an unknown holder.
+
+test/functional/test_runner.py: add 'brto' to the good_prefixes_re
+regex. ALL_SCRIPTS already contains 'brto_replacebyfee.py' (line 208)
+but check_script_prefixes() would assertion-fail because the regex
+only recognised (example|feature|...|tool|ltc|mweb)_. Without 'brto'
+in the alternation, CI runs would crash with a 'do not follow naming
+conventions' error.
+
+test/functional/interface_bitcoin_cli.py -> interface_burritocoin_cli.py:
+the file content tests burritocoin-cli (class TestBurritoCoinCli) and
+test_runner.py line 139 references it by its new name. The actual
+filename had been left as the upstream Bitcoin name, so check_script_list()
+would emit a missing-script warning. Renaming the file satisfies both
+the semantic intent and the existing reference.
+
+## `6e7e284` — Round 7 batch 3: init service hardening + config-template bugs
+
+**Date:** 2026-05-29 01:54:38 +0000  
+**Author:** Claude  
+**Full hash:** `6e7e284d4fd1c66a11fe9240558577733a556033`
+
+Bugs found by continued auditing:
+
+cleanup — remove junk files left over from earlier hostile-password
+smoke-testing (`ithpipe|` and `ith|pipes|`). The shell glob in those
+test commands wrote 22 bytes of literal text into oddly-named files
+in the repo root; they got swept into commit 24e8ef5 by `git add -A`.
+Removed via `git rm`.
+
+contrib/init/burritocoind.service — two related issues:
+
+(1) `PermissionsStartOnly=true` was deprecated in systemd 231+ (default
+    behavior now is that ExecStartPre runs as root unless suffixed with
+    `+`/`!`). On modern systemd (Ubuntu 24.04 ships 256+) this prints
+    a deprecation warning every time the unit loads.
+(2) `ExecStartPre=/bin/chgrp burritocoin /etc/burritocoin` was
+    redundant — `ConfigurationDirectory=burritocoin` already creates
+    /etc/burritocoin owned by User=Group= (burritocoin:burritocoin)
+    with ConfigurationDirectoryMode=0710. The chgrp does nothing.
+
+Removed both. The User/Group/ConfigurationDirectory/StateDirectory/
+RuntimeDirectory setup is left intact and is the correct, modern way
+to express what those two lines were trying to do.
+
+contrib/vps/setup.sh — `sed "s|/usr/bin/burritocoind|$BINARY_DEST|g"`
+had the same delimiter-collision + metachar problem as the config
+template substitution fixed in batch 2 (sed's `|` colliding if the
+value contained `|`, and `&` being interpreted as match-backref).
+$BINARY_DEST is normally a controlled path, but the bug class is
+identical. Switched to the same inline python3 literal-substitution
+approach for consistency.
+
+contrib/vps/burritocoin.conf and burritocoin-testnet.conf —
+
+(1) `addressindex=1` was set in both templates, with a comment
+    claiming it "enables balance/history lookups by address". That
+    option exists in some Bitcoin forks (Dash, certain ABC variants)
+    but NOT in BurritoCoin (which is a Litecoin/Bitcoin-Core lineage
+    fork). Confirmed: src/init.cpp's argsman has no `-addressindex`
+    declaration. The daemon would print "Config option addressindex
+    is unknown" on every startup and the comment would be flat-out
+    wrong: address lookups for the explorer actually come from
+    ElectrumX (installed by contrib/vps/setup-electrumx.sh), not
+    from the daemon.
+
+    Removed the line from both templates and replaced the comment
+    with an honest pointer to ElectrumX.
+
+(2) Mainnet template comments said "until DNS seeds are live" and
+    "<vps1-ip>" addnode placeholders — both stale. The DNS seed
+    (`seed.burritoco.in`) is live and the canonical seed IP
+    (50.116.17.170:9227) is compiled into chainparamsseeds.h.
+    Reworded the comment block.
+
+Cross-checked every other active config key in both templates against
+src/init.cpp's argsman and the per-subsystem `-flag` declarations — all
+14 remaining keys (daemon, dbcache, debug, listen, maxconnections,
+port, rpc{allowip,bind,password,port,user}, server, testnet, txindex)
+are supported.
+
 ## `24e8ef5` — Round 7 batch 2: bug-hunt cycle
 
 **Date:** 2026-05-29 01:50:35 +0000  
