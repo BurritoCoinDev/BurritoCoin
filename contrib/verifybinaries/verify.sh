@@ -5,7 +5,10 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 ###   This script attempts to download the signature file SHA256SUMS.asc from
-###   burritoco.in and burritocoin.org and compares them.
+###   the BurritoCoin download host. (BurritoCoin currently operates a single
+###   release host — burritoco.in — so HOST1 and HOST2 below point to the same
+###   origin. Once a second independent host exists, HOST2 can be repointed and
+###   this script will compare signatures across both.)
 ###   It first checks if the signature passes, and then downloads the files specified in
 ###   the file, and checks if the hashes of these files match those that are specified
 ###   in the signature file.
@@ -94,7 +97,7 @@ if ! WGETOUT=$(wget -N "$HOST1$BASEDIR$SIGNATUREFILENAME" 2>&1); then
 fi
 
 if ! WGETOUT=$(wget -N -O "$SIGNATUREFILENAME.2" "$HOST2$BASEDIR$SIGNATUREFILENAME" 2>&1); then
-   echo "burritocoin.org failed to provide signature file, but burritoco.in did?"
+   echo "HOST2 ($HOST2) failed to provide signature file, but HOST1 ($HOST1) did?"
    echo "wget output:"
    # shellcheck disable=SC2001
    echo "$WGETOUT"|sed 's/^/\t/g'
@@ -104,7 +107,7 @@ fi
 
 SIGFILEDIFFS="$(diff $SIGNATUREFILENAME $SIGNATUREFILENAME.2)"
 if [ "$SIGFILEDIFFS" != "" ]; then
-   echo "burritocoin.org and burritoco.in signature files were not equal?"
+   echo "HOST1 ($HOST1) and HOST2 ($HOST2) signature files were not equal?"
    clean_up $SIGNATUREFILENAME $SIGNATUREFILENAME.2
    exit 4
 fi

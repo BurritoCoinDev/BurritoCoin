@@ -45,4 +45,4 @@ Test and Verify Tools
 Utilities to generate test vectors for the data-driven BurritoCoin tests.
 
 ### [Verify Binaries](/contrib/verifybinaries) ###
-This script attempts to download and verify the signature file SHA256SUMS.asc from burritocoin.org.
+This script attempts to download and verify the signature file SHA256SUMS.asc from the BurritoCoin download host (currently burritoco.in).
