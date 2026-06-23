@@ -75,9 +75,20 @@ brew install berkeley-db4
     Configure and build the headless BurritoCoin Core binaries as well as the GUI (if Qt is found).
 
     You can disable the GUI build by passing `--without-gui` to configure.
+
+    On Homebrew systems (both Apple Silicon `/opt/homebrew` and Intel `/usr/local`),
+    configure does not auto-search the Homebrew prefix for boost, miniupnpc, or
+    libfmt. Point it there explicitly:
+
     ```shell
     ./autogen.sh
-    ./configure
+    export BREW_PREFIX="$(brew --prefix)"
+    ./configure \
+      --with-boost="$BREW_PREFIX/opt/boost" \
+      BDB_LIBS="-L$(pwd)/db4/lib -ldb_cxx-4.8" \
+      BDB_CFLAGS="-I$(pwd)/db4/include" \
+      CPPFLAGS="-I$BREW_PREFIX/include" \
+      LDFLAGS="-L$BREW_PREFIX/lib"
     make
     ```
 
