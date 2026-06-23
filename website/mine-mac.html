@@ -83,10 +83,18 @@ cd burritocoin
     <div class="step">
       <span class="step-number">5</span>
       <h3>Build BurritoCoin Core</h3>
+      <p>Homebrew installs into <code>/opt/homebrew</code> on Apple Silicon and
+         <code>/usr/local</code> on Intel, but our configure script doesn't search
+         either by default. The <code>BREW_PREFIX</code> export below points it at
+         the right place on both:</p>
       <pre><code>./autogen.sh
+export BREW_PREFIX="$(brew --prefix)"
 ./configure --without-gui --disable-tests --disable-bench \
+  --with-boost="$BREW_PREFIX/opt/boost" \
   BDB_LIBS="-L$(pwd)/db4/lib -ldb_cxx-4.8" \
-  BDB_CFLAGS="-I$(pwd)/db4/include"
+  BDB_CFLAGS="-I$(pwd)/db4/include" \
+  CPPFLAGS="-I$BREW_PREFIX/include" \
+  LDFLAGS="-L$BREW_PREFIX/lib"
 make -j$(sysctl -n hw.ncpu)
 sudo make install</code></pre>
       <p>This takes 10-20 minutes. The build produces <code>burritocoind</code> and

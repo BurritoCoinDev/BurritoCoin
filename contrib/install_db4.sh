@@ -33,7 +33,11 @@ check_exists() {
 sha256_check() {
   # Args: <sha256_hash> <filename>
   #
-  if check_exists sha256sum; then
+  # macOS Tahoe (15+) ships a BSD-style `sha256sum` that doesn't support
+  # GNU-style `-c` check mode, so prefer `shasum -a 256` there.
+  if [ "$(uname)" = "Darwin" ] && check_exists shasum; then
+    echo "${1}  ${2}" | shasum -a 256 -c
+  elif check_exists sha256sum; then
     echo "${1}  ${2}" | sha256sum -c
   elif check_exists sha256; then
     if [ "$(uname)" = "FreeBSD" ]; then
