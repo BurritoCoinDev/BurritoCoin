@@ -377,7 +377,7 @@ void BurritoCoinGUI::createActions()
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
     m_show_wallet_location_action = new QAction(tr("Show Wallet &File Location..."), this);
     m_show_wallet_location_action->setStatusTip(tr("Show where this wallet's wallet.dat file is stored on your computer"));
-    m_verify_backup_key_action = new QAction(tr("&Verify Backup Key..."), this);
+    m_verify_backup_key_action = new QAction(tr("Verify Backup &Key..."), this);
     m_verify_backup_key_action->setStatusTip(tr("Check, on this computer only, that a private key you wrote down belongs to this wallet"));
     changePassphraseAction = new QAction(tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
@@ -934,6 +934,11 @@ void BurritoCoinGUI::showVerifyBackupKey()
     connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
 
     dlg.exec();
+    // Best-effort scrub of the QLineEdit's heap buffer before clearing.
+    // Mirrors SecureClearQLineEdit() in askpassphrasedialog.cpp; intermediate
+    // QString copies (e.g. from .trimmed()) are not wiped, but this matches the
+    // codebase's established pattern for sensitive input fields.
+    key_edit->setText(QString(QLatin1Char(' ')).repeated(key_edit->text().size()));
     key_edit->clear();
 }
 
