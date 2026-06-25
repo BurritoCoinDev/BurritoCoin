@@ -53,6 +53,7 @@
 #include <QDockWidget>
 #include <QDragEnterEvent>
 #include <QFile>
+#include <QFileInfo>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMenu>
@@ -96,8 +97,17 @@ WalletDiskPaths GetWalletDiskPaths(interfaces::Node& node, WalletModel* wallet_m
     const QString wallet_dir = QString::fromStdString(node.walletClient().getWalletDir());
     const QString name = wallet_model->getWalletName();
     const QString folder = name.isEmpty() ? wallet_dir : QDir(wallet_dir).filePath(name);
-    paths.folder = QDir::toNativeSeparators(folder);
-    paths.file = QDir::toNativeSeparators(QDir(folder).filePath(QStringLiteral("wallet.dat")));
+    const QFileInfo folder_info(folder);
+    if (folder_info.isFile()) {
+        // Bare single-file wallet (e.g. -wallet=foo.dat): the "name" is the file
+        // itself, not a sub-folder containing wallet.dat.
+        paths.file = QDir::toNativeSeparators(folder_info.absoluteFilePath());
+        paths.folder = QDir::toNativeSeparators(folder_info.absolutePath());
+    } else {
+        // Directory-style wallet (the usual case): wallet.dat lives in the folder.
+        paths.folder = QDir::toNativeSeparators(folder);
+        paths.file = QDir::toNativeSeparators(QDir(folder).filePath(QStringLiteral("wallet.dat")));
+    }
     paths.valid = true;
     return paths;
 }
@@ -876,7 +886,7 @@ void BurritoCoinGUI::showVerifyBackupKey()
 
     QLineEdit* key_edit = new QLineEdit(&dlg);
     key_edit->setEchoMode(QLineEdit::Password);
-    key_edit->setPlaceholderText(tr("Private key (WIF) \xe2\x80\x94 starts with 'P'"));
+    key_edit->setPlaceholderText(tr("Private key (WIF) for this wallet"));
     layout->addWidget(key_edit);
 
     QCheckBox* show_key = new QCheckBox(tr("Show key"), &dlg);
@@ -913,8 +923,8 @@ void BurritoCoinGUI::showVerifyBackupKey()
                                "wallet, or open the matching wallet and try again.</span>"));
             break;
         case WalletModel::KeyInvalid:
-            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 That doesn't look like a BurritoCoin "
-                               "private key (WIF). It should start with 'P'. Check for typos, or a key from a "
+            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 That doesn't look like a valid "
+                               "BurritoCoin private key (WIF) for this network. Check for typos, or a key from a "
                                "different network.</span>"));
             break;
         }
@@ -937,7 +947,11 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
     settings.setValue("safety/walletOpenCount", opens);
 
     const WalletDiskPaths paths = GetWalletDiskPaths(m_node, wallet_model);
-    const QString file_html = paths.valid ? paths.file.toHtmlEscaped() : tr("(unknown)");
+    // Only assert the exact wallet.dat path if it really exists on disk; otherwise
+    // point at the folder, so the reminder never names a file that isn't there.
+    const bool file_exists = paths.valid && QFile::exists(paths.file);
+    const QString file_html = file_exists ? paths.file.toHtmlEscaped()
+                            : (paths.valid ? paths.folder.toHtmlEscaped() : tr("(unknown)"));
 
     const bool first_run = (opens == 1);
     // Back-up nudge on the very first open, then every third open after that.
@@ -985,8 +999,10 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
                        "wallet's recovery secret. A printed or hand-written copy survives a dead hard "
                        "drive, a lost laptop, or ransomware.</p>"
                        "<p><b>How to export it:</b> open <i>Help \xe2\x80\xba Node window</i>, choose "
-                       "the <i>Console</i> tab, and run:</p>"
-                       "<p><code>dumpwallet \"C:\\path\\to\\burritocoin-backup.txt\"</code></p>"
+                       "the <i>Console</i> tab, and run <code>dumpwallet</code> with a full path to a "
+                       "file you choose \xe2\x80\x94 for example:</p>"
+                       "<p><code>dumpwallet \"C:\\Users\\You\\burritocoin-backup.txt\"</code> (Windows)<br>"
+                       "<code>dumpwallet \"/home/you/burritocoin-backup.txt\"</code> (macOS/Linux)</p>"
                        "<p>That file contains your private keys and HD seed. Print it, store it "
                        "somewhere safe and offline, then delete the file from your computer. Anyone "
                        "who reads it can take your coins, so treat it like cash.</p>"));
@@ -1082,7 +1098,11 @@ void BurritoCoinGUI::createFaqPanel()
     m_faq_dock->setMinimumWidth(280);
     addDockWidget(Qt::RightDockWidgetArea, m_faq_dock);
     // Give it a sensible starting width so it does not crowd the wallet view.
-    resizeDocks({m_faq_dock}, {340}, Qt::Horizontal);
+    // resizeDocks() only takes effect once the main-window layout is active, so
+    // defer it until after the window has been shown.
+    QTimer::singleShot(0, this, [this] {
+        if (m_faq_dock) resizeDocks({m_faq_dock}, {340}, Qt::Horizontal);
+    });
 }
 
 QString BurritoCoinGUI::faqHtml() const
@@ -1118,9 +1138,11 @@ QString BurritoCoinGUI::faqHtml() const
          QT_TR_NOOP("The HD seed is one master private key stored inside wallet.dat. BurritoCoin does "
             "<b>not</b> use a 12- or 24-word phrase \xe2\x80\x94 there is no BIP39 mnemonic. To make a "
             "readable backup, open <b>Help &#8250; Node window &#8250; Console</b> and run "
-            "<code>dumpwallet \"C:\\path\\to\\burritocoin-backup.txt\"</code>. That file lists all your "
-            "private keys plus the seed; print it, store it offline, then delete the file. Treat it "
-            "like cash \xe2\x80\x94 anyone who reads it can take your coins.")},
+            "<code>dumpwallet</code> with a full path to a file you choose &#8212; for example "
+            "<code>dumpwallet \"C:\\Users\\You\\burritocoin-backup.txt\"</code> on Windows, or "
+            "<code>dumpwallet \"/home/you/burritocoin-backup.txt\"</code> on macOS/Linux. That file "
+            "lists all your private keys plus the seed; print it, store it offline, then delete the "
+            "file. Treat it like cash \xe2\x80\x94 anyone who reads it can take your coins.")},
         {QT_TR_NOOP("What does encrypting my wallet do? What if I forget the passphrase?"),
          QT_TR_NOOP("Encryption locks your keys with a passphrase, so coins can't be spent until you "
             "unlock the wallet. There is no back door: if you forget the passphrase, the coins are "
