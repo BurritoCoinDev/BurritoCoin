@@ -90,6 +90,11 @@ void ReceiveRequestDialog::setInfo(const SendCoinsRecipient &_info)
         ui->wallet_tag->hide();
         ui->wallet_content->hide();
     }
+
+    // Make copying the receiving address the prominent, default action so the
+    // user can share it in one click (or by pressing Enter).
+    ui->btnCopyAddress->setDefault(true);
+    ui->btnCopyAddress->setFocus();
 }
 
 void ReceiveRequestDialog::updateDisplayUnit()

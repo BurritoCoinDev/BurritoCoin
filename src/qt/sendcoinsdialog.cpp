@@ -322,21 +322,28 @@ bool SendCoinsDialog::PrepareSendText(QString& question_string, QString& informa
             amount.append(tr(" from wallet '%1'").arg(GUIUtil::HtmlEscape(model->getWalletName())));
         }
 
-        // generate address string
-        QString address = rcp.address;
+        // generate address string, shown prominently (monospace, highlighted,
+        // on its own line) so the user can verify it before sending — payments
+        // are irreversible.
+        QString address = GUIUtil::HtmlEscape(rcp.address);
+        QString addressBlock = QString("<br /><code style='font-size:11pt; "
+            "background-color:#f3e6c8; color:#1a1a1a;'>%1</code>").arg(address);
+        QString sendWarning = QString("<br /><span style='color:#c0392b; font-weight:bold;'>%1</span>")
+            .arg(tr("\xe2\x9a\xa0 Double-check this address. Sent coins cannot be reversed."));
 
         QString recipientElement;
 
         {
             if(rcp.label.length() > 0) // label with address
             {
-                recipientElement.append(tr("%1 to '%2'").arg(amount, GUIUtil::HtmlEscape(rcp.label)));
-                recipientElement.append(QString(" (%1)").arg(address));
+                recipientElement.append(tr("%1 to '%2':").arg(amount, GUIUtil::HtmlEscape(rcp.label)));
             }
             else // just address
             {
-                recipientElement.append(tr("%1 to %2").arg(amount, address));
+                recipientElement.append(tr("%1 to:").arg(amount));
             }
+            recipientElement.append(addressBlock);
+            recipientElement.append(sendWarning);
         }
         formatted.append(recipientElement);
     }

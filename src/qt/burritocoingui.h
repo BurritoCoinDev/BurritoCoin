@@ -124,6 +124,7 @@ private:
     UnitDisplayStatusBarControl* unitDisplayControl = nullptr;
     QLabel* labelWalletEncryptionIcon = nullptr;
     QLabel* labelWalletHDStatusIcon = nullptr;
+    GUIUtil::ClickableLabel* m_backup_status_label = nullptr;
     GUIUtil::ClickableLabel* labelProxyIcon = nullptr;
     GUIUtil::ClickableLabel* connectionsControl = nullptr;
     GUIUtil::ClickableLabel* labelBlocksIcon = nullptr;
@@ -274,6 +275,12 @@ private:
      @see WalletModel::EncryptionStatus
      */
     void setHDStatus(bool privkeyDisabled, int hdEnabled);
+
+    /** Set the wallet-backup status badge shown in the status bar. */
+    void setBackupStatus(WalletModel* wallet_model);
+
+    /** First-run onboarding: offer to create + back up a wallet for new users. */
+    void maybeShowOnboarding();
 
 public Q_SLOTS:
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);

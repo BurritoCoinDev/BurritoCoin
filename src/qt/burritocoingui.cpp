@@ -204,11 +204,15 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     unitDisplayControl = new UnitDisplayStatusBarControl(platformStyle);
     labelWalletEncryptionIcon = new QLabel();
     labelWalletHDStatusIcon = new QLabel();
+    m_backup_status_label = new GUIUtil::ClickableLabel();
+    m_backup_status_label->hide();
     labelProxyIcon = new GUIUtil::ClickableLabel();
     connectionsControl = new GUIUtil::ClickableLabel();
     labelBlocksIcon = new GUIUtil::ClickableLabel();
     if(enableWallet)
     {
+        frameBlocksLayout->addStretch();
+        frameBlocksLayout->addWidget(m_backup_status_label);
         frameBlocksLayout->addStretch();
         frameBlocksLayout->addWidget(unitDisplayControl);
         frameBlocksLayout->addStretch();
@@ -262,6 +266,9 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     });
 
     connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &BurritoCoinGUI::showModalOverlay);
+    connect(m_backup_status_label, &GUIUtil::ClickableLabel::clicked, [this] {
+        if (walletFrame) walletFrame->backupWallet();
+    });
     connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &BurritoCoinGUI::showModalOverlay);
 #ifdef ENABLE_WALLET
     if(enableWallet) {
@@ -732,11 +739,61 @@ void BurritoCoinGUI::setWalletController(WalletController* wallet_controller)
     for (WalletModel* wallet_model : m_wallet_controller->getOpenWallets()) {
         addWallet(wallet_model);
     }
+
+    // First-run onboarding for brand-new setups with no wallet yet. Deferred so
+    // it appears after the main window is visible.
+    QTimer::singleShot(600, this, &BurritoCoinGUI::maybeShowOnboarding);
 }
 
 WalletController* BurritoCoinGUI::getWalletController()
 {
     return m_wallet_controller;
+}
+
+void BurritoCoinGUI::maybeShowOnboarding()
+{
+    if (!enableWallet || !walletFrame || !m_wallet_controller) return;
+
+    QSettings settings;
+    if (settings.value(QStringLiteral("onboarding/done"), false).toBool()) return;
+
+    // Anyone who already has a wallet open is set up — record that and move on.
+    if (!m_wallet_controller->getOpenWallets().empty()) {
+        settings.setValue(QStringLiteral("onboarding/done"), true);
+        return;
+    }
+
+    // Mark done up front so we never nag again, whatever the user chooses here.
+    settings.setValue(QStringLiteral("onboarding/done"), true);
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Information);
+    box.setWindowTitle(tr("Welcome to BurritoCoin"));
+    box.setTextFormat(Qt::RichText);
+    box.setText(tr(
+        "<p style='font-size:13pt;'><b>\xf0\x9f\x8c\xaf Welcome to BurritoCoin!</b></p>"
+        "<p>This app is your wallet \xe2\x80\x94 it lets you receive and send BRTO and keeps your "
+        "coins safe on your own computer.</p>"
+        "<p>Let's set you up:</p>"
+        "<ol>"
+        "<li><b>Create a wallet</b> (you can protect it with a passphrase).</li>"
+        "<li><b>Back it up</b> \xe2\x80\x94 we'll remind you right after and show you exactly where "
+        "your wallet file lives.</li>"
+        "</ol>"
+        "<p>You can always find guidance in the <b>Help &amp; FAQ</b> panel on the right.</p>"));
+    QPushButton* create_btn = box.addButton(tr("Create My Wallet"), QMessageBox::AcceptRole);
+    box.addButton(tr("I'll do it later"), QMessageBox::RejectRole);
+    box.setDefaultButton(create_btn);
+    box.exec();
+
+    if (box.clickedButton() == create_btn) {
+        // Reuse the standard wallet-creation flow. Once the wallet is created and
+        // made current, the existing first-run backup reminder guides the backup.
+        auto* activity = new CreateWalletActivity(m_wallet_controller, this);
+        connect(activity, &CreateWalletActivity::created, this, &BurritoCoinGUI::setCurrentWallet);
+        connect(activity, &CreateWalletActivity::finished, activity, &QObject::deleteLater);
+        activity->create();
+    }
 }
 
 void BurritoCoinGUI::addWallet(WalletModel* walletModel)
@@ -981,7 +1038,7 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
         QPushButton* backup_btn = box.addButton(tr("Back Up Now..."), QMessageBox::AcceptRole);
         QPushButton* locate_btn = box.addButton(tr("Show Me the File"), QMessageBox::ActionRole);
         QPushButton* verify_btn = box.addButton(tr("Verify a Key..."), QMessageBox::ActionRole);
-        box.addButton(tr("I've Already Backed Up"), QMessageBox::RejectRole);
+        QPushButton* acked_btn = box.addButton(tr("I've Already Backed Up"), QMessageBox::RejectRole);
         box.setDefaultButton(backup_btn);
         box.exec();
 
@@ -992,6 +1049,11 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
             QDesktopServices::openUrl(QUrl::fromLocalFile(paths.folder));
         } else if (clicked == verify_btn) {
             showVerifyBackupKey();
+        } else if (clicked == acked_btn) {
+            // Take the user at their word and reflect it in the status badge.
+            QSettings settings;
+            settings.setValue(QStringLiteral("wallet/") + wallet_model->getWalletName() + QStringLiteral("/backup_done"), true);
+            setBackupStatus(wallet_model);
         }
     }
 
@@ -1519,6 +1581,17 @@ void BurritoCoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double 
 
 void BurritoCoinGUI::message(const QString& title, QString message, unsigned int style, bool* ret, const QString& detailed_message)
 {
+#ifdef ENABLE_WALLET
+    // When a wallet backup succeeds (from any path — the menu, a reminder, or
+    // the status-bar badge), record it so the backup badge flips to "Backed up".
+    if (walletFrame && title == tr("Backup Successful")) {
+        if (WalletModel* wm = walletFrame->currentWalletModel()) {
+            QSettings settings;
+            settings.setValue(QStringLiteral("wallet/") + wm->getWalletName() + QStringLiteral("/backup_done"), true);
+            setBackupStatus(wm);
+        }
+    }
+#endif // ENABLE_WALLET
     // Default title. On macOS, the window title is ignored (as required by the macOS Guidelines).
     QString strTitle{PACKAGE_NAME};
     // Default to information icon
@@ -1745,6 +1818,36 @@ void BurritoCoinGUI::updateWalletStatus()
     WalletModel * const walletModel = walletView->getWalletModel();
     setEncryptionStatus(walletModel->getEncryptionStatus());
     setHDStatus(walletModel->wallet().privateKeysDisabled(), walletModel->wallet().hdEnabled());
+    setBackupStatus(walletModel);
+}
+
+void BurritoCoinGUI::setBackupStatus(WalletModel* wallet_model)
+{
+    if (!m_backup_status_label) return;
+
+    // Watch-only / private-keys-disabled wallets hold no spendable keys to lose,
+    // so a backup badge would only confuse — hide it for those.
+    if (!wallet_model || wallet_model->wallet().privateKeysDisabled()) {
+        m_backup_status_label->hide();
+        return;
+    }
+
+    QSettings settings;
+    const QString key = QStringLiteral("wallet/") + wallet_model->getWalletName() + QStringLiteral("/backup_done");
+    const bool backed_up = settings.value(key, false).toBool();
+
+    if (backed_up) {
+        m_backup_status_label->setText(tr("\xe2\x9c\x94 Backed up"));
+        m_backup_status_label->setStyleSheet("color:#1e8e3e; padding:0 6px;");
+        m_backup_status_label->setToolTip(tr("This wallet has been backed up. Keep your backup somewhere safe."));
+        m_backup_status_label->setCursor(Qt::ArrowCursor);
+    } else {
+        m_backup_status_label->setText(tr("\xe2\x9a\xa0 Back up wallet"));
+        m_backup_status_label->setStyleSheet("color:#c0392b; font-weight:bold; padding:0 6px;");
+        m_backup_status_label->setToolTip(tr("Your wallet is not backed up yet. Click here to save a backup of wallet.dat."));
+        m_backup_status_label->setCursor(Qt::PointingHandCursor);
+    }
+    m_backup_status_label->show();
 }
 #endif // ENABLE_WALLET
 
