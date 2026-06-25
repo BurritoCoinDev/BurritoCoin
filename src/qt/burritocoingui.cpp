@@ -139,13 +139,39 @@ static bool LooksLikeWalletDat(const QString& path, QString* why_not)
         return false;
     }
     if (head.startsWith("SQLite format 3")) return true;
-    // BDB BTREE magic 0x00053162, little-endian at byte 12.
+    // BDB BTREE magic 0x00053162. Berkeley DB writes its meta-page magic in the
+    // writing host's native byte order, so accept BOTH endians, mirroring the
+    // canonical check in src/wallet/bdb.cpp.
     if (static_cast<quint8>(head[12]) == 0x62 && static_cast<quint8>(head[13]) == 0x31 &&
         static_cast<quint8>(head[14]) == 0x05 && static_cast<quint8>(head[15]) == 0x00) {
         return true;
     }
+    if (static_cast<quint8>(head[12]) == 0x00 && static_cast<quint8>(head[13]) == 0x05 &&
+        static_cast<quint8>(head[14]) == 0x31 && static_cast<quint8>(head[15]) == 0x62) {
+        return true;
+    }
     if (why_not) *why_not = QObject::tr("This file does not look like a wallet.dat "
                                         "(no Berkeley DB or SQLite signature).");
+    return false;
+}
+
+//! True iff `name` collides with a name we must not let through to mkpath/copy.
+//! Covers our wallet.dat sentinel, POSIX dot-names, and Windows DOS device names.
+//! The QRegExpValidator already blocks slashes / backslashes / dots at the
+//! keystroke level; this catches anything pasted past it. Windows reserved names
+//! are refused on every platform so restored wallets stay portable.
+static bool IsReservedWalletName(const QString& name)
+{
+    if (name.compare(QStringLiteral("wallet.dat"), Qt::CaseInsensitive) == 0) return true;
+    if (name == QStringLiteral(".") || name == QStringLiteral("..")) return true;
+    static const char* const kWinReserved[] = {
+        "CON", "PRN", "AUX", "NUL",
+        "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    };
+    for (const char* w : kWinReserved) {
+        if (name.compare(QLatin1String(w), Qt::CaseInsensitive) == 0) return true;
+    }
     return false;
 }
 } // namespace
@@ -1143,9 +1169,9 @@ void BurritoCoinGUI::restoreWalletFromBackup()
             feedback->clear();
             return;
         }
-        // Belt-and-braces against reserved names that slipped past the validator (e.g. paste).
-        if (name.compare(QStringLiteral("wallet.dat"), Qt::CaseInsensitive) == 0 ||
-            name == QStringLiteral(".") || name == QStringLiteral("..")) {
+        // Belt-and-braces against reserved names that slipped past the validator
+        // (e.g. paste). Covers wallet.dat, dot-names and Windows DOS device names.
+        if (IsReservedWalletName(name)) {
             feedback->setText(tr("<span style='color:#c0392b;'>That name is reserved. Pick another.</span>"));
             return;
         }
@@ -1165,8 +1191,14 @@ void BurritoCoinGUI::restoreWalletFromBackup()
                 return;
             }
         }
-        // Collision: ON-DISK wallets (loaded or not).
-        if (m_wallet_controller->listWalletDir().count(name.toStdString())) {
+        // Collision: ON-DISK. Check listWalletDir() (the recognized-wallet subset)
+        // AND QDir::exists (any folder, including stray empty ones from a prior
+        // failed restore). Without the second check a non-wallet folder would
+        // pass live validation and only trip the accept-time re-check, producing
+        // a misleading "appeared while this dialog was open" message.
+        const QString wallet_dir = RestoreWalletDir(m_node);
+        if (m_wallet_controller->listWalletDir().count(name.toStdString()) ||
+            QDir(wallet_dir).exists(name)) {
             feedback->setText(tr("<span style='color:#c0392b;'>A folder named <b>%1</b> already exists in your wallets directory. Pick a different name (the existing wallet will not be overwritten).</span>").arg(name.toHtmlEscaped()));
             return;
         }
@@ -1185,7 +1217,18 @@ void BurritoCoinGUI::restoreWalletFromBackup()
 
     // --- Accept handler: re-check, mkpath, copy, hand off ---------------
     connect(buttons, &QDialogButtonBox::accepted, dlg_ptr,
-            [this, dlg_ptr, file_edit, name_edit]() {
+            [this, dlg_ptr, file_edit, name_edit, restore_btn, buttons]() {
+        // Disable the whole button row immediately so a double-click / Enter+click
+        // can't queue a second accepted signal that re-enters this lambda while
+        // QApplication::processEvents() drains during the copy. Re-enable on every
+        // error return so the user can fix the input and retry without reopening.
+        restore_btn->setEnabled(false);
+        buttons->setEnabled(false);
+        auto rearm = [restore_btn, buttons]() {
+            buttons->setEnabled(true);
+            restore_btn->setEnabled(true);
+        };
+
         const QString src = file_edit->text().trimmed();
         const QString name = name_edit->text().trimmed();
         const QString wallet_dir = RestoreWalletDir(m_node);
@@ -1193,11 +1236,21 @@ void BurritoCoinGUI::restoreWalletFromBackup()
         const QString target_folder = wallet_dir_qd.filePath(name);
         const QString target_file = QDir(target_folder).filePath(QStringLiteral("wallet.dat"));
 
-        // Re-check: on-disk collision (race with another process / activity).
+        // Belt-and-braces: re-check reserved name at accept time too, in case the
+        // user pasted past the live check.
+        if (IsReservedWalletName(name)) {
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                tr("That name is reserved. Pick another."));
+            rearm();
+            return;
+        }
+        // Re-check: on-disk collision (covers both pre-existing folders the live
+        // sniff missed and a folder that genuinely appeared during the dialog).
         if (wallet_dir_qd.exists(name) ||
             m_wallet_controller->listWalletDir().count(name.toStdString())) {
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
-                tr("The folder <b>%1</b> appeared in your wallets directory while this dialog was open. Aborting so the existing wallet is not overwritten.").arg(name.toHtmlEscaped()));
+                tr("A folder named <b>%1</b> already exists in your wallets directory. Pick a different name (the existing wallet will not be overwritten).").arg(name.toHtmlEscaped()));
+            rearm();
             return;
         }
         // Re-check: loaded-wallet collision (a parallel Open Wallet could have completed).
@@ -1205,6 +1258,7 @@ void BurritoCoinGUI::restoreWalletFromBackup()
             if (wm && wm->getWalletName() == name) {
                 QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
                     tr("A wallet named <b>%1</b> was opened while this dialog was running. Pick a different name.").arg(name.toHtmlEscaped()));
+                rearm();
                 return;
             }
         }
@@ -1214,11 +1268,13 @@ void BurritoCoinGUI::restoreWalletFromBackup()
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
                 tr("The backup file <code>%1</code> is no longer readable.")
                     .arg(QDir::toNativeSeparators(src).toHtmlEscaped()));
+            rearm();
             return;
         }
         QString why_not;
         if (!LooksLikeWalletDat(src, &why_not)) {
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"), why_not);
+            rearm();
             return;
         }
         // Create wallets/<name>/.
@@ -1226,11 +1282,13 @@ void BurritoCoinGUI::restoreWalletFromBackup()
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
                 tr("Could not create the folder <code>%1</code>. Check that you have write permission to the wallets directory.")
                     .arg(QDir::toNativeSeparators(target_folder).toHtmlEscaped()));
+            rearm();
             return;
         }
         // Copy under an indeterminate progress indicator so multi-MB backups don't
         // look like a UI freeze. QFile::copy refuses to overwrite -- exactly what
-        // we want.
+        // we want. Buttons are already disabled, so the processEvents() below
+        // cannot re-enter this accept handler.
         QProgressDialog progress(tr("Copying backup..."), QString(), 0, 0, dlg_ptr);
         progress.setWindowModality(Qt::ApplicationModal);
         progress.setCancelButton(nullptr);   // copy is not interruptible; hide the button
@@ -1246,6 +1304,7 @@ void BurritoCoinGUI::restoreWalletFromBackup()
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
                 tr("Could not copy the backup to <code>%1</code>. Your original backup file was not modified.")
                     .arg(QDir::toNativeSeparators(target_file).toHtmlEscaped()));
+            rearm();
             return;
         }
 
