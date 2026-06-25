@@ -129,6 +129,8 @@ private:
     QLabel* progressBarLabel = nullptr;
     GUIUtil::ClickableProgressBar* progressBar = nullptr;
     QProgressDialog* progressDialog = nullptr;
+    /** Rotating "back up your wallet" safety tip shown in the status bar. */
+    QLabel* m_safety_tip_label = nullptr;
 
     QMenuBar* appMenuBar = nullptr;
     QToolBar* appToolBar = nullptr;
@@ -150,6 +152,7 @@ private:
     QAction* toggleHideAction = nullptr;
     QAction* encryptWalletAction = nullptr;
     QAction* backupWalletAction = nullptr;
+    QAction* m_show_wallet_location_action = nullptr;
     QAction* changePassphraseAction = nullptr;
     QAction* aboutQtAction = nullptr;
     QAction* openRPCConsoleAction = nullptr;
@@ -182,6 +185,9 @@ private:
     int prevBlocks = 0;
     int spinnerFrame = 0;
 
+    /** Ensure the per-launch backup / seed reminders only fire once. */
+    bool m_safety_reminders_done = false;
+
     const PlatformStyle *platformStyle;
     const NetworkStyle* const m_network_style;
 
@@ -206,6 +212,12 @@ private:
     void updateNetworkState();
 
     void updateHeadersSyncProgressLabel();
+
+    /** Build the rotating wallet-safety tip shown in the status bar. */
+    void createSafetyTipBanner();
+    /** Once per launch, encourage the user to back up wallet.dat and their
+        recovery seed, and remind them where the wallet file lives. */
+    void showWalletSafetyReminders(WalletModel* wallet_model);
 
     /** Open the OptionsDialog on the specified tab index */
     void openOptionsDialogWithTab(OptionsDialog::Tab tab);
@@ -284,6 +296,9 @@ public Q_SLOTS:
     void gotoVerifyMessageTab(QString addr = "");
     /** Load Partially Signed BurritoCoin Transaction from file or clipboard */
     void gotoLoadPSBT(bool from_clipboard = false);
+
+    /** Show where the current wallet's wallet.dat file is stored on disk. */
+    void showWalletLocation();
 
     /** Show open dialog */
     void openClicked();

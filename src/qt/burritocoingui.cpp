@@ -42,15 +42,21 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QClipboard>
 #include <QComboBox>
 #include <QDateTime>
+#include <QDesktopServices>
+#include <QDir>
 #include <QDragEnterEvent>
+#include <QFile>
 #include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QPointer>
 #include <QProgressDialog>
+#include <QPushButton>
 #include <QScreen>
 #include <QSettings>
 #include <QShortcut>
@@ -60,9 +66,37 @@
 #include <QSystemTrayIcon>
 #include <QTimer>
 #include <QToolBar>
+#include <QUrl>
 #include <QUrlQuery>
 #include <QVBoxLayout>
 #include <QWindow>
+
+#ifdef ENABLE_WALLET
+namespace {
+//! Native-separator on-disk locations for a loaded wallet.
+struct WalletDiskPaths {
+    QString folder; //!< directory that contains the wallet
+    QString file;   //!< the wallet.dat file itself
+    bool valid = false;
+};
+
+//! Work out where a wallet's wallet.dat lives so we can show the user, instead
+//! of making them hunt for it. The default (unnamed) wallet sits directly in
+//! the wallet directory; a named wallet lives in a sub-folder of that name.
+WalletDiskPaths GetWalletDiskPaths(interfaces::Node& node, WalletModel* wallet_model)
+{
+    WalletDiskPaths paths;
+    if (!wallet_model) return paths;
+    const QString wallet_dir = QString::fromStdString(node.walletClient().getWalletDir());
+    const QString name = wallet_model->getWalletName();
+    const QString folder = name.isEmpty() ? wallet_dir : QDir(wallet_dir).filePath(name);
+    paths.folder = QDir::toNativeSeparators(folder);
+    paths.file = QDir::toNativeSeparators(QDir(folder).filePath(QStringLiteral("wallet.dat")));
+    paths.valid = true;
+    return paths;
+}
+} // namespace
+#endif // ENABLE_WALLET
 
 
 const std::string BurritoCoinGUI::DEFAULT_UIPLATFORM =
@@ -187,6 +221,9 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
+
+    // Rotating wallet-safety reminder ("back up your wallet.dat", etc.)
+    createSafetyTipBanner();
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
@@ -318,6 +355,8 @@ void BurritoCoinGUI::createActions()
     encryptWalletAction->setCheckable(true);
     backupWalletAction = new QAction(tr("&Backup Wallet..."), this);
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
+    m_show_wallet_location_action = new QAction(tr("Show Wallet &File Location..."), this);
+    m_show_wallet_location_action->setStatusTip(tr("Show where this wallet's wallet.dat file is stored on your computer"));
     changePassphraseAction = new QAction(tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     signMessageAction = new QAction(tr("Sign &message..."), this);
@@ -382,6 +421,7 @@ void BurritoCoinGUI::createActions()
     {
         connect(encryptWalletAction, &QAction::triggered, walletFrame, &WalletFrame::encryptWallet);
         connect(backupWalletAction, &QAction::triggered, walletFrame, &WalletFrame::backupWallet);
+        connect(m_show_wallet_location_action, &QAction::triggered, this, &BurritoCoinGUI::showWalletLocation);
         connect(changePassphraseAction, &QAction::triggered, walletFrame, &WalletFrame::changePassphrase);
         connect(signMessageAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
         connect(signMessageAction, &QAction::triggered, [this]{ gotoSignMessageTab(); });
@@ -462,6 +502,7 @@ void BurritoCoinGUI::createMenuBar()
         file->addSeparator();
         file->addAction(openAction);
         file->addAction(backupWalletAction);
+        file->addAction(m_show_wallet_location_action);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
         file->addAction(m_load_psbt_action);
@@ -716,6 +757,16 @@ void BurritoCoinGUI::setCurrentWallet(WalletModel* wallet_model)
         }
     }
     updateWindowTitle();
+
+    // Once per launch, gently remind the user to keep a backup. Deferred so the
+    // main window finishes painting before any reminder dialog appears.
+    if (!m_safety_reminders_done && wallet_model) {
+        m_safety_reminders_done = true;
+        QPointer<WalletModel> wm(wallet_model);
+        QTimer::singleShot(900, this, [this, wm] {
+            if (wm) showWalletSafetyReminders(wm);
+        });
+    }
 }
 
 void BurritoCoinGUI::setCurrentWalletBySelectorIndex(int index)
@@ -731,6 +782,123 @@ void BurritoCoinGUI::removeAllWallets()
     setWalletActionsEnabled(false);
     walletFrame->removeAllWallets();
 }
+
+void BurritoCoinGUI::showWalletLocation()
+{
+    if (!walletFrame) return;
+    WalletModel* const wallet_model = walletFrame->currentWalletModel();
+    if (!wallet_model) {
+        QMessageBox::information(this, tr("Wallet File Location"),
+            tr("No wallet is loaded yet, so there is no wallet file to show."));
+        return;
+    }
+
+    const WalletDiskPaths paths = GetWalletDiskPaths(m_node, wallet_model);
+    const bool exists = QFile::exists(paths.file);
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Information);
+    box.setWindowTitle(tr("Wallet File Location"));
+    box.setTextFormat(Qt::RichText);
+    box.setText(tr("<p>This wallet's keys are stored in a file named <b>wallet.dat</b>.</p>"
+                   "<p><b>Folder:</b><br><code>%1</code></p>"
+                   "<p><b>File:</b><br><code>%2</code></p>"
+                   "<p>If you ever lose this file <i>and</i> your backups, the coins are gone for "
+                   "good. Keep a copy somewhere safe \xe2\x80\x94 a USB stick or external drive, not "
+                   "just this computer.</p>")
+                   .arg(paths.folder.toHtmlEscaped(), paths.file.toHtmlEscaped()));
+    if (!exists) {
+        box.setInformativeText(tr("Note: no file was found at the path above yet. The wallet may "
+                                  "store its data under a different name, or it may not have been "
+                                  "written to disk yet."));
+    }
+
+    QPushButton* open_btn = box.addButton(tr("Open Folder"), QMessageBox::ActionRole);
+    QPushButton* copy_btn = box.addButton(tr("Copy Path"), QMessageBox::ActionRole);
+    QPushButton* backup_btn = box.addButton(tr("Back Up Now..."), QMessageBox::ActionRole);
+    box.addButton(QMessageBox::Close);
+    box.setDefaultButton(open_btn);
+    box.exec();
+
+    QAbstractButton* const clicked = box.clickedButton();
+    if (clicked == open_btn) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(paths.folder));
+    } else if (clicked == copy_btn) {
+        QApplication::clipboard()->setText(paths.file);
+    } else if (clicked == backup_btn) {
+        walletFrame->backupWallet();
+    }
+}
+
+void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
+{
+    if (!wallet_model) return;
+
+    // Count how many times a wallet has been opened so we can pace the prompts.
+    QSettings settings;
+    const int opens = settings.value("safety/walletOpenCount", 0).toInt() + 1;
+    settings.setValue("safety/walletOpenCount", opens);
+
+    const WalletDiskPaths paths = GetWalletDiskPaths(m_node, wallet_model);
+    const QString file_html = paths.valid ? paths.file.toHtmlEscaped() : tr("(unknown)");
+
+    const bool first_run = (opens == 1);
+    // Back-up nudge on the very first open, then every third open after that.
+    const bool backup_due = first_run || (opens % 3 == 0);
+    // Paper-seed nudge every fourth open, but only for spendable HD wallets.
+    const bool seed_due = (opens % 4 == 0) && wallet_model->wallet().hdEnabled()
+                          && !wallet_model->wallet().privateKeysDisabled();
+
+    if (backup_due) {
+        QMessageBox box(this);
+        box.setIcon(first_run ? QMessageBox::Information : QMessageBox::Warning);
+        box.setWindowTitle(first_run ? tr("Welcome \xe2\x80\x94 keep your coins safe")
+                                     : tr("Have you backed up your wallet?"));
+        box.setTextFormat(Qt::RichText);
+        box.setText(tr("<p><b>Your coins live in a file named wallet.dat.</b> If you lose that file "
+                       "and have no backup, the coins are gone for good \xe2\x80\x94 there is no "
+                       "password reset and no support line that can bring them back.</p>"
+                       "<p>Your wallet file is here:</p><p><code>%1</code></p>"
+                       "<p>Copy it somewhere safe \xe2\x80\x94 ideally a USB stick or external drive "
+                       "kept away from this computer. If your wallet is encrypted, write the "
+                       "passphrase on paper too; the backup is useless without it.</p>").arg(file_html));
+        QPushButton* backup_btn = box.addButton(tr("Back Up Now..."), QMessageBox::AcceptRole);
+        QPushButton* locate_btn = box.addButton(tr("Show Me the File"), QMessageBox::ActionRole);
+        box.addButton(tr("I've Already Backed Up"), QMessageBox::RejectRole);
+        box.setDefaultButton(backup_btn);
+        box.exec();
+
+        QAbstractButton* const clicked = box.clickedButton();
+        if (clicked == backup_btn) {
+            if (walletFrame) walletFrame->backupWallet();
+        } else if (clicked == locate_btn && paths.valid) {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(paths.folder));
+        }
+    }
+
+    if (seed_due) {
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Information);
+        box.setWindowTitle(tr("Save a paper backup of your recovery seed"));
+        box.setTextFormat(Qt::RichText);
+        box.setText(tr("<p>For an extra layer of safety, keep an <b>offline paper backup</b> of your "
+                       "wallet's recovery secret. A printed or hand-written copy survives a dead hard "
+                       "drive, a lost laptop, or ransomware.</p>"
+                       "<p><b>How to export it:</b> open <i>Help \xe2\x80\xba Node window</i>, choose "
+                       "the <i>Console</i> tab, and run:</p>"
+                       "<p><code>dumpwallet \"C:\\path\\to\\burritocoin-backup.txt\"</code></p>"
+                       "<p>That file contains your private keys and HD seed. Print it, store it "
+                       "somewhere safe and offline, then delete the file from your computer. Anyone "
+                       "who reads it can take your coins, so treat it like cash.</p>"));
+        QPushButton* console_btn = box.addButton(tr("Open Node Window"), QMessageBox::ActionRole);
+        box.addButton(tr("I've Saved It"), QMessageBox::AcceptRole);
+        box.addButton(tr("Remind Me Later"), QMessageBox::RejectRole);
+        box.exec();
+        if (box.clickedButton() == console_btn) {
+            showDebugWindowActivateConsole();
+        }
+    }
+}
 #endif // ENABLE_WALLET
 
 void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
@@ -743,6 +911,7 @@ void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
     historyAction->setEnabled(enabled);
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
+    m_show_wallet_location_action->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);
@@ -751,6 +920,43 @@ void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
     m_close_wallet_action->setEnabled(enabled);
     m_close_all_wallets_action->setEnabled(enabled);
+}
+
+void BurritoCoinGUI::createSafetyTipBanner()
+{
+    // Only meaningful when a wallet can be loaded.
+    if (!enableWallet) return;
+
+    // The set of rotating reminders. Static so the timer lambda below can keep
+    // referencing them for the lifetime of the window.
+    static const QStringList tips = {
+        tr("\xf0\x9f\x8c\xaf  Losing your wallet.dat file means losing access to your coins \xe2\x80\x94 back it up."),
+        tr("\xf0\x9f\x94\x92  Write your wallet passphrase on paper. Forget it and no one can recover your coins."),
+        tr("\xf0\x9f\x93\x84  Keep an offline backup of your recovery seed \xe2\x80\x94 it can restore your whole wallet."),
+        tr("\xf0\x9f\x92\xbe  Back up wallet.dat to a USB stick or external drive, not just this computer."),
+        tr("\xf0\x9f\x97\x82  File \xe2\x80\xba Show Wallet File Location shows you exactly where wallet.dat lives."),
+    };
+
+    m_safety_tip_label = new QLabel(tips.first(), statusBar());
+    m_safety_tip_label->setObjectName("safetyTipLabel");
+    m_safety_tip_label->setTextFormat(Qt::PlainText);
+    m_safety_tip_label->setToolTip(tr("Tips for keeping your BurritoCoin safe"));
+    m_safety_tip_label->setStyleSheet("QLabel#safetyTipLabel { color: #c47d0e; padding-left: 6px; }");
+    m_safety_tip_label->setProperty("tipIndex", 0);
+    // Let the tip clip rather than widen the window's minimum size.
+    m_safety_tip_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    m_safety_tip_label->setMinimumWidth(0);
+    statusBar()->addWidget(m_safety_tip_label, 1);
+
+    QTimer* tip_timer = new QTimer(this);
+    tip_timer->setInterval(12000);
+    connect(tip_timer, &QTimer::timeout, m_safety_tip_label, [this] {
+        if (!m_safety_tip_label) return;
+        const int next = (m_safety_tip_label->property("tipIndex").toInt() + 1) % tips.size();
+        m_safety_tip_label->setProperty("tipIndex", next);
+        m_safety_tip_label->setText(tips.at(next));
+    });
+    tip_timer->start();
 }
 
 void BurritoCoinGUI::createTrayIcon()
