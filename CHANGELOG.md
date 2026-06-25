@@ -9,6 +9,158 @@ git client. Newest commits at the top.
 
 ---
 
+## `f946596` — Persist BurritoCoin explorer customizations as a portable patch
+
+**Date:** 2026-06-25 00:23:22 +0000  
+**Author:** BurritoCoinDev  
+**Full hash:** `f9465962b2f73e812fbd2a5b315a5d74c1bdba91`
+
+contrib/explorer/burritocoin-explorer.patch captures every change needed
+to turn upstream btc-rpc-explorer (commit 26e282a) into the BRTO
+explorer at explorer.burritoco.in: coin registration, branding assets,
+BRTO currency labels, BurritoCoin Explorer page titles, static
+BTC->BRTO copy, and the genesis-coinbase render fix that unblocks
+block 105. Stored as a binary-safe git diff so it includes the
+logo/favicon PNGs. README.md documents the base commit and re-apply
+procedure. .gitignore exception added because the source tree's
+blanket *.patch rule would otherwise hide it.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `410f8db` — Fix prose-table word wrapping on wallets page
+
+**Date:** 2026-06-24 22:40:49 +0000  
+**Author:** Claude  
+**Full hash:** `410f8db38976cb22b3edc5b45e54a2acb5838a56`
+
+The "How You'll Actually Use a Wallet" comparison table reused the
+.spec-table class, which sets word-break:break-all and a monospace font
+so technical tables can wrap long hashes/hex. On a prose table that
+chopped words mid-letter ("th/at", "Th/e"). Add a .spec-table.prose
+modifier that restores normal word breaking and the sans-serif body
+font, and apply it to the wallets comparison table. Technical tables on
+other pages are unaffected.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `e110599` — Add Wallets & Keys explainer page to website
+
+**Date:** 2026-06-24 22:22:45 +0000  
+**Author:** Claude  
+**Full hash:** `e11059944956af3e841590b3b5d2eabfac04c0eb`
+
+New /wallets.html explains the wallet-vs-address distinction in plain
+language: a wallet is a keychain holding many addresses, you receive to
+an address but spend from a wallet, addresses rotate via change outputs,
+and the two real secrets are the seed/wallet-file and the passphrase.
+Also covers how desktop/mobile/hardware/exchange wallets feel to use, a
+cheat-sheet of what to remember, and an FAQ. Includes anti-phishing
+guidance (we never ask for your seed/passphrase).
+
+Wired the page into the nav and footer across all existing pages and
+added it to sitemap.xml. Matches the existing site styles (hero-sm,
+step, callout, spec-table, faq-item).
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `f824343` — Add VPS website deploy script
+
+**Date:** 2026-06-23 16:01:54 +0000  
+**Author:** Claude  
+**Full hash:** `f824343e2d700b6872aedc48588770ba7f853d76`
+
+contrib/vps/deploy-website.sh syncs the repo's website/ directory into
+the nginx web root and reloads nginx. Run on the VPS as root after a
+git pull.
+
+Defaults the web root to /var/www/burritoco.in if it exists, otherwise
+/var/www/html. Overridable via positional arg or $BRTO_WEBROOT.
+
+Supports --prune (delete files in webroot not in website/) and
+--dry-run (preview changes without touching anything, nginx not
+reloaded). Runs `nginx -t` before reload, so a bad nginx config bails
+out cleanly instead of breaking the live site.
+
+Mirrors the style of contrib/vps/setup.sh (color helpers, step
+banners, preflight checks).
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `9dfad15` — Fix macOS build instructions: BSD sha256sum + Homebrew prefix
+
+**Date:** 2026-06-23 15:37:54 +0000  
+**Author:** Claude  
+**Full hash:** `9dfad15e4dd0e43cc965ab16be10e303e38bdf8e`
+
+Three cascading issues uncovered while testing the mine-mac.html build
+flow on a fresh macOS Tahoe / Apple Silicon machine:
+
+1. contrib/install_db4.sh — macOS Tahoe (15+) ships a BSD-style
+   `sha256sum` that does not support GNU `-c` check mode. The script's
+   `check_exists sha256sum` returned true and the verification step
+   exploded with a `usage:` error, so BDB 4.8 was never built. Detect
+   Darwin and prefer `shasum -a 256` there.
+
+2. website/mine-mac.html — configure doesn't auto-search
+   `/opt/homebrew` (Apple Silicon) or `/usr/local` (Intel) for boost,
+   miniupnpc, or libfmt, so it bailed with "libfmt missing" after
+   silently failing the boost and miniupnpc header probes. Step 5 now
+   exports `BREW_PREFIX="$(brew --prefix)"` and passes
+   `--with-boost`, `CPPFLAGS`, `LDFLAGS` accordingly — works on both
+   Apple Silicon and Intel without branching.
+
+3. doc/build-osx.md — same Homebrew-prefix issue; the website's
+   "Full build instructions" callout links here, so it has to match.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `1ccab18` — Add CLAUDE.md with project identity and audit-cycle closure
+
+**Date:** 2026-05-30 14:39:41 +0000  
+**Author:** Claude  
+**Full hash:** `1ccab18d31ec7a46be4c3a292532cac58a8051a2`
+
+Records the authoritative BurritoCoin network parameters, consensus
+constants, address encodings, and recurring false-positive traps so
+future Claude sessions don't re-flag correct values (notably
+nMinerConfirmationWindow=8064 vs DifficultyAdjustmentInterval=2016).
+
+Marks the standing "find errors, push, find more errors" audit cycle
+as concluded at commit 85328e5 so it doesn't auto-resume.
+
+https://claude.ai/code/session_014ANBfHyobtDTZSSGZf5ZQs
+
+## `85328e5` — Round 7 batch 17: realistic blockchain size estimates for new chain
+
+**Date:** 2026-05-29 02:36:47 +0000  
+**Author:** Claude  
+**Full hash:** `85328e50b85dfa8fc9dc59c60664875ae6b67090`
+
+src/chainparams.cpp: m_assumed_blockchain_size was 40 GB on mainnet and
+4 GB on testnet — copied from Litecoin's actual chain size accumulated
+over ~13 years. BurritoCoin launched 2026-04-11 (~48 days ago at time
+of edit) and has ~27,600 mostly-empty blocks (~hundreds of MB at most).
+Showing "40 GB required" in the Qt welcome wizard (intro.cpp uses
+AssumedBlockchainSize() to populate the storage estimate) misleads new
+users into thinking they need orders of magnitude more disk than they
+actually do, and may scare prospective node operators away.
+
+Lowered both mainnet and testnet to 1 GB blockchain + 1 GB chain state
+(uint64_t units = GB, so 1 is the lowest non-zero value). Added inline
+comments noting these are forward-looking and should be revised upward
+as the chain grows. Regtest stays at 0/0 (unchanged).
+
+## `57f7831` — Auto-update CHANGELOG.md (round 7 batches 1-16)
+
+**Date:** 2026-05-29 02:35:22 +0000  
+**Author:** Claude  
+**Full hash:** `57f7831824535d4b33d41dc6d2e3d17e77efd57c`
+
 ## `bfb08c0` — Round 7 batch 16: copyright manifest references missing SVG
 
 **Date:** 2026-05-29 02:35:09 +0000  
@@ -2233,6 +2385,108 @@ wire-compatible for the wallet format used by BurritoCoin.
 
 https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
 
+## `6db2cfd` — fix(genesis): correct nNonces using BurritoCoin's own scrypt + real merkle root
+
+**Date:** 2026-04-07 19:40:13 +0000  
+**Author:** Claude  
+**Full hash:** `6db2cfd1b4c3edc165767c3a3a9eecf2cf40d761`
+
+Previous nNonces (551616/399286) were mined against the wrong hashMerkleRoot.
+The chainparams comment had a SHA256d-computed txid (5370f1ef...) but
+BurritoCoin's CTransaction serialization includes the MWEB field, producing
+a different txid and thus a different hashMerkleRoot (18d490a7...).
+
+Correct values (mined using BurritoCoin's scrypt_1024_1_1_256 against the
+actual merkle root extracted from blk00000.dat):
+  mainnet: nNonce=1335344, scrypt=00000c3afee84031d323748205bc7e83f49a7ae5bdb3c5be481915f2f129b5b1
+  testnet: nNonce=710063,  scrypt=00000e7ec2b699d5a91a64c9d8a7435b87ce433e2a7128c338dcad24325370fc
+
+https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
+
+## `c8c8d38` — fix(genesis): replace SHA256d-mined nNonces with scrypt-mined nNonces
+
+**Date:** 2026-04-07 14:53:53 +0000  
+**Author:** Claude  
+**Full hash:** `c8c8d38e76f2f7dd0a9c929cb0fc26c71786b7c2`
+
+The original genesis nNonces (mainnet=457019, testnet=1858828) were found
+by iterating until GetHash() (SHA256d) satisfied the target. But the node
+calls ReadBlockFromDisk → CheckProofOfWork(GetPoWHash(), ...) which uses
+scrypt, so every startup crashed with:
+  ERROR: ReadBlockFromDisk: Errors in block header at FlatFilePos(nFile=0, nPos=8)
+
+Fix: replace both nNonces with values found by scrypt mining:
+  mainnet: nNonce=551616, scrypt hash=00000a818a629918d2b5344dee71d73f...
+  testnet: nNonce=399286, scrypt hash=00000ee1f4933cdb8d0a3ae049fd84fe...
+
+Also restore testnet to its own nTime=1773844917 (distinct from mainnet).
+
+https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
+
+## `a1df954` — fix(testnet): use mainnet genesis block (properly mined)
+
+**Date:** 2026-04-07 01:50:58 +0000  
+**Author:** Claude  
+**Full hash:** `a1df954161d14ad85451cd49f8b5adbff02fd7a4`
+
+The testnet genesis block (nNonce=1858828, nTime=1773844917) was never
+mined — its scrypt PoW hash does not satisfy nBits=0x1e0ffff0.
+ReadBlockFromDisk calls CheckProofOfWork(GetPoWHash(), ...) after reading
+the genesis block from disk, causing every startup to fail with:
+  ERROR: ReadBlockFromDisk: Errors in block header at FlatFilePos(nFile=0, nPos=8)
+
+Fix: use the mainnet genesis parameters (nTime=1773844916, nNonce=457019)
+which were properly mined. The networks remain distinct via different
+message-start bytes (BRTN vs BRTM), P2P ports (19227 vs 9227), and
+address prefixes. Sharing a genesis block hash is standard practice
+(Litecoin testnet3 does the same).
+
+https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
+
+## `bec08c2` — Fix three null pointer dereferences in validation.cpp MWEB paths
+
+**Date:** 2026-04-05 15:19:38 +0000  
+**Author:** Claude  
+**Full hash:** `bec08c2d62dd3496b7ac26224b8de546ab52dd40`
+
+GetMWEBCacheView() returns nullptr when the MWEB DB view is not
+initialized (e.g., if mw::CoinsViewDB::Open() returns null).
+Three call sites dereferenced it unconditionally:
+
+1. UpdateCoins (line ~1519): add assert — if mweb_tx is non-null,
+   the view must be initialized; silent skip would corrupt MWEB state.
+
+2. DisconnectBlock (line ~1840): add null guard that returns
+   DISCONNECT_FAILED with an error log instead of crashing.
+
+3. ConnectBlock (line ~2290): add null guard — if mweb_block is
+   non-null and view is null, return consensus error; if mweb_block
+   is null (pre-MWEB block), Node::ConnectBlock is a no-op so skip
+   safely rather than dereferencing null.
+
+https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
+
+## `822f48e` — Fix three bugs found in fifth full audit pass
+
+**Date:** 2026-04-05 15:10:16 +0000  
+**Author:** Claude  
+**Full hash:** `822f48e2079c298b3e685471cdb39620ac5bf59d`
+
+1. mweb_transact.cpp BuildChangeRecipient: brto_change was double-subtracted.
+   pegin_amount is already computed as (brto_inputs - brto_fee - brto_change),
+   so subtracting brto_change again in the MWEB change formula made change too
+   small by exactly brto_change satoshis. Removed the extra subtraction.
+
+2. net_processing.cpp ProcessGetMWEBLeafset (line ~1792): GetMWEBCacheView()
+   was dereferenced without a null check. A peer sending GETMWEBLEAFSET before
+   the MWEB view is initialized would trigger a null pointer dereference crash.
+   Added null guard with peer disconnect.
+
+3. net_processing.cpp ProcessGetMWEBUTXOs (line ~1893): Same null dereference
+   issue for mweb_cache->GetOutputPMMR() / GetLeafSet(). Added null guard.
+
+https://claude.ai/code/session_018pNHYsiTaDPknSRd36FRN2
+
 ## `7f2681a` — Fix misleading assert in AddMWEBTx pegin amount calculation
 
 **Date:** 2026-04-05 14:58:21 +0000  
@@ -2562,6 +2816,727 @@ postinstall.js:70 — includes('"BRTO"') could false-positive on any
 start.js:110      — e.message is undefined when e is not an Error object
                     (e.g. a thrown string); use instanceof guard with
                     String(e) fallback
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `ad466ea` — Fix 5 bugs found in explorer line-by-line review
+
+**Date:** 2026-03-30 21:33:42 +0000  
+**Author:** Claude  
+**Full hash:** `ad466eaf235e54f703c2df72589a146f5da97a5f`
+
+coins/BRTO.js:7   — rounding mode was 8 (ROUND_UP); change to 1
+                    (ROUND_DOWN/truncate) to match Bitcoin's integer
+                    subsidy halving arithmetic
+coins/BRTO.js:83  — p2sh2AddressPrefix was "1c" (lowercase) inconsistent
+                    with the comment (0x1C); fix to "1C"
+postinstall.js:81 — regex /(\}\s*;?\s*$)/m with the m-flag made $ match
+                    end-of-line, so the first '}' anywhere in the coins
+                    index was matched instead of the final closing brace;
+                    replace with lastIndexOf('}') which is unambiguous
+start.js:96       — brittle e.message.includes(appPath) heuristic to
+                    distinguish missing-file from missing-dep errors;
+                    replace with fs.existsSync pre-check so real errors
+                    always propagate
+package.json:11   — "^3.4.0" allowed any 3.x minor bump which could break
+                    the coin registry injection API; tightened to "~3.4.0"
+                    (patch-level updates only)
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `51cd466` — Add btc-rpc-explorer setup for BurritoCoin block explorer
+
+**Date:** 2026-03-30 21:30:09 +0000  
+**Author:** Claude  
+**Full hash:** `51cd466a037edac72c784646d9ef26fe86871a80`
+
+Creates explorer/ with everything needed to run a BurritoCoin block
+explorer powered by btc-rpc-explorer, ready for mainnet launch:
+
+- coins/BRTO.js: Full coin definition (genesis hashes, address prefixes,
+  bech32/mweb HRPs, block reward halving, RPC port 9226)
+- scripts/postinstall.js: Patches btc-rpc-explorer's coin registry at
+  install time so BTCEXP_COIN=BRTO is recognised
+- start.js: Runtime launcher that injects BRTO coin config and starts
+  the explorer; falls back gracefully if postinstall was skipped
+- .env.example: Documented config template (mainnet RPC port 9226,
+  testnet 19553, regtest 19553 options)
+- package.json: Depends on btc-rpc-explorer ^3.4.0
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `ab843d2` — Fix T1: null dereference in CCoinsViewCache::BatchWrite (coins.cpp)
+
+**Date:** 2026-03-19 01:15:26 +0000  
+**Author:** Claude  
+**Full hash:** `ab843d2063f52ba95cf969833798ea31ea1de1fe`
+
+CCoinsViewCache::BatchWrite unconditionally called derivedView->Flush()
+but derivedView (the child cache's mweb_view) is nullptr when MWEB is
+not yet active — the constructor sets mweb_view to nullptr whenever
+baseIn->GetMWEBView() returns null. Any Flush() call on a pre-MWEB
+or non-MWEB-enabled cache would therefore crash with a null pointer
+dereference. Added a null guard before the Flush() call.
+
+All 537 unit tests pass.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `aae3d66` — Fix 4 bugs found in second-pass review (S1–S4)
+
+**Date:** 2026-03-19 01:05:56 +0000  
+**Author:** Claude  
+**Full hash:** `aae3d668dfa9e43905d0d1acb1dec466bf2674cc`
+
+Critical:
+- S1: mweb_node.cpp ConnectBlock also called vtx.back() without a
+  vtx.empty() guard (same class as R12/R13 which were fixed in the
+  first pass; this third call site was missed). Added guard before
+  the vtx.back() call inside ConnectBlock.
+
+Arithmetic (high):
+- S2: feerate.cpp constructor guard checked mweb_weight <= INT64_MAX
+  but multiplied by BASE_MWEB_FEE=100 immediately after, which still
+  overflows for mweb_weight > INT64_MAX/100. Tightened bound to
+  INT64_MAX / BASE_MWEB_FEE.
+- S3: feerate.cpp MeetsFeePerK multiplied m_weight * BASE_MWEB_FEE
+  with no bounds check at all (m_weight is size_t, can be UINT64_MAX).
+  Added overflow guard before the multiplication.
+
+Thread safety (medium):
+- S4: wallet.cpp R16 moved reset() inside cs_wallets lock to fix a
+  race, but the handler destructor may itself try to acquire cs_wallets
+  via a callback, causing deadlock. Restructured to erase from
+  vpwallets inside a scoped LOCK block, then call reset() after the
+  lock is released, eliminating both the original race and the
+  potential deadlock.
+
+All 537 unit tests pass.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `47e3300` — Fix 13 bugs found in line-by-line review (R1–R13, R15, R16)
+
+**Date:** 2026-03-18 19:56:09 +0000  
+**Author:** Claude  
+**Full hash:** `47e330065da4f3cd4bbd664b3de7053a52e3752b`
+
+Critical (crash/UB on network input):
+- R6: moneystr.cpp FormatMoney loop could access str[i-2] with i<2; add i>=2 guard
+- R12/R13: mweb_node.cpp ContextualCheckBlock and ValidateMWEBBlock called
+  vtx.back() without checking vtx is non-empty; add empty-vector guards
+- R14: key_io.cpp MWEB bech32 decode path accessed decoded.data.begin()+1
+  without verifying decoded.data.size()>1; add size check to outer if
+
+High (release-build safety / arithmetic):
+- R1–R3: feerate.cpp replaced assert() guards (stripped in NDEBUG/release)
+  with explicit if-checks in constructor, GetFee, and GetMWEBFee
+- R4: feerate.cpp base_fee*1000/nSize could overflow int64_t for large fees;
+  reorder to base_fee/nSize*1000 + (base_fee%nSize)*1000/nSize
+- R7: moneystr.cpp ParseMoney boundary was nUnits>COIN, allowing exactly COIN
+  through; corrected to nUnits>=COIN
+
+Medium (correctness):
+- R5: feerate.cpp CFeeRate::ToString displayed negative rates incorrectly;
+  use std::abs on the full value and prepend "-" when negative
+- R8: transaction.cpp CTxOut::ToString used signed modulo for negative nValue,
+  producing garbled output; use std::abs with explicit sign prefix
+- R11: mweb_miner.cpp pegout_amount+tx_fee lacked overflow check before use;
+  validate with MoneyRange and return false on overflow
+- R16: wallet.cpp RemoveWallet called m_chain_notifications_handler.reset()
+  outside cs_wallets lock, racing other threads; moved inside LOCK scope
+
+Low (dead code / clarity):
+- R9: transaction.cpp second witness loop shadowed loop variable tx_in;
+  renamed to tx_wit for clarity
+- R10: miner.cpp null-check after reset(new …) is unreachable (new throws);
+  removed dead check
+- R15: chainparams.cpp duplicate vFixedSeeds.clear() in CTestNetParams ctor;
+  removed second call
+
+All 537 unit tests pass.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `6e2e1bf` — Fix N1-N8: logic/safety bugs in feerate, mweb_miner, miner, moneystr
+
+**Date:** 2026-03-18 16:31:50 +0000  
+**Author:** Claude  
+**Full hash:** `6e2e1bfe21a5f5f56bd60da725cb0bd81bad5ac2`
+
+- N1 (feerate.cpp): use std::abs() on remainder in ToString() to avoid
+  garbled negative output like "-1.-500 burrioshi/vB"
+
+- N2 (mweb_miner.cpp): replace assert(MoneyRange(peg-in output value))
+  with runtime check + LogPrintf + return false
+
+- N3 (mweb_miner.cpp): replace assert(MoneyRange(peg-out amount))
+  with runtime check + LogPrintf + return false
+
+- N4 (mweb_miner.cpp): replace assert(read_success) in
+  AddHogExTransaction with runtime check + LogPrintf + return
+
+- N5 (mweb_miner.cpp): replace assert(!vout.empty()) with runtime
+  check + LogPrintf + return to avoid UB null dereference in release
+
+- N6 (mweb_miner.cpp): replace assert(MoneyRange(hogAddr.nValue))
+  with runtime check + LogPrintf + return
+
+- N7 (miner.cpp): replace assert(pindexPrev != nullptr) with
+  if (!pindexPrev) return nullptr for graceful null handling
+
+- N8 (moneystr.cpp): add comment explaining the nUnits bounds guard
+  is unreachable (nUnits is always in [0, COIN-1])
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `42aa6ac` — Fix B10: rename pIndexPrev → pindexPrev in mweb_miner to match codebase convention
+
+**Date:** 2026-03-18 15:20:34 +0000  
+**Author:** Claude  
+**Full hash:** `42aa6ac3498d0848492964aaa5fac059f3a2f5f1`
+
+The parameter name pIndexPrev (capital I) in AddHogExTransaction was
+inconsistent with the rest of the codebase which uses pindexPrev
+(lower-case i) for CBlockIndex pointers throughout validation,
+mweb_node, miner, etc. The call site in miner.cpp already passed
+pindexPrev; only the declaration (mweb_miner.h) and definition
+(mweb_miner.cpp) needed updating.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `eede1b3` — Fix B9: correct pIndexPrev → pindexPrev typo in mweb_node.cpp comments
+
+**Date:** 2026-03-18 15:16:40 +0000  
+**Author:** Claude  
+**Full hash:** `eede1b34ede8e2c416948f7cbd4d4a8b4e5078f4`
+
+Two comments in ValidateBlock and ConnectBlock described the hogex input
+amount calculation referencing 'pIndexPrev->mweb_amount' (capital I), but
+the actual local variable throughout both functions is 'pindexPrev'
+(lower-case i). Bring the comments in line with the code.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `db2b006` — Fix B8: replace remaining stale 'satoshi(s)' references in test files
+
+**Date:** 2026-03-18 15:12:24 +0000  
+**Author:** Claude  
+**Full hash:** `db2b00623a38f56d35dca214de22e2696e371b77`
+
+- amount_tests.cpp: "satoshis per kB" → "burrioshis per kB" in comment
+- fuzz/fee_rate.cpp: rename local vars satoshis_per_k / another_satoshis_per_k
+  → burrioshis_per_k / another_burrioshis_per_k
+- miner_tests.cpp: "10k satoshi fee" → "10k burrioshi fee" in comment
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `fbcdceb` — Fix B7: rename FeeEstimateMode::SAT_VB → BURRIOSHI_VB and fix sat/kvB doc comments
+
+**Date:** 2026-03-18 15:09:04 +0000  
+**Author:** Claude  
+**Full hash:** `fbcdceb66440eb3eaaaf73d9a5124abb94fa3897`
+
+The enum value SAT_VB was inherited from Bitcoin/Litecoin; the sibling
+BRTO_KVB already uses BurritoCoin's currency code, so SAT_VB should
+consistently use the BurritoCoin atom name.
+
+- feerate.h: rename SAT_VB → BURRIOSHI_VB and update its doxygen comment
+- feerate.h: replace "(sat/kvB)" / "(sat/vB)" / "to sat/vB" in constructor
+  doc with "(burrioshi/kvB)" / "(burrioshi/vB)" / "to burrioshi/vB"
+- feerate.cpp: update matching switch-case label
+- txassembler.cpp, rpcwallet.cpp, amount_tests.cpp: update all call sites
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `af0a351` — Fix B6: rename nSatoshisPerK → nBurrioshisPerK in CFeeRate
+
+**Date:** 2026-03-18 15:03:41 +0000  
+**Author:** Claude  
+**Full hash:** `af0a35111886245142ac94422ae6cf176f7f3134`
+
+The private member and constructor parameter were still using the
+Bitcoin-inherited name "nSatoshisPerK" even though the inline comment
+already correctly read "unit is burrioshi-per-1,000-bytes".  Rename
+throughout feerate.h and feerate.cpp to match the BurritoCoin unit name.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `10b659b` — Fix B4/B5: replace stale Litecoin/Bitcoin comments in key_io.cpp
+
+**Date:** 2026-03-18 14:49:16 +0000  
+**Author:** Claude  
+**Full hash:** `10b659bd20410417bee16e738e0db9a674c358a3`
+
+Three comments in DecodeDestination were inherited from Litecoin and
+described wrong address prefixes:
+- "version 0" for P2PKH → correct value is 25 ('B' prefix on mainnet)
+- "version 5 for 3 prefix" → clarified as legacy backward-compat decode
+- "version 5 for M prefix" → 'M' was Litecoin's prefix; BurritoCoin
+  SCRIPT_ADDRESS2=28 produces 'C' prefix on mainnet
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `f29668d` — Fix B1/B2/B3: replace Litecoin genesis with BurritoCoin genesis block
+
+**Date:** 2026-03-18 14:45:00 +0000  
+**Author:** Claude  
+**Full hash:** `f29668dfd965ac5176845872ef0eb93a9c255c1b`
+
+Mines a fresh BurritoCoin genesis block with:
+- Timestamp: "WSJ 18/Mar/2026 Finance Bros to Tech Bros: Don't Mess With My Bloomberg Terminal"
+- Team-controlled genesis output key (04dd6fb369...)
+- Mainnet:  nTime=1773844916  nNonce=457019    hash=00000f4b714b973787f41b7bf17002a796a3975b2556a6717f8ab7065c0da822
+- Testnet:  nTime=1773844917  nNonce=1858828   hash=0000037096771633b924adc62068ed1236dbde90cb2007d27b640fe464e4c601
+- Regtest:  nTime=1296688602  nNonce=0         hash=35a426bb750fd902834dfabdab980c842ebfc9f9623fa1cfbb38f591acb68ae0
+
+Removes all BRTO-TODO placeholders related to genesis re-mining.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `9cb7dc8` — Fix bugs #1-6, #8, #10: replace assert() with proper runtime checks
+
+**Date:** 2026-03-18 10:22:01 +0000  
+**Author:** Claude  
+**Full hash:** `9cb7dc8f6c1dad15470a02741a1f79caf7da83fe`
+
+- Bug #1 (transaction.cpp): Remove noexcept from GetOutput() overloads
+  and replace assert() bounds checks with throw std::out_of_range.
+
+- Bug #2 (wallet.cpp): Replace assert(false) on wallet encryption
+  half-state failure with std::abort() to guarantee process termination
+  in release builds.
+
+- Bug #3 (mweb_node.cpp): Replace assert(!pHogEx->vout.empty()) with
+  state.Invalid() to reject malformed HogEx blocks in release builds.
+
+- Bug #4/#5 (wallet.cpp): Replace assert(false) on missing pegout kernel
+  and consistency assert() with LogPrintf + early return.
+
+- Bug #6 (mweb_node.cpp): Add MoneyRange() check on mweb_amount before
+  comparing against HogEx output value.
+
+- Bug #8 (miner.cpp): Add MoneyRange() check on coinbase value
+  (nFees + subsidy) and return nullptr if out of range.
+
+- Bug #10 (key.cpp): Replace all assert() calls on secp256k1 return
+  values and state checks with proper if-checks that throw
+  std::runtime_error or return false/0 as appropriate.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `ed26b54` — Fix V1: guard nStartHeight==0 in check_computeblockversion_bip8 to prevent OOM
+
+**Date:** 2026-03-18 02:46:16 +0000  
+**Author:** Claude  
+**Full hash:** `ed26b5400811ce1684a388fd3fb332c42c289e08`
+
+Mine(nStartHeight - 1) with nStartHeight = 0 silently underflowed unsigned
+int to UINT_MAX, causing the test helper to allocate ~4 billion CBlockIndex
+objects and triggering an OOM kill (exit 137).
+
+The test itself is also semantically incorrect for nStartHeight == 0: the
+BIP8 state machine keeps all blocks in period 0 as DEFINED (genesis is
+always DEFINED), so the loop checking [nStartHeight, nTimeoutHeight) for
+a set bit would fail even without the OOM. The ComputeBlockVersion(nullptr)
+assertion on line 328 already covers the null-tip (genesis) case.
+
+Add an early return after validating nStartHeight is a retarget-boundary
+multiple, explaining both the underflow risk and the semantic reasoning.
+This fixes the BurritoCoin MWEB deployment (nStartHeight=0, nTimeoutHeight=
+nMinerConfirmationWindow), which triggered the path.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `1517d2a` — Fix L4: replace Bitcoin WIF keys with BurritoCoin WIF in CheckUnparsable tests
+
+**Date:** 2026-03-18 02:28:04 +0000  
+**Author:** Claude  
+**Full hash:** `1517d2a7fa1dea2bf14419bf03a38f01cb1b1037`
+
+Lines 333, 342, and 343 of descriptor_tests.cpp used standard Bitcoin WIF
+compressed keys (version 128, K.../L... prefix) in CheckUnparsable tests
+that verify structural errors (P2SH size limit, bare-multisig key count).
+
+These tests passed incidentally because the descriptor parser checks
+structural limits before decoding individual keys, so the wrong version
+byte was never reached. Replace all 16 Bitcoin WIF keys with their
+BurritoCoin equivalents (version 153, P... prefix), making each test
+explicitly valid in both key format and expected error path.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `d689884` — Fix test suite to use BurritoCoin mainnet key/address formats
+
+**Date:** 2026-03-17 23:45:18 +0000  
+**Author:** Claude  
+**Full hash:** `d6898848c1364e6611e52e19af8ff2d1d54f9537`
+
+- bloom_tests: re-encode WIF key with BurritoCoin SECRET_KEY version (153)
+- burritocoin_tests: update Taproot/MWEB deployment assertions for
+  ALWAYS_ACTIVE Taproot (BIP9) and 1-window MWEB timeout (BIP8)
+- descriptor_tests: replace all LTC/BTC WIF (v176/v128) and HD keys
+  (xprv/xpub) with BurritoCoin equivalents (v153, Ktpv.../Ktub...),
+  fix descriptor checksum values and xpub cache branch check
+- key_io_valid.json: replace LTC mainnet P2PKH/P2SH addresses and WIF
+  keys with BurritoCoin mainnet versions (P2PKH v25, P2SH2 v28, WIF v153)
+- util_tests: replace LTC mainnet address with BurritoCoin equivalent
+- util/system.cpp: silently ignore duplicate ArgsManager registrations
+  instead of throwing, preventing 428 test failures from shared gArgs
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `8c98edd` — Replace assert(false) dead-code traps and fix silent failure (L1–L5)
+
+**Date:** 2026-03-17 21:31:41 +0000  
+**Author:** Claude  
+**Full hash:** `8c98edd09556e9b94e2d30b3aa133c8ca9a9892c`
+
+L1 (node/coinstats.cpp:111): Replace assert(false) in GetUTXOStats() with a
+proper return error() call, so an unrecognised CoinStatsHashType surfaces as
+a logged failure in both debug and release builds instead of undefined
+behaviour.
+
+L2 (psbt.cpp:347): Replace assert(false) in PSBTRoleName() with a
+std::invalid_argument throw, providing a descriptive message if an
+unrecognised PSBTRole value is ever passed. Add #include <stdexcept>.
+
+L3 (util/error.cpp:36): Replace assert(false) in TransactionErrorString()
+with a return of a formatted Untranslated() string, so unknown
+TransactionError values produce a readable result rather than UB in release.
+
+L4 (validation.cpp:1323): Uncomment and implement the previously elided error
+path in InitCoinsDB() — a failed ReadBlockFromDisk() now throws
+std::runtime_error instead of silently proceeding with a default-constructed
+block, which would cause mw::CoinsViewDB::Open() to initialise from bad state.
+Also update the stale "remove in v0.22" comment on the mempool.dat
+try-except block to accurately describe its backward-compat purpose.
+
+L5 (validation.cpp:1596): Replace stale "TODO: Remove this requirement" note
+on AssertLockHeld(cs_main) with a factual comment; the lock requirement is
+architectural and not a bug.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `5f64b12` — Replace unsafe assert() calls and remove stale TODO in M-series bugs (M3, M5)
+
+**Date:** 2026-03-17 21:04:18 +0000  
+**Author:** Claude  
+**Full hash:** `5f64b12580d5fb44f30ae9dc1d2be1b286ed7185`
+
+M5 (wallet/wallet.cpp): assert(wallet) in AddWallet() and RemoveWallet()
+silently vanished in release builds, allowing a null shared_ptr to be
+dereferenced. Replaced with explicit null checks that return false, consistent
+with the functions' existing bool-based error-reporting contract.
+
+M3 (mweb/mweb_node.h): Removed stale "fix function summaries" TODO comment;
+the summaries are accurate and the comment was never actionable.
+
+M1/M2/M4 not changed: M1's merkle check is correctly performed via CheckBlock;
+M2's cast is safe (lenR/lenS are single-byte values, no overflow possible);
+M4's bare-char TODO is a future refactor note, not a runtime bug.
+
+M6 not changed: SetBackend(m_dummy) was deliberately commented out for MWEB
+compatibility; re-enabling it requires full analysis of the MWEB input flow.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `a1ec014` — Replace unsafe assert() calls with proper error handling in H-series bugs (H2, H3)
+
+**Date:** 2026-03-17 21:00:27 +0000  
+**Author:** Claude  
+**Full hash:** `a1ec0145b5e08a87143c7b8ee44e01032b965533`
+
+H2 (util/system.cpp): assert(ret.second) silently vanished in release builds,
+hiding duplicate argument registration. Now throws std::logic_error with the
+conflicting argument name so the programming error is always surfaced.
+
+H3 (prevector.h): assert() after malloc/realloc disappeared in release builds,
+turning allocation failures into null-pointer dereferences. Now throws
+std::bad_alloc() on allocation failure. Also adds <new> include and removes
+the now-resolved FIXME comment. The realloc path is also fixed to stage the
+new pointer before assigning, preventing the original pointer from being lost
+if allocation fails.
+
+H1 already resolved by C3 fix. H4 already uses proper std::runtime_error
+subclass (uint_error) with no assert involved.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `c5d28cb` — Replace unsafe assert() calls with proper runtime error handling (C1, C2, C3)
+
+**Date:** 2026-03-17 20:58:20 +0000  
+**Author:** Claude  
+**Full hash:** `c5d28cb23e32d00de9d43b6414d4645652811cd1`
+
+Three critical assert() calls used for runtime validation would silently
+disappear in release builds (NDEBUG), bypassing critical checks:
+
+- coins.cpp: AddCoin() now throws std::logic_error if a spent coin is passed
+- protocol.cpp: CMessageHeader constructor now throws std::runtime_error if
+  command name exceeds COMMAND_SIZE, preventing malformed network messages
+- primitives/block.cpp: GetHogEx() now guards the empty-vout condition in
+  the if-expression instead of asserting, returning nullptr for invalid state
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `83e97da` — fix(H12): use ALWAYS_ACTIVE for Taproot and 1-window timeout for MWEB
+
+**Date:** 2026-03-17 20:34:28 +0000  
+**Author:** Claude  
+**Full hash:** `83e97daf623438561cfe135fc1060e7bb7f99ac5`
+
+On mainnet and testnet, Taproot was using a height-based deployment with
+nTimeoutHeight=2016000 on both networks, computed via different multipliers
+(250×8064 and 1000×2016) that coincidentally produced the same value —
+making it unclear whether this was intentional.
+
+Since Taproot is a core BurritoCoin feature from day 1, switch to
+ALWAYS_ACTIVE (nStartTime) on all networks, consistent with regtest.
+This removes signaling overhead and makes intent unambiguous.
+
+For MWEB, ALWAYS_ACTIVE is intentionally avoided (mandates HogEx in every
+block from genesis, breaking the 100-block test-setup helpers). Keep
+height-based activation but replace the 2,016,000-block (~9.6 year)
+timeout with 1 × nMinerConfirmationWindow:
+  - Mainnet: nTimeoutHeight=8064  (~14 days forced lock-in)
+  - Testnet: nTimeoutHeight=2016  (~3.5 days forced lock-in)
+
+This ensures MWEB activates promptly via BIP8-style mandatory lock-in
+if miners have not already signaled, with clearly distinct and intentional
+values for each network.
+
+Also removes the two BRTO-TODO comments that tracked this as an open item.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `1e6d2dd` — fix(H9): assign unique BurritoCoin-specific Base58 prefixes
+
+**Date:** 2026-03-17 16:57:13 +0000  
+**Author:** Claude  
+**Full hash:** `1e6d2dd068327083a373075b8bfd923c56e07e9d`
+
+Replace mainnet Base58 prefixes that were identical to Bitcoin (xpub/xprv)
+and Litecoin (PUBKEY_ADDRESS=48, SECRET_KEY=176) with values unique to
+BurritoCoin:
+
+  PUBKEY_ADDRESS  48  →  25   (P2PKH addresses: 'L...' → 'B...')
+  SECRET_KEY     176  → 153   (WIF compressed:  'T...' → 'P...')
+  SCRIPT_ADDRESS2 50  →  28   (legacy P2SH-2:   'M...' → 'C...')
+  EXT_PUBLIC_KEY  0x0488B21E → 0x0188D9CE  ('xpub' → 'Ktub')
+  EXT_SECRET_KEY  0x0488ADE4 → 0x0188D26A  ('xprv' → 'Ktpv')
+
+Without unique prefixes, BRTO mainnet addresses and HD keys were
+indistinguishable from Bitcoin/Litecoin addresses, creating a collision
+risk and potential for user confusion or funds loss on the wrong chain.
+
+Update affected test vectors in bip32_tests.cpp, key_tests.cpp,
+util_tests.cpp, and burritocoin_tests.cpp to use the new BRTO-specific
+encoded forms.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `c794c35` — fix(H6): prevent size_t underflow in mweb_node.cpp vtx loop bounds
+
+**Date:** 2026-03-17 16:08:25 +0000  
+**Author:** Claude  
+**Full hash:** `c794c356ef0465bae4d2a2fcbda0f2e15fd8d9c3`
+
+Replace `block.vtx.size() - 1` with `i + 1 < block.vtx.size()` in all
+four loop conditions at lines 64, 101, 139, and 191. When vtx is empty,
+the subtraction on an unsigned size_t wraps to SIZE_MAX, causing the
+loop to run out of bounds. The rewritten condition is logically identical
+but safe against underflow.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `4ce3b26` — Change nSpendHeight and GetSpendHeight to int64_t (fixes H2)
+
+**Date:** 2026-03-17 16:00:40 +0000  
+**Author:** Claude  
+**Full hash:** `4ce3b266b72aa524a10158c606a67b31b43ea659`
+
+int nSpendHeight in CheckTxInputs caused signed/unsigned mismatch with
+coin.nHeight (uint32_t:31). C++ arithmetic conversions promoted int to
+unsigned, so a negative or underflowing nSpendHeight could produce a
+huge positive depth, silently bypassing the coinbase/pegout maturity
+checks. Changing to int64_t ensures coin.nHeight is promoted upward to
+int64_t instead, making underflow impossible and negative values
+detectable. GetSpendHeight updated to match; fuzz caller updated to use
+ConsumeIntegralInRange<int64_t>. Consistent with the H1 fix that moved
+block-height fields in consensus/params.h to int64_t.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `8faa2ac` — Mark signet args as unsupported in help text (fixes L7)
+
+**Date:** 2026-03-17 15:53:34 +0000  
+**Author:** Claude  
+**Full hash:** `8faa2acae2432ca92ae53bd053f8dd461120e1b7`
+
+-signet, -signetchallenge, and -signetseednode were registered with
+upstream Litecoin help text implying they work, but CreateChainParams
+throws immediately when signet is selected. Update all three descriptions
+to state they are not yet supported, so help output is consistent with
+runtime behaviour. Also remove 'signet' from the -chain allowed-values
+list. The runtime error in CreateChainParams is unchanged.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `5d7c324` — Assign unique BurritoCoin ports, replacing Litecoin defaults (fixes L4, H8, H13)
+
+**Date:** 2026-03-17 15:50:15 +0000  
+**Author:** Claude  
+**Full hash:** `5d7c324e2bb23bab398c6ea8ed0207be8b60725a`
+
+Replace all Litecoin-inherited port numbers with BurritoCoin-specific values
+that do not collide with Bitcoin (8332/8333) or Litecoin (9332/9333):
+
+  Mainnet  RPC 9332→9226  P2P/Onion 9333→9227
+  Testnet  RPC 19334→19226  P2P/Onion 19335→19227
+  Signet   RPC 39332→39226  P2P/Onion 39335→39227
+  Regtest  RPC 19443→19553  P2P/Onion 19444→19554
+
+Also removes the BRTO-TODO comment in chainparamsbase.cpp, updates all
+hardcoded port literals in RPC help text and CLI help strings, and fixes
+the three port-assertion tests in burritocoin_tests.cpp to match.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `195437b` — Add autoconf artifacts confdefs.h and conftest.cpp to .gitignore
+
+**Date:** 2026-03-16 14:23:35 +0000  
+**Author:** Claude  
+**Full hash:** `195437b702abceec2f609598562d7ba502cef158`
+
+These are generated by ./configure and should not be tracked.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `22f795d` — Fix H1: change nSubsidyHalvingInterval from int to int64_t
+
+**Date:** 2026-03-16 14:19:26 +0000  
+**Author:** Claude  
+**Full hash:** `22f795dc7ab5931ece0933a40db9b213a8ac2bc8`
+
+The field holds 1,042,600,000 and is used in arithmetic with int64_t
+nHeight in validation.cpp. Making the type explicit eliminates the
+implicit int→int64_t promotion and prevents any future overflow risk.
+
+Activation height fields (BIP16Height etc.) are left as int since they
+must match CBlockIndex::nHeight throughout the codebase.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `9dae4a3` — Update copyright years to 2026 across qt/ and configure.ac
+
+**Date:** 2026-03-16 14:12:59 +0000  
+**Author:** Claude  
+**Full hash:** `9dae4a379365cfe0843476cc4724d238d9bf2f1f`
+
+- configure.ac: bump COPYRIGHT_YEAR from 2024 to 2026 (drives splash
+  screen and COPYRIGHT_STR at runtime)
+- src/qt/**/*.{cpp,h,mm,sh}: standardize all file-header copyright end
+  years to 2026 (131 files; end years ranged from 2014–2020)
+
+Fixes L2 (splashscreen 2011-start / stale end year) and L3 (scattered
+qt/ copyright years).
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `8fabafb` — Fix test failures: REGTEST default, scrypt PoW loop, MWEB HogEx, WIF keys
+
+**Date:** 2026-03-16 13:50:58 +0000  
+**Author:** Claude  
+**Full hash:** `8fabafb8129ab394816accd8a6011306faa18932`
+
+- chainparams.cpp: Change regtest MWEB from ALWAYS_ACTIVE to nStartTime=1
+  to avoid requiring HogEx in every block (breaks standard test helpers);
+  fix nMinerConfirmationWindow comment (144 vs 8064 mainnet, not 2016)
+- consensus/tx_check.cpp: Allow HogEx txns with empty vin (valid on first
+  MWEB-enabled block before any pegins)
+- test/miner_tests.cpp: Use REGTEST chain; add scrypt PoW search loop;
+  clear witness reserved value; fix sigops fee to stay within BLOCKSUBSIDY
+- test/rpc_tests.cpp: Use regtest address/WIF keys instead of mainnet
+- test/util/setup_common.cpp: Insert extra txns before HogEx (not after)
+- test/util/setup_common.h: Default TestingSetup chain to REGTEST
+- validation.cpp: Null-guard chain tip in UpdateMempoolForReorg
+- wallet tests: Use regtest WIF key prefix (239); fix expected balance to
+  10 COIN/block (BurritoCoin subsidy); default WalletTestingSetup to REGTEST
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `a17dacb` — Fix 20 bugs identified in codebase audit (critical through low severity)
+
+**Date:** 2026-03-16 02:34:18 +0000  
+**Author:** Claude  
+**Full hash:** `a17dacb9571f53365ef27f0540cf9eea120bc93d`
+
+Critical fixes:
+- Delete orphaned bitcoinconsensus.{h,cpp} and libbitcoinconsensus.pc.in (C1)
+- Fix BaseIndex::GetSummary() null dereference on m_best_block_index (C4)
+- Fix operator precedence bug in coinstats.cpp UTXO hash computation (C5)
+- Add MWEB balance to CWallet::GetBalance() via new MWEB::Wallet::GetBalance() (C3)
+- Replace BLAKE3 single-char tags with BurritoCoin-specific derive-key context
+  strings to prevent cross-chain replay attacks with Litecoin MWEB (C6)
+- Fix scrypt.cpp MSVC build: use x86cpuid[] instead of undefined buffer[] (C7)
+
+High severity fixes:
+- Add null guard for pindexPrev->pprev in mweb_node.cpp ContextualCheckBlock
+  and ConnectBlock (prevents crash when MWEB is ALWAYS_ACTIVE on regtest) (H3)
+- Add pHogEx->vin.empty() guard before vin.front() access in ConnectBlock (H3/H4)
+- Promote BLOCK_MUTATED to BLOCK_CONSENSUS for fee and amount mismatches in
+  ConnectBlock (TODO comments resolved) (H5)
+- Raise MIN_PEER_PROTO_VERSION from 31800 to 70015 (H7)
+- Add MAX_MONEY upper-bound check in KernelSumValidator::ValidateState (H10)
+- Replace undefined-behavior uint64_t* pointer cast with std::memcpy in
+  OutputMask::FromShared (H11)
+
+Medium severity fixes:
+- Fix nMinerConfirmationWindow comment to match actual value (M1)
+- Set regtest MWEB deployment to ALWAYS_ACTIVE (was hardcoded Litecoin date) (M7)
+- Update pow.cpp comments: "10 minutes" -> "2.5 minutes", "14 days" -> "3.5 days" (M11)
+
+Low severity fixes:
+- Replace "LIPs 0002-0004" with "BIPs 0002-0004" in consensus/params.h
+- Remove LIP reference from validation.h MWEB comment
+- Update Keychain.cpp Litecoin version-specific comment to be generic
+- Remove orphaned src/qt/res/src/bitcoin.svg
+- Update compress_tests.cpp comment to clarify upstream test boundary
+- Update chainparamsbase.cpp Tor port comment with BRTO-TODO for unique ports
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `9fb45b9` — gitignore: add *~ to catch extension-less backup files
+
+**Date:** 2026-03-15 20:36:43 +0000  
+**Author:** Claude  
+**Full hash:** `9fb45b95c6c348731ae6b16b28c813059cdc18f5`
+
+The pattern *.*~* already covers files like foo.ext~, but files
+without an extension (e.g. src/univalue/configure~) were not matched.
+Adding *~ catches all tilde-suffixed backup files regardless of
+whether they have an extension.
+
+https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
+
+## `2c0575b` — Add extended BurritoCoin-specific unit tests
+
+**Date:** 2026-03-15 20:35:50 +0000  
+**Author:** Claude  
+**Full hash:** `2c0575bcfc580e24339b0ea937b455f80b74beaf`
+
+Extends burritocoin_tests.cpp with 25 additional tests covering:
+
+- Network message-start magic bytes (mainnet BRTO, testnet BRTN, regtest BRTG)
+- Default P2P port numbers (9333 / 19335 / 19444)
+- Miner confirmation window (8064) and 75% rule-change threshold (6048)
+- Relationship between confirmation window and 4× retarget periods
+- Taproot/MWEB activation-from-genesis and shared timeout height (2016000)
+- Mainnet Base58 address prefixes (pubkey=48, script=5, WIF=176)
+- FormatMoney / ParseMoney round-trips at BRTO scale (premine 148M,
+  full 21B MAX_MONEY, rejection of amounts above the hard cap)
+- nMinimumChainWork is zero on the new chain
 
 https://claude.ai/code/session_01EnK79DbN3mQP3o2aubBpK7
 
@@ -2972,3 +3947,409 @@ BurritoCoin — PUBKEY_ADDRESS=48 and SECRET_KEY=176 are identical to
 Litecoin, so the same WIF and P2PKH encodings apply.
 
 https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `dc53b7b` — Rename bitcoin-prefixed Qt source files to burritocoin-prefixed names
+
+**Date:** 2026-03-10 13:34:30 +0000  
+**Author:** Claude  
+**Full hash:** `dc53b7b08862e10b5a4c97c1a46f6825a61d880e`
+
+Makefile.qt.include already referenced these files by their burritocoin-*
+names (e.g. qt/burritocoingui.cpp, qt/burritocoin.qrc), and the file
+contents already used the correct BurritoCoin class names and include
+paths, but the actual filenames on disk still used the bitcoin- prefix,
+causing the build to fail to find them.
+
+Renames (content unchanged):
+  bitcoin.cpp               → burritocoin.cpp
+  bitcoin.h                 → burritocoin.h
+  bitcoin.qrc               → burritocoin.qrc
+  bitcoin_locale.qrc        → burritocoin_locale.qrc
+  bitcoinaddressvalidator.cpp → burritocoinaddressvalidator.cpp
+  bitcoinaddressvalidator.h   → burritocoinaddressvalidator.h
+  bitcoinamountfield.cpp    → burritocoinamountfield.cpp
+  bitcoinamountfield.h      → burritocoinamountfield.h
+  bitcoingui.cpp            → burritocoingui.cpp
+  bitcoingui.h              → burritocoingui.h
+  bitcoinstrings.cpp        → burritocoinstrings.cpp
+  bitcoinunits.cpp          → burritocoinunits.cpp
+  bitcoinunits.h            → burritocoinunits.h
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `1123d2f` — Fix mainnet P2P magic bytes (missed stage in prior commit)
+
+**Date:** 2026-03-10 04:14:37 +0000  
+**Author:** Claude  
+**Full hash:** `1123d2f7bccae7518095d320eb98043dbe101828`
+
+The magic bytes change (0xfbc0b6db → 0x42524f4f "BRTO") was applied to
+the working tree but not staged before the prior commit. Staging it now.
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `6e2c09c` — Third audit pass: fix critical magic bytes, complete MSVC migration, clean pixmaps
+
+**Date:** 2026-03-10 04:13:39 +0000  
+**Author:** Claude  
+**Full hash:** `6e2c09c833d015fc4cc7133eb5b3eb8a61710e61`
+
+Critical bug fix:
+- Fix mainnet P2P magic bytes: was 0xfbc0b6db (Litecoin's magic) → now
+  0x42 0x52 0x54 0x4f ('B','R','T','O'). Nodes sharing Litecoin's magic bytes
+  would have connected to the Litecoin network instead of BurritoCoin.
+
+MSVC build system — rename 18 orphaned bitcoin-*/libbitcoin_* directories to
+their burritocoin-* equivalents so they match what bitcoin.sln references:
+  bitcoin-cli/ → burritocoin-cli/
+  bitcoin-qt/ → burritocoin-qt/
+  bitcoin-tx/ → burritocoin-tx/
+  bitcoin-wallet/ → burritocoin-wallet/
+  bitcoind/ → burritocoind/
+  libbitcoin_cli/ → libburritocoin_cli/
+  libbitcoin_common/ → libburritocoin_common/
+  libbitcoin_crypto/ → libburritocoin_crypto/
+  libbitcoin_qt/ → libburritocoin_qt/
+  libbitcoin_server/ → libburritocoin_server/
+  libbitcoin_util/ → libburritocoin_util/
+  libbitcoin_wallet/ → libburritocoin_wallet/
+  libbitcoin_wallet_tool/ → libburritocoin_wallet_tool/
+  libbitcoin_zmq/ → libburritocoin_zmq/
+  libbitcoinconsensus/ → libburritocoinconsensus/
+  test_bitcoin/ → test_burritocoin/
+  test_bitcoin-qt/ → test_burritocoin-qt/
+  bench_bitcoin/ → bench_burritocoin/
+- Rename bitcoin.sln → burritocoin.sln
+- Rename bitcoin_config.h → burritocoin_config.h (matches msvc-autogen.py expectation)
+
+Asset cleanup:
+- Remove 11 orphaned share/pixmaps/bitcoin*.{png,xpm,ico} files; they were not
+  referenced by the Qt resource file and carried Bitcoin branding
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `f73aa0b` — Second branding/build audit: fix critical build breakages and clean up
+
+**Date:** 2026-03-09 20:54:16 +0000  
+**Author:** Claude  
+**Full hash:** `f73aa0b7b03e9779b10bb510c072a8efc12d79f2`
+
+Build system fixes (would have caused compile failures):
+- Rename src/bitcoind.cpp → burritocoind.cpp, bitcoin-cli.cpp → burritocoin-cli.cpp,
+  bitcoin-tx.cpp → burritocoin-tx.cpp, bitcoin-wallet.cpp → burritocoin-wallet.cpp
+  so Makefile.am's SOURCES references resolve correctly
+- Rename matching .rc Windows resource files to burritocoin-* names
+- Rename src/qt/res/bitcoin-qt-res.rc → burritocoin-qt-res.rc (matches MSVC .vcxproj)
+
+Qt GUI fixes (would have caused Qt resource compiler failure):
+- Rename res/icons/bitcoin.png → burritocoin.png, litecoin_splash.png →
+  burritocoin_splash.png, bitcoin.ico → burritocoin.ico, bitcoin.icns →
+  burritocoin.icns, bitcoin_testnet.ico → burritocoin_testnet.ico to match
+  aliases in bitcoin.qrc
+
+Network / consensus parameter fixes:
+- Fix testnet RPC port 19332 → 19334 in chainparamsbase.cpp
+- Remove all 16 Litecoin mainnet checkpoints; replace with empty
+  BRTO-TODO stub (Litecoin hashes would reject valid BurritoCoin blocks)
+- Zero out Litecoin chainTxData statistics (nTime/nTxCount/dTxRate)
+
+Test fixes:
+- Disable all three BIP32 test cases with boost::unit_test::disabled() and
+  an explanatory comment — vectors were derived from "Bitcoin seed" HMAC key
+  but key.cpp now uses "BurritoCoin seed", producing different key material
+
+Branding/comment cleanup:
+- Remove "(sat)" parenthetical from Burrioshi unit description in bitcoinunits.cpp
+- Replace all gitian.sigs.ltc → gitian.sigs.brto in release-process.md
+- Fix "Unit: sat/vbyte" → "burrioshi/vbyte" comment in blockchain.cpp
+- Fix stale "testnet3" reference in validation.cpp and doc/files.md → testnet4
+- Remove LIP-0002/LIP-0003/LIP-0004 Litecoin spec references from chainparams.cpp
+- Remove LIP-0006 references from protocol.h (replaced with neutral phrasing)
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `9ed045d` — Full branding audit fixes: unit names, ports, file renames, DNS seeds
+
+**Date:** 2026-03-09 19:33:24 +0000  
+**Author:** Claude  
+**Full hash:** `9ed045df0b5fe61d79429ea28bff59df981ca396`
+
+- Fix CURRENCY_ATOM from "sat" to "burrioshi" in feerate.h so all RPC
+  fee rate output correctly shows burrioshi/vB instead of sat/vB
+- Fix SAT shortName() in bitcoinunits.cpp to return "burrioshi"
+- Update amount_tests.cpp expected value to match new CURRENCY_ATOM
+- Fix hardcoded port 8332→9332 in bitcoin-cli.cpp and burritocoin-cli.1
+- Fix P2P port comment 8333→9333 in netbase.cpp
+- Fix port numbers comment in burritocoin.conf (9333/19335/39335/19444)
+- Remove Litecoin third-party DNS seeds (thrasher.io, koin-project.com)
+  from mainnet and testnet chainparams; keep BurritoCoin-specific seeds
+- Rename doc/man litecoin-*.1 → burritocoin-*.1 / burritocoind.1
+- Rename share/examples/litecoin.conf → burritocoin.conf
+- Rename contrib bash completion scripts bitcoin-* → burritocoin-*
+- Rename 85 Qt locale files bitcoin_*.ts → burritocoin_*.ts
+- Fix remaining "satoshi/sat/Satoshi" references in comments across
+  blockchain.cpp, coincontroldialog.cpp, rpcwallet.cpp, feerate.h,
+  bitcoinunits.h, wallet.h, feebumper.cpp, bitcoinamountfield.h/.cpp
+- Update depends/description.md and README.md from Litecoin→BurritoCoin
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `fa6f69b` — Replace remaining 'satoshi' references with 'burrioshi' throughout codebase
+
+**Date:** 2026-03-09 19:12:39 +0000  
+**Author:** Claude  
+**Full hash:** `fa6f69be4314fe5785719854b11e87610e4650ca`
+
+Replace all user-facing and developer-facing references to 'satoshi'/'satoshis'
+with the BurritoCoin-specific unit name 'burrioshi' across UI strings, RPC help
+text, code comments, and translation files. Also fix HelpExampleRpc to use
+BurritoCoin's RPC port (9332) instead of Bitcoin's port (8332).
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `3675d76` — Full codebase audit: fix branding and protocol bugs
+
+**Date:** 2026-03-09 15:45:16 +0000  
+**Author:** Claude  
+**Full hash:** `3675d762f71aaf3b15fc6916a89111afd205fae5`
+
+Critical fixes:
+- key.cpp: Change BIP32 seed HMAC key from "Bitcoin seed" to "BurritoCoin seed"
+  so HD wallet derivation is distinct from Bitcoin/Litecoin
+- chainparams.cpp: Fix regtest MWEB HRP from "tbrtomweb" (testnet) to "rbrtomweb"
+
+MWEB variable renames (ltc_* → brto_*):
+- mweb_transact.h/.cpp: ltc_change, ltc_input_amount, ltc_fee → brto_*
+- libmw/test/framework/src/TxBuilder.cpp: ltc_address → brto_address
+
+User-facing branding fixes:
+- rpc/util.cpp: EXAMPLE_ADDRESS bc1q... → brto1q...
+- qt/guiconstants.h: QAPP_APP_NAME_TESTNET "Liteocin-Qt-testnet" → "BurritoCoin-Qt-testnet"
+- qt/bitcoinunits.cpp: uBRTO shortName "bits" → "morsels" (matches longName)
+- qt/forms/receiverequestdialog.ui: placeholder bc1... → brto1...
+- qt/README.md: mBTC reference → mBRTO
+
+Test/bench fixes:
+- bench/bech32.cpp: hardcoded "bc" HRP → "brto"
+- test/fuzz/bech32.cpp: hardcoded "bc" HRP → "brto"
+- wallet/test/scriptpubkeyman_tests.cpp: replace stale ltcmweb1 address
+  literals with prefix-only checks; add FIXME to regenerate exact vectors
+  after BIP32 seed change
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `9cf09dd` — Fix remaining LTC branding, address, and exception class issues
+
+**Date:** 2026-03-09 14:33:47 +0000  
+**Author:** Claude  
+**Full hash:** `9cf09dda5e2251d089f27d721ac51f05aef1acbb`
+
+Exception hierarchy:
+- Rename LTCException -> BRTOException (new BRTOException.h)
+- Remove obsolete LTCException.h
+- Update all 7 exception classes (Crypto, Database, Deserialization,
+  File, InsufficientFunds, NotFoundException, Validation) to inherit
+  from BRTOException
+
+MWEB/Wallet enum and variable names:
+- Rename InputPreference::LTC_ONLY -> BRTO_ONLY in coinselection.h/.cpp
+  and txassembler.cpp
+- Rename TxType::LTC_TO_LTC -> BRTO_TO_BRTO in mweb_transact.h/.cpp
+  and txassembler.h/.cpp
+- Rename is_ltc lambda -> is_brto in mweb_transact.cpp and txassembler.cpp
+
+Address fixes:
+- src/test/util/wallet.cpp: rltc1 unspendable address -> rbrto1
+- src/qt/forms/receiverequestdialog.ui: placeholder LTC1... -> brto1...
+- src/test/data/key_io_valid.json: convert all 24 Litecoin bech32 test
+  vectors (ltc1/tltc1/rltc1) to BurritoCoin equivalents (brto1/tbrto1/rbrto1)
+- test/functional/data/rpc_psbt.json: 2 rltc1 addresses -> rbrto1
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `104e20e` — Fix remaining block-reward and address bugs across tests and C++ source
+
+**Date:** 2026-03-09 14:20:31 +0000  
+**Author:** Claude  
+**Full hash:** `104e20e8e971f17f2f0275aa47ce130ee9820dfd`
+
+- p2p_eviction.py, p2p_tx_download.py, p2p_blocksonly.py: fix coinbase
+  spend amounts from 50 BRTO to 10 BRTO (correct block reward)
+- rpc_createmultisig.py: replace stale halving-based balance formula
+  (149*50 + (h-149-100)*25) with (height-100)*10 to match BurritoCoin's
+  10 BRTO reward and 1,042,600,000-block halving interval
+- src/test/miner_tests.cpp: replace 5000000000LL (50 BRTO) with
+  1000000000LL (10 BRTO) in TestPackageSelection; fix "1BTC" comment
+- test_framework/address.py, wallet_dump.py, p2p_segwit.py,
+  rpc_generateblock.py, rpc_deriveaddresses.py, rpc_invalid_address_message.py,
+  wallet_hd.py, wallet_importdescriptors.py, wallet_importmulti.py,
+  wallet_labels.py: replace all rltc1/rltc bech32 addresses and prefix
+  checks with correct rbrto1/rbrto equivalents for BurritoCoin regtest
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `498f15b` — Fourth bug pass: fix remaining coin value references across tests
+
+**Date:** 2026-03-09 01:36:28 +0000  
+**Author:** Claude  
+**Full hash:** `498f15bf3615b22e67d380c3edc0c94a0d2071f5`
+
+- compress_tests.cpp: rename NUM_MULTIPLES_1BTC→1COIN, NUM_MULTIPLES_50BTC→50COIN; update comments
+- feature_csv_activation.py: 49.98→9.98, 49.99→9.99 (coinbase spend amounts, 7 occurrences)
+- feature_segwit.py: 49.95→9.95 (tx3 spends 9.99 BRTO output)
+- mempool_reorg.py: 49.99→9.99 (4 occurrences), 49.98→9.98 (2 occurrences)
+- mempool_resurrect.py: 49.99→9.99, 49.98→9.98
+- rpc_signrawtransaction.py: 49.998→9.998 (spends 9.999 BRTO output)
+- wallet_txn_clone.py: fix stale "50BTC" comment → "10 BRTO"
+- wallet_txn_doublespend.py: fix stale "50 BRTO coin each" and "50BTC" comments → 10 BRTO
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `9a44670` — Third bug pass: fix remaining hardcoded Bitcoin/Litecoin values in functional tests
+
+**Date:** 2026-03-09 01:28:20 +0000  
+**Author:** Claude  
+**Full hash:** `9a446708136cd0d77c8d6ca23739cde8aac2edaf`
+
+- messages.py: MAX_MONEY 84M → 21B BRTO (2 places: constant and tx validation)
+- p2p_invalid_tx.py: coinbase spend output 50→10 COIN
+- p2p_invalid_block.py: invalid coinbase 100→20 COIN (still > block reward of 10)
+- feature_assumevalid.py: tx output 49→9 BRTO (< block reward)
+- feature_segwit.py: find_spendable_utxo 50→10, send amounts 49.998/49.999/49.996/49.99→9.998/9.999/9.996/9.99, balance assertions updated
+- rpc_signrawtransaction.py: sendtoaddress 49.999→9.999
+- wallet_importdescriptors.py: sendtoaddress 49.99995540→9.99995540, createrawtransaction 49.999→9.999
+- wallet_txn_doublespend.py: starting_balance 1250→250 (25 blocks × 10 BRTO), +100→+20 (2 blocks), assert 1250+1240→250+1240
+- wallet_txn_clone.py: starting_balance 1250→250, expected +=100→+=20
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `500e75a` — Second full bug check: fix coin references in Qt units, blocktools, and Python tests
+
+**Date:** 2026-03-09 01:23:52 +0000  
+**Author:** Claude  
+**Full hash:** `500e75a778329bfa53fc69b7a9d265160628d42a`
+
+- Rename mBTC/uBTC enum values to mBRTO/uBRTO in bitcoinunits.h/.cpp
+- Update unit description strings: Lites→Burritos, Photons→Morsels, Liteoshis→Burrioshi
+- Fix MWEB Coin.h comment: litoshis→burrioshi
+- Update blocktools.py: coinbase 50→10 COIN, halving interval 150→1042600000
+- Update 13 Python functional tests: all 50 BRTO coinbase balance references → 10 BRTO
+  (wallet_balance, wallet_basic, wallet_labels, wallet_send, wallet_backup,
+   wallet_multiwallet, wallet_txn_doublespend, wallet_txn_clone,
+   interface_bitcoin_cli, interface_rest, rpc_fundrawtransaction,
+   rpc_rawtransaction, mempool_spend_coinbase, p2p_invalid_block)
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `dd20029` — Fix remaining subsidy hardcodes in wallet and miner tests
+
+**Date:** 2026-03-09 01:08:20 +0000  
+**Author:** Claude  
+**Full hash:** `dd20029cd87e887b545d2d94332edde4119870f1`
+
+wallet_tests.cpp:341: 50*COIN → 10*COIN (GetImmatureCredit assertion).
+
+miner_tests.cpp:255: BLOCKSUBSIDY constant 50*COIN → 10*COIN to match
+  the new BurritoCoin block reward.
+
+miner_tests.cpp:363-388: Replace the old Litecoin halving-boundary test
+  (which looped to heights 839,999 / 840,000) with a modest 1,000-block
+  advance. BurritoCoin's halving interval is 1,042,600,000 blocks; the
+  old heights are meaningless, and iterating to the new boundary in a
+  unit test is not feasible.
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `3e10de3` — Fix bugs found by full bug/functionality check
+
+**Date:** 2026-03-09 01:06:42 +0000  
+**Author:** Claude  
+**Full hash:** `3e10de3e34cf39f4cc9c4d9b31336f41397d46d0`
+
+wallet_tests.cpp: update expected coinbase reward 50 COIN → 10 COIN
+  (two assertions that would have failed at test runtime).
+
+bitcoinunits.cpp: fix description() strings that the rebrand script
+  missed — "Lites"/"Photons"/"Liteoshis" → "Burritos"/"Morsels"/"Burrioshi".
+
+feerate.h/feerate.cpp: rename FeeEstimateMode::BTC_KVB → BRTO_KVB
+  and update the sole call-site in amount_tests.cpp; rename local
+  variable ltc_fee → base_fee; fix "litoshis" → "burrioshi" in comment.
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `cde9aef` — Set BurritoCoin monetary policy: 148M premine, 10 BRTO/block, 21B cap
+
+**Date:** 2026-03-09 00:59:20 +0000  
+**Author:** Claude  
+**Full hash:** `cde9aef7bf2b8475a810668fac0876327573a3b0`
+
+Genesis block (height 0): 148,000,000 BRTO premine.
+
+Regular block reward: 10 BRTO/block (~2,102,400 BRTO/year at 2.5-min
+blocks, satisfying the ~2M/year target).
+
+Halving interval: 1,042,600,000 blocks (~4,960 years), chosen so that
+the geometric series converges to exactly 20,852,000,000 BRTO from
+mining (10 × 1,042,600,000 × 2). Combined with the genesis premine
+the total hard cap is 21,000,000,000 BRTO.
+
+The effectively multi-millennium halving interval keeps emission steady
+for any practical timeframe while still encoding a hard mathematical cap.
+
+MAX_MONEY updated to 21,000,000,000 BRTO (consensus-critical).
+
+Genesis block hash assertions removed with BRTO-TODO notes; they must
+be recalculated once the genesis block is re-mined with a valid PoW
+solution for the new coinbase output amount.
+
+Subsidy unit tests updated to reflect new initial reward (10 BRTO)
+and genesis premine semantics.
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `18da317` — Rebrand codebase from Litecoin/Bitcoin to BurritoCoin (ticker: BRTO)
+
+**Date:** 2026-03-09 00:31:21 +0000  
+**Author:** Claude  
+**Full hash:** `18da31773857a463d4a1bc399d0a55b5cc29ae14`
+
+- Replace all Litecoin/Bitcoin coin name references with BurritoCoin
+- Replace LTC/BTC ticker symbols with BRTO
+- Update bech32/MWEB human-readable parts (ltc→brto, tltc→tbrto, rltc→rbrto, ltcmweb→brtomweb)
+- Update unit names (lites→burritos, photons→morsels, liteoshi→burrioshi)
+- Update client name to BurritoCoinCore
+- Comment out Litecoin DNS seeds with BRTO-TODO placeholder
+- Add rebrand.py script used to perform the changes
+
+https://claude.ai/code/session_012mruV6G6eFqYamntr9mq78
+
+## `1406f96` — Merge pull request #1043 from jorgesumle/master
+
+**Date:** 2026-01-28 20:11:32 +0000  
+**Author:** Loshan T  
+**Full hash:** `1406f96db622d3536ef068452575267ae8d68031`
+
+Fix broken Transifex link from README
+
+## `eb61a0d` — Merge pull request #1068 from luke-mckay/debugBuildFix
+
+**Date:** 2026-01-03 16:32:00 -0500  
+**Author:** David Burkett  
+**Full hash:** `eb61a0d5fdff5b79e355eb6ef988c2944bac4f68`
+
+fix: debug build conflict with logger symbol
+
+## `6fc0530` — fix: debug build conflict with logger symbol
+
+**Date:** 2026-01-03 11:33:04 -0700  
+**Author:** Luke E. McKay  
+**Full hash:** `6fc0530c724b38c66d097f6aed170bb02f844b06`
+
+## `2e78888` — Merge pull request #1066 from sorenstoutner/cstdint
+
+**Date:** 2026-01-01 11:55:04 -0500  
+**Author:** David Burkett  
+**Full hash:** `2e78888ff3ea73ee608e882baa48a4bcce7eebb0`
+
+Add <cstdint> include to fix build error.
