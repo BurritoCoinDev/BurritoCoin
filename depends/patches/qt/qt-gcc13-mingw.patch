@@ -1,0 +1,24 @@
+diff -ruN a/qtbase/src/corelib/global/qglobal.h b/qtbase/src/corelib/global/qglobal.h
+--- a/qtbase/src/corelib/global/qglobal.h	2019-04-09 04:52:04.000000000 +0000
++++ b/qtbase/src/corelib/global/qglobal.h	2026-06-25 02:09:11.569622098 +0000
+@@ -45,6 +45,8 @@
+ #  include <type_traits>
+ #  include <cstddef>
+ #  include <utility>
++#  include <limits>
++#  include <cstdint>
+ #endif
+ 
+ #include <stddef.h>
+diff -ruN a/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp b/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp
+--- a/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp	2019-04-09 04:52:04.000000000 +0000
++++ b/qtbase/src/plugins/platforms/windows/qwindowsmousehandler.cpp	2026-06-25 02:09:11.572588271 +0000
+@@ -60,7 +60,7 @@
+  * are present in the Windows SDK's, but not in older MSVC Express
+  * versions. */
+ 
+-#if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
++#if !defined(TOUCHEVENTF_MOVE)
+ 
+ typedef struct tagTOUCHINPUT {
+     LONG x;
