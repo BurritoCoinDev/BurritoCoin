@@ -266,9 +266,12 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     });
 
     connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &BurritoCoinGUI::showModalOverlay);
+#ifdef ENABLE_WALLET
+    // Guarded: WalletFrame is only a complete type when wallet support is built.
     connect(m_backup_status_label, &GUIUtil::ClickableLabel::clicked, [this] {
         if (walletFrame) walletFrame->backupWallet();
     });
+#endif // ENABLE_WALLET
     connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &BurritoCoinGUI::showModalOverlay);
 #ifdef ENABLE_WALLET
     if(enableWallet) {
@@ -831,6 +834,9 @@ void BurritoCoinGUI::removeWallet(WalletModel* walletModel)
     rpcConsole->removeWallet(walletModel);
     walletFrame->removeWallet(walletModel);
     updateWindowTitle();
+    // Removing a wallet may have switched the active wallet; refresh the backup
+    // badge for whichever one is current now (or hide it when none remain).
+    setBackupStatus(walletFrame->currentWalletModel());
 }
 
 void BurritoCoinGUI::setCurrentWallet(WalletModel* wallet_model)
@@ -1039,7 +1045,11 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
         QPushButton* backup_btn = box.addButton(tr("Back Up Now..."), QMessageBox::AcceptRole);
         QPushButton* locate_btn = box.addButton(tr("Show Me the File"), QMessageBox::ActionRole);
         QPushButton* verify_btn = box.addButton(tr("Verify a Key..."), QMessageBox::ActionRole);
-        QPushButton* acked_btn = box.addButton(tr("I've Already Backed Up"), QMessageBox::RejectRole);
+        // "I've Already Backed Up" must be an explicit click — keep it ActionRole.
+        // The RejectRole "Remind Me Later" button is what Esc / window-close maps
+        // to, so dismissing the dialog never silently marks the wallet backed up.
+        QPushButton* acked_btn = box.addButton(tr("I've Already Backed Up"), QMessageBox::ActionRole);
+        box.addButton(tr("Remind Me Later"), QMessageBox::RejectRole);
         box.setDefaultButton(backup_btn);
         box.exec();
 
