@@ -87,6 +87,17 @@ public:
     // Check address for validity
     bool validateAddress(const QString &address);
 
+    // Result of checkPrivKeyOwnership().
+    enum KeyOwnership {
+        KeyInvalid,      // not a valid private key for this network
+        KeyNotInWallet,  // a valid key, but this wallet does not hold it
+        KeyInWallet      // a valid key the wallet can spend from
+    };
+
+    // Locally verify whether a WIF private key is owned (spendable) by this
+    // wallet. The key never leaves the process and is never logged.
+    KeyOwnership checkPrivKeyOwnership(const QString& wif) const;
+
     // Return status record for SendCoins, contains error id + information
     struct SendCoinsReturn
     {

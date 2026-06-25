@@ -50,6 +50,7 @@ struct BlockAndHeaderTipInfo;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
+class QDockWidget;
 class QMenu;
 class QProgressBar;
 class QProgressDialog;
@@ -131,6 +132,8 @@ private:
     QProgressDialog* progressDialog = nullptr;
     /** Rotating "back up your wallet" safety tip shown in the status bar. */
     QLabel* m_safety_tip_label = nullptr;
+    /** Right-side dockable Help & FAQ panel. */
+    QDockWidget* m_faq_dock = nullptr;
 
     QMenuBar* appMenuBar = nullptr;
     QToolBar* appToolBar = nullptr;
@@ -153,6 +156,7 @@ private:
     QAction* encryptWalletAction = nullptr;
     QAction* backupWalletAction = nullptr;
     QAction* m_show_wallet_location_action = nullptr;
+    QAction* m_verify_backup_key_action = nullptr;
     QAction* changePassphraseAction = nullptr;
     QAction* aboutQtAction = nullptr;
     QAction* openRPCConsoleAction = nullptr;
@@ -215,6 +219,10 @@ private:
 
     /** Build the rotating wallet-safety tip shown in the status bar. */
     void createSafetyTipBanner();
+    /** Build the right-side Help & FAQ dock panel. */
+    void createFaqPanel();
+    /** The rich-text content shown in the Help & FAQ panel. */
+    QString faqHtml() const;
     /** Once per launch, encourage the user to back up wallet.dat and their
         recovery seed, and remind them where the wallet file lives. */
     void showWalletSafetyReminders(WalletModel* wallet_model);
@@ -299,6 +307,9 @@ public Q_SLOTS:
 
     /** Show where the current wallet's wallet.dat file is stored on disk. */
     void showWalletLocation();
+
+    /** Local-only dialog to confirm a written-down WIF belongs to this wallet. */
+    void showVerifyBackupKey();
 
     /** Show open dialog */
     void openClicked();

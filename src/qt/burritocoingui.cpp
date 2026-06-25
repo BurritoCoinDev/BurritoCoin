@@ -42,13 +42,18 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDesktopServices>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QDir>
+#include <QDockWidget>
 #include <QDragEnterEvent>
 #include <QFile>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
@@ -64,6 +69,7 @@
 #include <QStatusBar>
 #include <QStyle>
 #include <QSystemTrayIcon>
+#include <QTextEdit>
 #include <QTimer>
 #include <QToolBar>
 #include <QUrl>
@@ -151,6 +157,10 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
 
     // Accept D&D of URIs
     setAcceptDrops(true);
+
+    // Right-side Help & FAQ panel. Created before the menu bar so its toggle
+    // action can be added to the Window menu.
+    createFaqPanel();
 
     // Create actions for the toolbar, menu bar and tray/dock icon
     // Needs walletFrame to be initialized
@@ -357,6 +367,8 @@ void BurritoCoinGUI::createActions()
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
     m_show_wallet_location_action = new QAction(tr("Show Wallet &File Location..."), this);
     m_show_wallet_location_action->setStatusTip(tr("Show where this wallet's wallet.dat file is stored on your computer"));
+    m_verify_backup_key_action = new QAction(tr("&Verify Backup Key..."), this);
+    m_verify_backup_key_action->setStatusTip(tr("Check, on this computer only, that a private key you wrote down belongs to this wallet"));
     changePassphraseAction = new QAction(tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     signMessageAction = new QAction(tr("Sign &message..."), this);
@@ -422,6 +434,7 @@ void BurritoCoinGUI::createActions()
         connect(encryptWalletAction, &QAction::triggered, walletFrame, &WalletFrame::encryptWallet);
         connect(backupWalletAction, &QAction::triggered, walletFrame, &WalletFrame::backupWallet);
         connect(m_show_wallet_location_action, &QAction::triggered, this, &BurritoCoinGUI::showWalletLocation);
+        connect(m_verify_backup_key_action, &QAction::triggered, this, &BurritoCoinGUI::showVerifyBackupKey);
         connect(changePassphraseAction, &QAction::triggered, walletFrame, &WalletFrame::changePassphrase);
         connect(signMessageAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
         connect(signMessageAction, &QAction::triggered, [this]{ gotoSignMessageTab(); });
@@ -503,6 +516,7 @@ void BurritoCoinGUI::createMenuBar()
         file->addAction(openAction);
         file->addAction(backupWalletAction);
         file->addAction(m_show_wallet_location_action);
+        file->addAction(m_verify_backup_key_action);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
         file->addAction(m_load_psbt_action);
@@ -560,6 +574,11 @@ void BurritoCoinGUI::createMenuBar()
         window_menu->addSeparator();
         window_menu->addAction(usedSendingAddressesAction);
         window_menu->addAction(usedReceivingAddressesAction);
+    }
+
+    if (m_faq_dock) {
+        window_menu->addSeparator();
+        window_menu->addAction(m_faq_dock->toggleViewAction());
     }
 
     window_menu->addSeparator();
@@ -830,6 +849,84 @@ void BurritoCoinGUI::showWalletLocation()
     }
 }
 
+void BurritoCoinGUI::showVerifyBackupKey()
+{
+    if (!walletFrame) return;
+    WalletModel* const wallet_model = walletFrame->currentWalletModel();
+    if (!wallet_model) {
+        QMessageBox::information(this, tr("Verify Backup Key"),
+            tr("Open or create a wallet first, then you can check a backed-up key against it."));
+        return;
+    }
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Verify Backup Key"));
+    dlg.setMinimumWidth(480);
+    QVBoxLayout* layout = new QVBoxLayout(&dlg);
+
+    QLabel* intro = new QLabel(tr(
+        "<p>Paste a private key (WIF) you wrote down, and BurritoCoin will check \xe2\x80\x94 "
+        "<b>entirely on this computer</b> \xe2\x80\x94 whether it belongs to the wallet you have "
+        "open.</p>"
+        "<p>The key is <b>never sent anywhere</b>, and it is not saved or written to any log. "
+        "Use this to confirm a paper backup is correct <i>before</i> you ever need it.</p>"), &dlg);
+    intro->setWordWrap(true);
+    intro->setTextFormat(Qt::RichText);
+    layout->addWidget(intro);
+
+    QLineEdit* key_edit = new QLineEdit(&dlg);
+    key_edit->setEchoMode(QLineEdit::Password);
+    key_edit->setPlaceholderText(tr("Private key (WIF) \xe2\x80\x94 starts with 'P'"));
+    layout->addWidget(key_edit);
+
+    QCheckBox* show_key = new QCheckBox(tr("Show key"), &dlg);
+    layout->addWidget(show_key);
+    connect(show_key, &QCheckBox::toggled, key_edit, [key_edit](bool on) {
+        key_edit->setEchoMode(on ? QLineEdit::Normal : QLineEdit::Password);
+    });
+
+    QLabel* result = new QLabel(&dlg);
+    result->setWordWrap(true);
+    result->setTextFormat(Qt::RichText);
+    result->setMinimumHeight(44);
+    layout->addWidget(result);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(&dlg);
+    QPushButton* verify_btn = buttons->addButton(tr("Verify"), QDialogButtonBox::AcceptRole);
+    buttons->addButton(QDialogButtonBox::Close);
+    layout->addWidget(buttons);
+
+    auto do_verify = [wallet_model, key_edit, result] {
+        const QString wif = key_edit->text().trimmed();
+        if (wif.isEmpty()) {
+            result->setText(tr("<span style='color:#c47d0e;'>Enter a private key to check.</span>"));
+            return;
+        }
+        switch (wallet_model->checkPrivKeyOwnership(wif)) {
+        case WalletModel::KeyInWallet:
+            result->setText(tr("<span style='color:#1e8e3e;'>\xe2\x9c\x94 This key belongs to your wallet. "
+                               "Your backup is good.</span>"));
+            break;
+        case WalletModel::KeyNotInWallet:
+            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 This is a valid private key, but it "
+                               "is <b>not</b> in the wallet you have open. Make sure you backed up the right "
+                               "wallet, or open the matching wallet and try again.</span>"));
+            break;
+        case WalletModel::KeyInvalid:
+            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 That doesn't look like a BurritoCoin "
+                               "private key (WIF). It should start with 'P'. Check for typos, or a key from a "
+                               "different network.</span>"));
+            break;
+        }
+    };
+    connect(verify_btn, &QPushButton::clicked, &dlg, do_verify);
+    connect(key_edit, &QLineEdit::returnPressed, &dlg, do_verify);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+
+    dlg.exec();
+    key_edit->clear();
+}
+
 void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
 {
     if (!wallet_model) return;
@@ -864,6 +961,7 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
                        "passphrase on paper too; the backup is useless without it.</p>").arg(file_html));
         QPushButton* backup_btn = box.addButton(tr("Back Up Now..."), QMessageBox::AcceptRole);
         QPushButton* locate_btn = box.addButton(tr("Show Me the File"), QMessageBox::ActionRole);
+        QPushButton* verify_btn = box.addButton(tr("Verify a Key..."), QMessageBox::ActionRole);
         box.addButton(tr("I've Already Backed Up"), QMessageBox::RejectRole);
         box.setDefaultButton(backup_btn);
         box.exec();
@@ -873,6 +971,8 @@ void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)
             if (walletFrame) walletFrame->backupWallet();
         } else if (clicked == locate_btn && paths.valid) {
             QDesktopServices::openUrl(QUrl::fromLocalFile(paths.folder));
+        } else if (clicked == verify_btn) {
+            showVerifyBackupKey();
         }
     }
 
@@ -912,6 +1012,7 @@ void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     m_show_wallet_location_action->setEnabled(enabled);
+    m_verify_backup_key_action->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);
@@ -957,6 +1058,107 @@ void BurritoCoinGUI::createSafetyTipBanner()
         m_safety_tip_label->setText(tips.at(next));
     });
     tip_timer->start();
+}
+
+void BurritoCoinGUI::createFaqPanel()
+{
+    // Only meaningful when a wallet can be loaded.
+    if (!enableWallet) return;
+
+    m_faq_dock = new QDockWidget(tr("Help & FAQ"), this);
+    m_faq_dock->setObjectName("FAQDock");
+    m_faq_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    // NOTE: this depends-Qt is built without the 'textbrowser' feature, so we use
+    // a read-only QTextEdit (the 'textedit' feature is enabled) for the rich text.
+    QTextEdit* faq = new QTextEdit(m_faq_dock);
+    faq->setReadOnly(true);
+    faq->setFrameStyle(QFrame::NoFrame);
+    faq->setStyleSheet(
+        "QTextEdit { background: #1a0f05; color: #d6c4a3; border: none; padding: 12px; }");
+    faq->setHtml(faqHtml());
+
+    m_faq_dock->setWidget(faq);
+    m_faq_dock->setMinimumWidth(280);
+    addDockWidget(Qt::RightDockWidgetArea, m_faq_dock);
+    // Give it a sensible starting width so it does not crowd the wallet view.
+    resizeDocks({m_faq_dock}, {340}, Qt::Horizontal);
+}
+
+QString BurritoCoinGUI::faqHtml() const
+{
+    // Q&A content fact-checked against the wallet source: legacy HD wallets,
+    // no BIP39 mnemonic, the HD seed only restores HD-derived keys (not imported
+    // keys) and needs a rescan, encryption is irreversible and does not rotate
+    // the seed, and only a current wallet.dat is a complete backup.
+    struct QA { const char* q; const char* a; };
+    const QA items[] = {
+        {QT_TR_NOOP("Where is my wallet.dat file saved?"),
+         QT_TR_NOOP("Your coins are controlled by keys inside a file called <b>wallet.dat</b>. "
+            "Use <b>File &#8250; Show Wallet File Location\xe2\x80\xa6</b> to see the exact folder and "
+            "to open it or copy the path. On Windows it is normally under "
+            "<code>%APPDATA%\\BurritoCoin</code>, on macOS under "
+            "<code>~/Library/Application Support/BurritoCoin</code>, and on Linux under "
+            "<code>~/.burritocoin</code> (named wallets live in a <code>wallets/&lt;name&gt;</code> "
+            "sub-folder).")},
+        {QT_TR_NOOP("What happens if I lose wallet.dat?"),
+         QT_TR_NOOP("If you lose wallet.dat and have no backup, the coins are gone for good \xe2\x80\x94 "
+            "no one, including the BurritoCoin team, can recover them. The coins still exist on the "
+            "blockchain, but without the keys nobody can spend them. This is why a current backup "
+            "matters so much.")},
+        {QT_TR_NOOP("If I lose wallet.dat, can my recovery seed rebuild the wallet?"),
+         QT_TR_NOOP("Only partly. New wallets are HD, so the single master <b>HD seed</b> can "
+            "re-derive the addresses the wallet made automatically \xe2\x80\x94 but you must load the "
+            "seed back in and then run a blockchain <b>rescan</b> to find past transactions. The seed "
+            "only looks ahead a limited number of addresses (the keypool, default 1000), so a "
+            "heavily-used wallet may need repeated top-ups. Most importantly, the seed does <b>not</b> "
+            "restore keys you imported yourself, watch-only addresses, or your labels. For that reason "
+            "a full wallet.dat backup is the only complete backup.")},
+        {QT_TR_NOOP("What is the HD seed, and how do I make a paper backup?"),
+         QT_TR_NOOP("The HD seed is one master private key stored inside wallet.dat. BurritoCoin does "
+            "<b>not</b> use a 12- or 24-word phrase \xe2\x80\x94 there is no BIP39 mnemonic. To make a "
+            "readable backup, open <b>Help &#8250; Node window &#8250; Console</b> and run "
+            "<code>dumpwallet \"C:\\path\\to\\burritocoin-backup.txt\"</code>. That file lists all your "
+            "private keys plus the seed; print it, store it offline, then delete the file. Treat it "
+            "like cash \xe2\x80\x94 anyone who reads it can take your coins.")},
+        {QT_TR_NOOP("What does encrypting my wallet do? What if I forget the passphrase?"),
+         QT_TR_NOOP("Encryption locks your keys with a passphrase, so coins can't be spent until you "
+            "unlock the wallet. There is no back door: if you forget the passphrase, the coins are "
+            "<b>permanently lost</b>. Encrypting also does not change your seed, so any <i>older, "
+            "unencrypted</i> wallet.dat copy can still spend your coins with no passphrase \xe2\x80\x94 "
+            "after you encrypt, destroy or re-secure old backups and make a fresh backup of the "
+            "encrypted file.")},
+        {QT_TR_NOOP("How do I restore from a backup file or a key?"),
+         QT_TR_NOOP("The simplest, complete restore is to copy a <b>current</b> wallet.dat back into "
+            "its folder (with the wallet closed) and open it. An outdated copy may be missing keys you "
+            "imported since, so never overwrite a newer wallet.dat with an older one. To restore a "
+            "dumpwallet text file use <code>importwallet</code>; to restore a single written-down key "
+            "use <code>importprivkey</code>. These import/rescan steps need a full (un-pruned) "
+            "blockchain.")},
+        {QT_TR_NOOP("How can I check a private key I wrote down really belongs to my wallet?"),
+         QT_TR_NOOP("Use <b>File &#8250; Verify Backup Key\xe2\x80\xa6</b>. Paste the private key (WIF) "
+            "you wrote down and BurritoCoin checks, <b>entirely on your own computer</b>, whether that "
+            "key belongs to the wallet you have open. The key is never sent anywhere and is not saved "
+            "or logged \xe2\x80\x94 it's a safe way to confirm a paper backup before you rely on it.")},
+        {QT_TR_NOOP("How do I make a good backup, and where should I keep it?"),
+         QT_TR_NOOP("Back up the whole, current wallet.dat \xe2\x80\x94 it includes your seed, every "
+            "imported key, and your labels. Make a fresh backup after you import a key, after you "
+            "encrypt, or after anything important. Keep at least two copies in separate safe places "
+            "(for example an encrypted USB drive plus a printed copy), keep them offline, and re-secure "
+            "any old unencrypted copies.")},
+    };
+
+    QString body =
+        "<div style='font-size:13px;'>"
+        "<h2 style='color:#f5a623; margin-bottom:2px;'>\xf0\x9f\x8c\xaf BurritoCoin \xe2\x80\x94 Help &amp; FAQ</h2>"
+        "<p style='color:#c47d0e; margin-top:0;'>Keeping your coins safe.</p>";
+    for (const QA& item : items) {
+        body += "<p style='color:#f5a623; font-weight:bold; margin-bottom:2px;'>"
+              + tr(item.q) + "</p>";
+        body += "<p style='color:#d6c4a3; margin-top:0;'>" + tr(item.a) + "</p>";
+    }
+    body += "</div>";
+    return body;
 }
 
 void BurritoCoinGUI::createTrayIcon()
