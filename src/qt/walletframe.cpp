@@ -35,20 +35,76 @@ WalletFrame::WalletFrame(const PlatformStyle* _platformStyle, BurritoCoinGUI* _g
 
     // hbox for no wallet
     QGroupBox* no_wallet_group = new QGroupBox(walletStack);
-    QVBoxLayout* no_wallet_layout = new QVBoxLayout(no_wallet_group);
+    no_wallet_group->setStyleSheet("QGroupBox { border: none; background: #1a0f05; }");
 
-    QLabel *noWallet = new QLabel(tr("No wallet has been loaded.\nGo to File > Open Wallet to load a wallet.\n- OR -"));
-    noWallet->setAlignment(Qt::AlignCenter);
-    no_wallet_layout->addWidget(noWallet, 0, Qt::AlignHCenter | Qt::AlignBottom);
+    QVBoxLayout* no_wallet_layout = new QVBoxLayout(no_wallet_group);
+    no_wallet_layout->setContentsMargins(40, 40, 40, 40);
+    no_wallet_layout->setSpacing(0);
+    no_wallet_layout->addStretch(2);
+
+    // Big title
+    QLabel* noWalletTitle = new QLabel(tr("\xf0\x9f\x8c\xaf  BurritoCoin"));
+    noWalletTitle->setAlignment(Qt::AlignCenter);
+    {
+        QFont f = noWalletTitle->font();
+        f.setPointSize(qMax(28, f.pointSize() * 3));
+        f.setBold(true);
+        noWalletTitle->setFont(f);
+        noWalletTitle->setStyleSheet("color: #f5a623;");
+    }
+    no_wallet_layout->addWidget(noWalletTitle);
+
+    QLabel* noWalletTag = new QLabel(tr("No wallet is loaded."));
+    noWalletTag->setAlignment(Qt::AlignCenter);
+    {
+        QFont f = noWalletTag->font();
+        f.setPointSize(qMax(14, (f.pointSize() * 3) / 2));
+        noWalletTag->setFont(f);
+        noWalletTag->setStyleSheet("color: #c47d0e; margin-top: 6px;");
+    }
+    no_wallet_layout->addWidget(noWalletTag);
+
+    no_wallet_layout->addSpacing(28);
+
+    QLabel* noWalletHint = new QLabel(tr("Create a new wallet to start receiving BurritoCoin, "
+                                          "or open an existing one with <b>File &#8250; Open Wallet</b>."));
+    noWalletHint->setAlignment(Qt::AlignCenter);
+    noWalletHint->setWordWrap(true);
+    noWalletHint->setTextFormat(Qt::RichText);
+    noWalletHint->setMaximumWidth(560);
+    {
+        QFont f = noWalletHint->font();
+        f.setPointSize(qMax(11, (f.pointSize() * 11) / 10));
+        noWalletHint->setFont(f);
+        noWalletHint->setStyleSheet("color: #d6c4a3;");
+    }
+    no_wallet_layout->addWidget(noWalletHint, 0, Qt::AlignHCenter);
+
+    no_wallet_layout->addSpacing(36);
 
     // A button for create wallet dialog
     QPushButton* create_wallet_button = new QPushButton(tr("Create a new wallet"), walletStack);
+    create_wallet_button->setCursor(Qt::PointingHandCursor);
+    create_wallet_button->setMinimumSize(260, 52);
+    {
+        QFont f = create_wallet_button->font();
+        f.setPointSize(qMax(13, (f.pointSize() * 13) / 10));
+        f.setBold(true);
+        create_wallet_button->setFont(f);
+    }
+    create_wallet_button->setStyleSheet(
+        "QPushButton { background-color: #f5a623; color: #3b1f0a;"
+        " border: none; border-radius: 8px; padding: 10px 28px; }"
+        "QPushButton:hover { background-color: #ffc04d; }"
+        "QPushButton:pressed { background-color: #c47d0e; }");
     connect(create_wallet_button, &QPushButton::clicked, [this] {
         auto activity = new CreateWalletActivity(gui->getWalletController(), this);
         connect(activity, &CreateWalletActivity::finished, activity, &QObject::deleteLater);
         activity->create();
     });
-    no_wallet_layout->addWidget(create_wallet_button, 0, Qt::AlignHCenter | Qt::AlignTop);
+    no_wallet_layout->addWidget(create_wallet_button, 0, Qt::AlignHCenter);
+
+    no_wallet_layout->addStretch(3);
     no_wallet_group->setLayout(no_wallet_layout);
 
     walletStack->addWidget(no_wallet_group);
