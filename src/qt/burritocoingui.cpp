@@ -1089,6 +1089,10 @@ void BurritoCoinGUI::createFaqPanel()
     m_faq_dock = new QDockWidget(tr("Help & FAQ"), this);
     m_faq_dock->setObjectName("FAQDock");
     m_faq_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    // The dock's window title is reused verbatim for toggleViewAction()'s text,
+    // and the menu renderer strips '&' as a mnemonic prefix — escape it as '&&'
+    // so the Window menu entry shows "Help & FAQ" instead of "Help  FAQ".
+    m_faq_dock->toggleViewAction()->setText(tr("Help && FAQ"));
 
     // NOTE: this depends-Qt is built without the 'textbrowser' feature, so we use
     // a read-only QTextEdit (the 'textedit' feature is enabled) for the rich text.
