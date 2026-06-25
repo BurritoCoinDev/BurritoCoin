@@ -817,6 +817,7 @@ void BurritoCoinGUI::removeWallet(WalletModel* walletModel)
 
     labelWalletHDStatusIcon->hide();
     labelWalletEncryptionIcon->hide();
+    if (m_backup_status_label) m_backup_status_label->hide();
 
     int index = m_wallet_selector->findData(QVariant::fromValue(walletModel));
     m_wallet_selector->removeItem(index);
@@ -1584,7 +1585,8 @@ void BurritoCoinGUI::message(const QString& title, QString message, unsigned int
 #ifdef ENABLE_WALLET
     // When a wallet backup succeeds (from any path — the menu, a reminder, or
     // the status-bar badge), record it so the backup badge flips to "Backed up".
-    if (walletFrame && title == tr("Backup Successful")) {
+    // The title originates in WalletView, so match that translation context.
+    if (walletFrame && title == QCoreApplication::translate("WalletView", "Backup Successful")) {
         if (WalletModel* wm = walletFrame->currentWalletModel()) {
             QSettings settings;
             settings.setValue(QStringLiteral("wallet/") + wm->getWalletName() + QStringLiteral("/backup_done"), true);
