@@ -939,18 +939,19 @@ void BurritoCoinGUI::showVerifyBackupKey()
     QVBoxLayout* layout = new QVBoxLayout(&dlg);
 
     QLabel* intro = new QLabel(tr(
-        "<p>Paste a private key (WIF) you wrote down, and BurritoCoin will check \xe2\x80\x94 "
-        "<b>entirely on this computer</b> \xe2\x80\x94 whether it belongs to the wallet you have "
-        "open.</p>"
-        "<p>The key is <b>never sent anywhere</b>, and it is not saved or written to any log. "
-        "Use this to confirm a paper backup is correct <i>before</i> you ever need it.</p>"), &dlg);
+        "<p><b>Most users don't need this.</b> Your real backup is the "
+        "<code>wallet.dat</code> file \xe2\x80\x94 it already contains every key in this wallet.</p>"
+        "<p>Use this dialog only if you've separately exported a single private key (WIF, a long "
+        "string starting with <b>P</b>) via <code>dumpprivkey</code> in the console and want to confirm "
+        "your written or printed copy is correct. The check runs <b>entirely on this computer</b>; "
+        "the key is never sent anywhere and is not saved or logged.</p>"), &dlg);
     intro->setWordWrap(true);
     intro->setTextFormat(Qt::RichText);
     layout->addWidget(intro);
 
     QLineEdit* key_edit = new QLineEdit(&dlg);
     key_edit->setEchoMode(QLineEdit::Password);
-    key_edit->setPlaceholderText(tr("Private key (WIF) for this wallet"));
+    key_edit->setPlaceholderText(tr("Private key (WIF) \xe2\x80\x94 not your wallet passphrase"));
     layout->addWidget(key_edit);
 
     QCheckBox* show_key = new QCheckBox(tr("Show key"), &dlg);
@@ -1232,18 +1233,42 @@ QString BurritoCoinGUI::faqHtml() const
             "unencrypted</i> wallet.dat copy can still spend your coins with no passphrase \xe2\x80\x94 "
             "after you encrypt, destroy or re-secure old backups and make a fresh backup of the "
             "encrypted file.")},
-        {QT_TR_NOOP("How do I restore from a backup file or a key?"),
-         QT_TR_NOOP("The simplest, complete restore is to copy a <b>current</b> wallet.dat back into "
-            "its folder (with the wallet closed) and open it. An outdated copy may be missing keys you "
-            "imported since, so never overwrite a newer wallet.dat with an older one. To restore a "
-            "dumpwallet text file use <code>importwallet</code>; to restore a single written-down key "
-            "use <code>importprivkey</code>. These import/rescan steps need a full (un-pruned) "
+        {QT_TR_NOOP("My wallet is gone \xe2\x80\x94 how do I restore from a wallet.dat backup?"),
+         QT_TR_NOOP("Quit BurritoCoin Core completely (the file is locked while it is running). In "
+            "Explorer / Finder open the folder shown by <b>File &#8250; Show Wallet File Location\xe2\x80\xa6</b> "
+            "and make a new sibling sub-folder there with any name (for example "
+            "<code>MyWallet-Restored</code>). Copy your backup file into it and rename the copy to "
+            "exactly <code>wallet.dat</code>. Relaunch BurritoCoin Core, choose <b>File &#8250; Open "
+            "Wallet</b> and pick the new folder. If the wallet was encrypted, enter the original "
+            "passphrase \xe2\x80\x94 the passphrase was never inside the file.")},
+        {QT_TR_NOOP("How do I know the restore actually worked?"),
+         QT_TR_NOOP("Open the restored wallet and check the obvious things: your <b>balance</b> matches "
+            "what you remember, your previously-created addresses are listed under the <b>Receive</b> "
+            "tab with their labels, and your history appears on the <b>Transactions</b> tab. If something "
+            "looks missing, open <b>Help &#8250; Node window &#8250; Console</b> and run "
+            "<code>rescanblockchain</code> \xe2\x80\x94 then wait for the scan to finish.")},
+        {QT_TR_NOOP("I have wallet.dat but forgot the passphrase. Can I recover the coins?"),
+         QT_TR_NOOP("<b>No.</b> BurritoCoin Core's encryption has no back door and there is no recovery "
+            "service. Anyone offering to \"recover\" or \"reset\" a forgotten passphrase is running a "
+            "scam \xe2\x80\x94 do not send them your wallet file, screenshots, or any payment. The only "
+            "real hope is remembering enough fragments to brute-force the passphrase locally with a tool "
+            "you trust, on a computer you control.")},
+        {QT_TR_NOOP("I only have paper backups of private keys (WIFs) \xe2\x80\x94 how do I restore?"),
+         QT_TR_NOOP("This is the advanced path. Create a fresh empty wallet, open <b>Help &#8250; Node "
+            "window &#8250; Console</b>, unlock if encrypted, then for each key run "
+            "<code>importprivkey \"&lt;WIF&gt;\" \"&lt;label&gt;\" true</code> \xe2\x80\x94 the final "
+            "<code>true</code> triggers a rescan to find that key's past transactions. If your backup "
+            "is a <code>dumpwallet</code> text file (a file listing every key plus the seed), use "
+            "<code>importwallet \"&lt;full-path&gt;\"</code> once. These steps need a full (un-pruned) "
             "blockchain.")},
-        {QT_TR_NOOP("How can I check a private key I wrote down really belongs to my wallet?"),
-         QT_TR_NOOP("Use <b>File &#8250; Verify Backup Key\xe2\x80\xa6</b>. Paste the private key (WIF) "
-            "you wrote down and BurritoCoin checks, <b>entirely on your own computer</b>, whether that "
-            "key belongs to the wallet you have open. The key is never sent anywhere and is not saved "
-            "or logged \xe2\x80\x94 it's a safe way to confirm a paper backup before you rely on it.")},
+        {QT_TR_NOOP("Should I use \"Verify Backup Key\" to test my wallet.dat backup?"),
+         QT_TR_NOOP("No \xe2\x80\x94 that dialog is for a different, narrow scenario. It only checks a "
+            "single private key (WIF) you wrote down separately. Most people never have those: a "
+            "<code>wallet.dat</code> backup already contains every key. The dialog is useful if you "
+            "exported one specific key via <code>dumpprivkey</code> and want to confirm your written or "
+            "printed copy is correct \xe2\x80\x94 the check runs entirely on your own computer, without "
+            "re-exposing the key. To verify a <code>wallet.dat</code> backup instead, just open it and "
+            "see if your balance, addresses and history are there.")},
         {QT_TR_NOOP("How do I make a good backup, and where should I keep it?"),
          QT_TR_NOOP("Back up the whole, current wallet.dat \xe2\x80\x94 it includes your seed, every "
             "imported key, and your labels. Make a fresh backup after you import a key, after you "
