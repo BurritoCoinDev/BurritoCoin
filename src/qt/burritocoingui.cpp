@@ -53,7 +53,9 @@
 #include <QDockWidget>
 #include <QDragEnterEvent>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMenu>
@@ -63,6 +65,8 @@
 #include <QPointer>
 #include <QProgressDialog>
 #include <QPushButton>
+#include <QRegExp>
+#include <QRegExpValidator>
 #include <QScreen>
 #include <QSettings>
 #include <QShortcut>
@@ -110,6 +114,39 @@ WalletDiskPaths GetWalletDiskPaths(interfaces::Node& node, WalletModel* wallet_m
     }
     paths.valid = true;
     return paths;
+}
+
+//! Wallet dir root via the Qt-safe node interface (never call GetWalletDir()
+//! directly from src/qt).
+static QString RestoreWalletDir(interfaces::Node& node)
+{
+    return QString::fromStdString(node.walletClient().getWalletDir());
+}
+
+//! Cheap 16-byte signature sniff so we can refuse "that's a JPEG" before we
+//! copy. Recognises both Berkeley DB legacy wallets and SQLite descriptor wallets.
+static bool LooksLikeWalletDat(const QString& path, QString* why_not)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        if (why_not) *why_not = QObject::tr("The backup file could not be opened for reading.");
+        return false;
+    }
+    const QByteArray head = f.read(16);
+    f.close();
+    if (head.size() < 16) {
+        if (why_not) *why_not = QObject::tr("The backup file is too small to be a wallet.");
+        return false;
+    }
+    if (head.startsWith("SQLite format 3")) return true;
+    // BDB BTREE magic 0x00053162, little-endian at byte 12.
+    if (static_cast<quint8>(head[12]) == 0x62 && static_cast<quint8>(head[13]) == 0x31 &&
+        static_cast<quint8>(head[14]) == 0x05 && static_cast<quint8>(head[15]) == 0x00) {
+        return true;
+    }
+    if (why_not) *why_not = QObject::tr("This file does not look like a wallet.dat "
+                                        "(no Berkeley DB or SQLite signature).");
+    return false;
 }
 } // namespace
 #endif // ENABLE_WALLET
@@ -426,6 +463,10 @@ void BurritoCoinGUI::createActions()
     m_create_wallet_action->setEnabled(false);
     m_create_wallet_action->setStatusTip(tr("Create a new wallet"));
 
+    m_restore_wallet_action = new QAction(tr("&Restore Wallet from Backup..."), this);
+    m_restore_wallet_action->setEnabled(false);
+    m_restore_wallet_action->setStatusTip(tr("Import an existing wallet.dat backup file into a new wallet on this computer"));
+
     m_close_all_wallets_action = new QAction(tr("Close All Wallets..."), this);
     m_close_all_wallets_action->setStatusTip(tr("Close all wallets"));
 
@@ -503,6 +544,7 @@ void BurritoCoinGUI::createActions()
             connect(activity, &CreateWalletActivity::finished, activity, &QObject::deleteLater);
             activity->create();
         });
+        connect(m_restore_wallet_action, &QAction::triggered, this, &BurritoCoinGUI::restoreWalletFromBackup);
         connect(m_close_all_wallets_action, &QAction::triggered, [this] {
             m_wallet_controller->closeAllWallets(this);
         });
@@ -530,6 +572,7 @@ void BurritoCoinGUI::createMenuBar()
     {
         file->addAction(m_create_wallet_action);
         file->addAction(m_open_wallet_action);
+        file->addAction(m_restore_wallet_action);
         file->addAction(m_close_wallet_action);
         file->addAction(m_close_all_wallets_action);
         file->addSeparator();
@@ -735,6 +778,7 @@ void BurritoCoinGUI::setWalletController(WalletController* wallet_controller)
     m_create_wallet_action->setEnabled(true);
     m_open_wallet_action->setEnabled(true);
     m_open_wallet_action->setMenu(m_open_wallet_menu);
+    m_restore_wallet_action->setEnabled(true);
 
     connect(wallet_controller, &WalletController::walletAdded, this, &BurritoCoinGUI::addWallet);
     connect(wallet_controller, &WalletController::walletRemoved, this, &BurritoCoinGUI::removeWallet);
@@ -1005,6 +1049,222 @@ void BurritoCoinGUI::showVerifyBackupKey()
     // codebase's established pattern for sensitive input fields.
     key_edit->setText(QString(QLatin1Char(' ')).repeated(key_edit->text().size()));
     key_edit->clear();
+}
+
+void BurritoCoinGUI::restoreWalletFromBackup()
+{
+    if (!walletFrame || !m_wallet_controller) return;
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Restore Wallet from Backup"));
+    dlg.setMinimumWidth(560);
+    QVBoxLayout* layout = new QVBoxLayout(&dlg);
+
+    QLabel* intro = new QLabel(tr(
+        "<p>Restore a previously saved <code>wallet.dat</code> backup so it shows up "
+        "alongside your other wallets. Your original backup file is <b>not modified</b> \xe2\x80\x94 "
+        "a copy is placed in your wallets folder under the name you choose.</p>"
+        "<p>If the backup is encrypted, BurritoCoin will ask for the passphrase the first "
+        "time you spend from it. The passphrase is <b>not</b> entered here.</p>"), &dlg);
+    intro->setWordWrap(true);
+    intro->setTextFormat(Qt::RichText);
+    layout->addWidget(intro);
+
+    // --- Row 1: source backup file -------------------------------------
+    QHBoxLayout* file_row = new QHBoxLayout;
+    QLabel* file_label = new QLabel(tr("Backup file:"), &dlg);
+    QLineEdit* file_edit = new QLineEdit(&dlg);
+    file_edit->setPlaceholderText(tr("Path to wallet.dat backup..."));
+    QPushButton* browse_btn = new QPushButton(tr("Browse..."), &dlg);
+    file_row->addWidget(file_label);
+    file_row->addWidget(file_edit, 1);
+    file_row->addWidget(browse_btn);
+    layout->addLayout(file_row);
+
+    // --- Row 2: target wallet name -------------------------------------
+    QHBoxLayout* name_row = new QHBoxLayout;
+    QLabel* name_label = new QLabel(tr("Name for this wallet:"), &dlg);
+    QLineEdit* name_edit = new QLineEdit(&dlg);
+    name_edit->setPlaceholderText(tr("e.g. restored-2026-06"));
+    // First char alnum or _ (no leading space/dash/dot); rest may include space;
+    // 1..64 chars. Blocks slashes, backslashes and dots at the keystroke level.
+    name_edit->setValidator(new QRegExpValidator(
+        QRegExp(QStringLiteral("[A-Za-z0-9_][A-Za-z0-9 _-]{0,63}")), &dlg));
+    name_row->addWidget(name_label);
+    name_row->addWidget(name_edit, 1);
+    layout->addLayout(name_row);
+
+    // --- Live red/amber/green feedback (same idiom as showVerifyBackupKey) ---
+    QLabel* feedback = new QLabel(&dlg);
+    feedback->setWordWrap(true);
+    feedback->setTextFormat(Qt::RichText);
+    feedback->setMinimumHeight(44);
+    layout->addWidget(feedback);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(&dlg);
+    QPushButton* restore_btn = buttons->addButton(tr("Restore"), QDialogButtonBox::AcceptRole);
+    buttons->addButton(QDialogButtonBox::Cancel);
+    restore_btn->setEnabled(false);
+    layout->addWidget(buttons);
+
+    QDialog* const dlg_ptr = &dlg;
+
+    // --- Browse handler ------------------------------------------------
+    connect(browse_btn, &QPushButton::clicked, dlg_ptr,
+            [this, dlg_ptr, file_edit, name_edit]() {
+        const QString picked = QFileDialog::getOpenFileName(
+            dlg_ptr, tr("Select wallet.dat backup"), QDir::homePath(),
+            tr("Wallet backups (wallet.dat *.dat);;All files (*)"));
+        if (picked.isEmpty()) return;   // user cancelled the file dialog
+        file_edit->setText(QDir::toNativeSeparators(picked));
+        if (name_edit->text().isEmpty()) {
+            QFileInfo fi(picked);
+            QString suggested = fi.dir().dirName();   // parent dir is often the original wallet name
+            if (suggested.isEmpty() || suggested == QLatin1String(".")) {
+                suggested = QStringLiteral("restored-") +
+                            QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd"));
+            }
+            suggested.replace(QRegExp(QStringLiteral("[^A-Za-z0-9 _-]")), QStringLiteral("-"));
+            // First char must satisfy the validator (alnum/_).
+            if (!suggested.isEmpty() &&
+                !QRegExp(QStringLiteral("[A-Za-z0-9_]")).exactMatch(suggested.left(1))) {
+                suggested[0] = QLatin1Char('_');
+            }
+            name_edit->setText(suggested.left(64));
+        }
+    });
+
+    // --- Live validation: every keystroke ------------------------------
+    auto revalidate = [this, file_edit, name_edit, feedback, restore_btn]() {
+        restore_btn->setEnabled(false);
+        const QString src = file_edit->text().trimmed();
+        const QString name = name_edit->text().trimmed();
+        if (src.isEmpty() || name.isEmpty()) {
+            feedback->clear();
+            return;
+        }
+        // Belt-and-braces against reserved names that slipped past the validator (e.g. paste).
+        if (name.compare(QStringLiteral("wallet.dat"), Qt::CaseInsensitive) == 0 ||
+            name == QStringLiteral(".") || name == QStringLiteral("..")) {
+            feedback->setText(tr("<span style='color:#c0392b;'>That name is reserved. Pick another.</span>"));
+            return;
+        }
+        QFileInfo sinfo(src);
+        if (!sinfo.exists() || !sinfo.isFile()) {
+            feedback->setText(tr("<span style='color:#c0392b;'>That backup file does not exist.</span>"));
+            return;
+        }
+        if (!sinfo.isReadable()) {
+            feedback->setText(tr("<span style='color:#c0392b;'>The backup file is not readable. Check its permissions.</span>"));
+            return;
+        }
+        // Collision: currently-LOADED wallets.
+        for (WalletModel* wm : m_wallet_controller->getOpenWallets()) {
+            if (wm && wm->getWalletName() == name) {
+                feedback->setText(tr("<span style='color:#c0392b;'>A wallet named <b>%1</b> is already open. Choose a different name.</span>").arg(name.toHtmlEscaped()));
+                return;
+            }
+        }
+        // Collision: ON-DISK wallets (loaded or not).
+        if (m_wallet_controller->listWalletDir().count(name.toStdString())) {
+            feedback->setText(tr("<span style='color:#c0392b;'>A folder named <b>%1</b> already exists in your wallets directory. Pick a different name (the existing wallet will not be overwritten).</span>").arg(name.toHtmlEscaped()));
+            return;
+        }
+        // Signature sniff.
+        QString why_not;
+        if (!LooksLikeWalletDat(src, &why_not)) {
+            feedback->setText(QStringLiteral("<span style='color:#c47d0e;'>%1 %2</span>")
+                              .arg(why_not.toHtmlEscaped(), tr("Restore is disabled.").toHtmlEscaped()));
+            return;
+        }
+        feedback->setText(tr("<span style='color:#1e8e3e;'>Ready: a copy of this file will be placed at the new wallet location and loaded.</span>"));
+        restore_btn->setEnabled(true);
+    };
+    connect(file_edit, &QLineEdit::textChanged, dlg_ptr, revalidate);
+    connect(name_edit, &QLineEdit::textChanged, dlg_ptr, revalidate);
+
+    // --- Accept handler: re-check, mkpath, copy, hand off ---------------
+    connect(buttons, &QDialogButtonBox::accepted, dlg_ptr,
+            [this, dlg_ptr, file_edit, name_edit]() {
+        const QString src = file_edit->text().trimmed();
+        const QString name = name_edit->text().trimmed();
+        const QString wallet_dir = RestoreWalletDir(m_node);
+        QDir wallet_dir_qd(wallet_dir);
+        const QString target_folder = wallet_dir_qd.filePath(name);
+        const QString target_file = QDir(target_folder).filePath(QStringLiteral("wallet.dat"));
+
+        // Re-check: on-disk collision (race with another process / activity).
+        if (wallet_dir_qd.exists(name) ||
+            m_wallet_controller->listWalletDir().count(name.toStdString())) {
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                tr("The folder <b>%1</b> appeared in your wallets directory while this dialog was open. Aborting so the existing wallet is not overwritten.").arg(name.toHtmlEscaped()));
+            return;
+        }
+        // Re-check: loaded-wallet collision (a parallel Open Wallet could have completed).
+        for (WalletModel* wm : m_wallet_controller->getOpenWallets()) {
+            if (wm && wm->getWalletName() == name) {
+                QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                    tr("A wallet named <b>%1</b> was opened while this dialog was running. Pick a different name.").arg(name.toHtmlEscaped()));
+                return;
+            }
+        }
+        // Re-check: source still readable and still has a wallet signature.
+        const QFileInfo sinfo(src);
+        if (!sinfo.exists() || !sinfo.isFile() || !sinfo.isReadable()) {
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                tr("The backup file <code>%1</code> is no longer readable.")
+                    .arg(QDir::toNativeSeparators(src).toHtmlEscaped()));
+            return;
+        }
+        QString why_not;
+        if (!LooksLikeWalletDat(src, &why_not)) {
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"), why_not);
+            return;
+        }
+        // Create wallets/<name>/.
+        if (!wallet_dir_qd.mkpath(name)) {
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                tr("Could not create the folder <code>%1</code>. Check that you have write permission to the wallets directory.")
+                    .arg(QDir::toNativeSeparators(target_folder).toHtmlEscaped()));
+            return;
+        }
+        // Copy under an indeterminate progress indicator so multi-MB backups don't
+        // look like a UI freeze. QFile::copy refuses to overwrite -- exactly what
+        // we want.
+        QProgressDialog progress(tr("Copying backup..."), QString(), 0, 0, dlg_ptr);
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setCancelButton(nullptr);   // copy is not interruptible; hide the button
+        progress.setMinimumDuration(0);
+        progress.show();
+        QApplication::processEvents();
+        const bool copied = QFile::copy(src, target_file);
+        progress.close();
+        if (!copied) {
+            // Best-effort rollback: remove the empty folder stub so a future restore
+            // with the same name isn't permanently blocked.
+            QDir(target_folder).removeRecursively();
+            QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
+                tr("Could not copy the backup to <code>%1</code>. Your original backup file was not modified.")
+                    .arg(QDir::toNativeSeparators(target_file).toHtmlEscaped()));
+            return;
+        }
+
+        dlg_ptr->accept();   // close wizard BEFORE kicking off the async load
+
+        // Hand off to the exact same activity the Open Wallet submenu uses. Any
+        // loadWallet() error is surfaced by OpenWalletActivity::finish() with its
+        // own QMessageBox::critical, so we don't layer another dialog. The copied
+        // wallets/<name>/wallet.dat is intentionally left on disk on load failure
+        // so the user can inspect/retry.
+        auto* activity = new OpenWalletActivity(m_wallet_controller, this);
+        connect(activity, &OpenWalletActivity::opened, this, &BurritoCoinGUI::setCurrentWallet);
+        connect(activity, &OpenWalletActivity::finished, activity, &QObject::deleteLater);
+        activity->open(name.toStdString());
+    });
+
+    connect(buttons, &QDialogButtonBox::rejected, dlg_ptr, &QDialog::reject);
+
+    dlg.exec();   // Cancel / Esc / window close -> nothing written, no rollback needed.
 }
 
 void BurritoCoinGUI::showWalletSafetyReminders(WalletModel* wallet_model)

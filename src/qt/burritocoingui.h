@@ -165,6 +165,7 @@ private:
     QAction* showHelpMessageAction = nullptr;
     QAction* m_create_wallet_action{nullptr};
     QAction* m_open_wallet_action{nullptr};
+    QAction* m_restore_wallet_action{nullptr};
     QMenu* m_open_wallet_menu{nullptr};
     QAction* m_close_wallet_action{nullptr};
     QAction* m_close_all_wallets_action{nullptr};
@@ -317,6 +318,9 @@ public Q_SLOTS:
 
     /** Local-only dialog to confirm a written-down WIF belongs to this wallet. */
     void showVerifyBackupKey();
+
+    /** Wizard: copy a wallet.dat backup into a new named wallet folder and load it without restarting. */
+    void restoreWalletFromBackup();
 
     /** Show open dialog */
     void openClicked();
