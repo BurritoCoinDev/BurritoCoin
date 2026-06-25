@@ -154,3 +154,6 @@ db4/
 osx_volname
 dist/
 *.background.tiff
+
+# Allow the deliberately-vendored explorer patch (BRTO skin for btc-rpc-explorer)
+!contrib/explorer/**/*.patch
