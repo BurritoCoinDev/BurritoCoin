@@ -54,7 +54,7 @@
 
 QLabel { color: rgb(40,40,40);  }</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayoutSub" stretch="1,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayoutSub" stretch="1,0,0">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -158,6 +158,61 @@ QLabel { color: rgb(40,40,40);  }</string>
                 <bool>true</bool>
                </property>
               </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayoutHideBtn">
+               <property name="topMargin">
+                <number>12</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="closeButton">
+                 <property name="minimumSize">
+                  <size>
+                   <width>220</width>
+                   <height>46</height>
+                  </size>
+                 </property>
+                 <property name="cursor">
+                  <cursorShape>PointingHandCursor</cursorShape>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton#closeButton { background-color: #f5a623; color: #3b1f0a; border: none; border-radius: 6px; padding: 8px 22px; } QPushButton#closeButton:hover { background-color: #ffc04d; } QPushButton#closeButton:pressed { background-color: #c47d0e; }</string>
+                 </property>
+                 <property name="text">
+                  <string>Hide this notice</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Esc</string>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::StrongFocus</enum>
+                 </property>
+                 <property name="default">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="hideBtnRightSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
              </item>
              <item>
               <spacer name="verticalSpacerInTextSpace">
@@ -320,45 +375,6 @@ QLabel { color: rgb(40,40,40);  }</string>
             <widget class="QLabel" name="expectedTimeLeft">
              <property name="text">
               <string>calculating...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayoutButtons">
-           <property name="leftMargin">
-            <number>10</number>
-           </property>
-           <property name="topMargin">
-            <number>10</number>
-           </property>
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="closeButton">
-             <property name="text">
-              <string>Hide</string>
-             </property>
-             <property name="shortcut">
-              <string>Esc</string>
-             </property>
-             <property name="focusPolicy">
-              <enum>Qt::StrongFocus</enum>
-             </property>
-             <property name="default">
-              <bool>true</bool>
              </property>
             </widget>
            </item>
