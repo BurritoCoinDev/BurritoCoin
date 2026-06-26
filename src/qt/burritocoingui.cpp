@@ -1298,9 +1298,12 @@ void BurritoCoinGUI::restoreWalletFromBackup()
         const bool copied = QFile::copy(src, target_file);
         progress.close();
         if (!copied) {
-            // Best-effort rollback: remove the empty folder stub so a future restore
-            // with the same name isn't permanently blocked.
-            QDir(target_folder).removeRecursively();
+            // Best-effort rollback: remove the empty folder stub mkpath() created so
+            // a future restore with the same name isn't permanently blocked. Use
+            // rmdir() (NOT removeRecursively): it only removes an EMPTY directory, so
+            // in the exotic case where something raced a real wallet.dat into the
+            // folder during the copy, this is a harmless no-op rather than data loss.
+            wallet_dir_qd.rmdir(name);
             QMessageBox::critical(dlg_ptr, tr("Restore wallet failed"),
                 tr("Could not copy the backup to <code>%1</code>. Your original backup file was not modified.")
                     .arg(QDir::toNativeSeparators(target_file).toHtmlEscaped()));
