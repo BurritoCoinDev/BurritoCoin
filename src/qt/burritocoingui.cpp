@@ -1611,11 +1611,11 @@ QString BurritoCoinGUI::faqHtml() const
     };
 
     QString body =
-        "<div style='font-size:13px;'>"
+        "<div style='font-size:15px; line-height:1.4;'>"
         "<h2 style='color:#f5a623; margin-bottom:2px;'>\xf0\x9f\x8c\xaf BurritoCoin \xe2\x80\x94 Help &amp; FAQ</h2>"
         "<p style='color:#c47d0e; margin-top:0;'>Keeping your coins safe.</p>";
     for (const QA& item : items) {
-        body += "<p style='color:#f5a623; font-weight:bold; margin-bottom:2px;'>"
+        body += "<p style='color:#f5a623; font-weight:bold; font-size:16px; margin-bottom:2px;'>"
               + tr(item.q) + "</p>";
         body += "<p style='color:#d6c4a3; margin-top:0;'>" + tr(item.a) + "</p>";
     }
