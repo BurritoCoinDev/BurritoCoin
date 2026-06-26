@@ -1363,7 +1363,7 @@ void BurritoCoinGUI::restoreFromRecovery()
         connect(activity, &RestoreRecoveryActivity::restored, this, [this](WalletModel*) {
             QMessageBox::information(this, tr("Wallet restored"),
                 tr("Your wallet was restored. It is currently <b>unencrypted</b> \xe2\x80\x94 protect it "
-                   "with a passphrase via <b>Settings \xe2\x80\xba Change Passphrase</b>. If some funds "
+                   "with a passphrase via <b>Settings \xe2\x80\xba Encrypt Wallet</b>. If some funds "
                    "look missing, run <code>rescanblockchain</code> from the Node window console."));
         });
         connect(activity, &RestoreRecoveryActivity::finished, activity, &QObject::deleteLater);
