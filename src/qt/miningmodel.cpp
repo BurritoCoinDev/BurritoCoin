@@ -190,7 +190,15 @@ void MiningModel::workerLoop(int id)
             // IncrementExtraNonce's coinbase layout (BIP34 height-first, scriptSig
             // <= 100 bytes) exactly, just without the shared static.
             LOCK(cs_main);
-            const int height = ::ChainActive().Tip()->nHeight + 1;
+            // Derive the BIP34 height from the template's OWN parent, not the
+            // live tip: if the tip advanced since CreateNewBlock fixed
+            // hashPrevBlock (e.g. a sibling worker just connected a block), a
+            // live-tip height would mismatch the parent and the solved block
+            // would be rejected 'bad-cb-height'. This keeps the coinbase
+            // self-consistent with the template under multi-worker tip races.
+            const CBlockIndex* prev = LookupBlockIndex(block.hashPrevBlock);
+            if (!prev) continue; // template's parent vanished (deep reorg) — reload
+            const int height = prev->nHeight + 1;
             CMutableTransaction coinbase(*block.vtx[0]);
             coinbase.vin[0].scriptSig = (CScript() << height << CScriptNum(extra_nonce));
             assert(coinbase.vin[0].scriptSig.size() <= 100);
