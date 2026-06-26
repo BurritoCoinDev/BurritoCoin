@@ -36,6 +36,7 @@
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <node/ui_interface.h>
+#include <univalue.h>
 #include <util/system.h>
 #include <util/translation.h>
 #include <validation.h>
@@ -65,6 +66,7 @@
 #include <QPointer>
 #include <QProgressDialog>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QRegExp>
 #include <QRegExpValidator>
 #include <QScreen>
@@ -461,6 +463,8 @@ void BurritoCoinGUI::createActions()
     m_show_wallet_location_action->setStatusTip(tr("Show where this wallet's wallet.dat file is stored on your computer"));
     m_verify_backup_key_action = new QAction(tr("Verify Backup &Key..."), this);
     m_verify_backup_key_action->setStatusTip(tr("Check, on this computer only, that a private key you wrote down belongs to this wallet"));
+    m_recovery_key_action = new QAction(tr("Back Up Recovery K&ey..."), this);
+    m_recovery_key_action->setStatusTip(tr("Show this wallet's recovery key for a paper backup, or save a full recovery file"));
     changePassphraseAction = new QAction(tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     signMessageAction = new QAction(tr("Sign &message..."), this);
@@ -501,6 +505,9 @@ void BurritoCoinGUI::createActions()
     m_restore_wallet_action = new QAction(tr("&Restore Wallet from Backup..."), this);
     m_restore_wallet_action->setEnabled(false);
     m_restore_wallet_action->setStatusTip(tr("Import an existing wallet.dat backup file into a new wallet on this computer"));
+    m_restore_recovery_action = new QAction(tr("Restore from Recovery Key or &File..."), this);
+    m_restore_recovery_action->setEnabled(false);
+    m_restore_recovery_action->setStatusTip(tr("Recover a wallet from a recovery key or a recovery file into a new wallet"));
 
     m_close_all_wallets_action = new QAction(tr("Close All Wallets..."), this);
     m_close_all_wallets_action->setStatusTip(tr("Close all wallets"));
@@ -531,6 +538,7 @@ void BurritoCoinGUI::createActions()
         connect(backupWalletAction, &QAction::triggered, walletFrame, &WalletFrame::backupWallet);
         connect(m_show_wallet_location_action, &QAction::triggered, this, &BurritoCoinGUI::showWalletLocation);
         connect(m_verify_backup_key_action, &QAction::triggered, this, &BurritoCoinGUI::showVerifyBackupKey);
+        connect(m_recovery_key_action, &QAction::triggered, this, &BurritoCoinGUI::showRecoveryKey);
         connect(changePassphraseAction, &QAction::triggered, walletFrame, &WalletFrame::changePassphrase);
         connect(signMessageAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
         connect(signMessageAction, &QAction::triggered, [this]{ gotoSignMessageTab(); });
@@ -580,6 +588,7 @@ void BurritoCoinGUI::createActions()
             activity->create();
         });
         connect(m_restore_wallet_action, &QAction::triggered, this, &BurritoCoinGUI::restoreWalletFromBackup);
+        connect(m_restore_recovery_action, &QAction::triggered, this, &BurritoCoinGUI::restoreFromRecovery);
         connect(m_close_all_wallets_action, &QAction::triggered, [this] {
             m_wallet_controller->closeAllWallets(this);
         });
@@ -608,6 +617,7 @@ void BurritoCoinGUI::createMenuBar()
         file->addAction(m_create_wallet_action);
         file->addAction(m_open_wallet_action);
         file->addAction(m_restore_wallet_action);
+        file->addAction(m_restore_recovery_action);
         file->addAction(m_close_wallet_action);
         file->addAction(m_close_all_wallets_action);
         file->addSeparator();
@@ -615,6 +625,7 @@ void BurritoCoinGUI::createMenuBar()
         file->addAction(backupWalletAction);
         file->addAction(m_show_wallet_location_action);
         file->addAction(m_verify_backup_key_action);
+        file->addAction(m_recovery_key_action);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
         file->addAction(m_load_psbt_action);
@@ -815,6 +826,7 @@ void BurritoCoinGUI::setWalletController(WalletController* wallet_controller)
     m_open_wallet_action->setEnabled(true);
     m_open_wallet_action->setMenu(m_open_wallet_menu);
     m_restore_wallet_action->setEnabled(true);
+    m_restore_recovery_action->setEnabled(true);
 
     connect(wallet_controller, &WalletController::walletAdded, this, &BurritoCoinGUI::addWallet);
     connect(wallet_controller, &WalletController::walletRemoved, this, &BurritoCoinGUI::removeWallet);
@@ -1083,6 +1095,285 @@ void BurritoCoinGUI::showVerifyBackupKey()
     // Mirrors SecureClearQLineEdit() in askpassphrasedialog.cpp; intermediate
     // QString copies (e.g. from .trimmed()) are not wiped, but this matches the
     // codebase's established pattern for sensitive input fields.
+    key_edit->setText(QString(QLatin1Char(' ')).repeated(key_edit->text().size()));
+    key_edit->clear();
+}
+
+void BurritoCoinGUI::showRecoveryKey()
+{
+    if (!walletFrame) return;
+    WalletModel* const wallet_model = walletFrame->currentWalletModel();
+    if (!wallet_model) {
+        QMessageBox::information(this, tr("Recovery Key"),
+            tr("Open or create a wallet first."));
+        return;
+    }
+
+    // Reading the seed needs the wallet unlocked (the key is decrypted in memory).
+    // requestUnlock prompts for the passphrase if the wallet is encrypted, and
+    // relocks automatically when this scope ends. It stays unlocked for the whole
+    // dialog, so the "Save full recovery file" (dumpwallet) below also works.
+    WalletModel::UnlockContext unlock(wallet_model->requestUnlock());
+    if (!unlock.isValid()) return; // user cancelled the passphrase prompt
+
+    const QString wif = QString::fromStdString(wallet_model->wallet().getHDSeedWIF());
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Back Up Recovery Key"));
+    dlg.setMinimumWidth(560);
+    QVBoxLayout* layout = new QVBoxLayout(&dlg);
+
+    QLabel* intro = new QLabel(tr(
+        "<p>This is the <b>master key</b> to every address this wallet generates. "
+        "Anyone who sees it can take your coins \xe2\x80\x94 so before you reveal it:</p>"
+        "<ul>"
+        "<li>Make sure <b>no one can see your screen</b>, and that you are <b>not screen-sharing "
+        "or recording</b>.</li>"
+        "<li><b>Write it on paper</b> and store it offline \xe2\x80\x94 avoid saving it to a file, "
+        "photo, email or cloud.</li>"
+        "</ul>"
+        "<p>Recover from this key later with <b>File \xe2\x80\xba Restore from Recovery Key or File</b>. "
+        "A recovery key restores the addresses this wallet <i>generated</i> \xe2\x80\x94 it does not "
+        "restore keys you imported yourself. For a complete backup, use <b>Save full recovery "
+        "file</b> below (or back up wallet.dat).</p>"), &dlg);
+    intro->setWordWrap(true);
+    intro->setTextFormat(Qt::RichText);
+    layout->addWidget(intro);
+
+    QLineEdit* key_edit = new QLineEdit(&dlg);
+    key_edit->setReadOnly(true);
+    key_edit->setEchoMode(QLineEdit::Password);
+    const bool have_key = !wif.isEmpty();
+    if (have_key) {
+        key_edit->setText(wif);
+    } else {
+        key_edit->setPlaceholderText(tr("This wallet has no HD recovery key (imported / watch-only only)"));
+        key_edit->setEnabled(false);
+    }
+    layout->addWidget(key_edit);
+
+    QHBoxLayout* row = new QHBoxLayout;
+    QCheckBox* show_key = new QCheckBox(tr("Show key"), &dlg);
+    show_key->setEnabled(have_key);
+    connect(show_key, &QCheckBox::toggled, key_edit, [key_edit](bool on) {
+        key_edit->setEchoMode(on ? QLineEdit::Normal : QLineEdit::Password);
+    });
+    QPushButton* copy_btn = new QPushButton(tr("Copy"), &dlg);
+    copy_btn->setEnabled(have_key);
+    connect(copy_btn, &QPushButton::clicked, &dlg, [wif] {
+        QApplication::clipboard()->setText(wif);
+    });
+    row->addWidget(show_key);
+    row->addStretch(1);
+    row->addWidget(copy_btn);
+    layout->addLayout(row);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(&dlg);
+    QPushButton* save_file_btn = buttons->addButton(tr("Save full recovery file..."), QDialogButtonBox::ActionRole);
+    buttons->addButton(QDialogButtonBox::Close);
+    layout->addWidget(buttons);
+
+    QDialog* const dlg_ptr = &dlg;
+    connect(save_file_btn, &QPushButton::clicked, dlg_ptr, [this, dlg_ptr, wallet_model] {
+        const QString path = QFileDialog::getSaveFileName(dlg_ptr, tr("Save Recovery File"),
+            QDir(QDir::homePath()).filePath(QStringLiteral("burritocoin-recovery.txt")),
+            tr("Recovery files (*.txt);;All files (*)"));
+        if (path.isEmpty()) return;
+        // dumpwallet refuses to overwrite; the save dialog already confirmed the
+        // overwrite with the user, so clear the path first.
+        if (QFile::exists(path)) QFile::remove(path);
+
+        QString err;
+        bool ok = false;
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        try {
+            UniValue params(UniValue::VARR);
+            params.push_back(path.toStdString());
+            const QByteArray enc = QUrl::toPercentEncoding(wallet_model->getWalletName());
+            const std::string uri = "/wallet/" + std::string(enc.constData(), enc.length());
+            m_node.executeRpc("dumpwallet", params, uri);
+            ok = true;
+        } catch (const UniValue& e) {
+            const UniValue& msg = find_value(e, "message");
+            err = msg.isStr() ? QString::fromStdString(msg.get_str())
+                              : tr("The wallet could not write the recovery file.");
+        } catch (const std::exception& e) {
+            err = QString::fromStdString(e.what());
+        }
+        QApplication::restoreOverrideCursor();
+
+        if (ok) {
+            QMessageBox::information(dlg_ptr, tr("Recovery file saved"),
+                tr("Saved to:\n%1\n\nThis file contains every private key in this wallet. Treat it "
+                   "like cash: store it offline (a USB drive or a printout) and delete it from this "
+                   "computer once it is safely stored.").arg(QDir::toNativeSeparators(path)));
+        } else {
+            QMessageBox::critical(dlg_ptr, tr("Could not save recovery file"), err);
+        }
+    });
+    connect(buttons, &QDialogButtonBox::rejected, dlg_ptr, &QDialog::reject);
+
+    dlg.exec();
+    // Best-effort scrub of the displayed key, mirroring SecureClearQLineEdit.
+    key_edit->setText(QString(QLatin1Char(' ')).repeated(key_edit->text().size()));
+    key_edit->clear();
+}
+
+void BurritoCoinGUI::restoreFromRecovery()
+{
+    if (!walletFrame || !m_wallet_controller) return;
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Restore from Recovery Key or File"));
+    dlg.setMinimumWidth(580);
+    QVBoxLayout* layout = new QVBoxLayout(&dlg);
+
+    QLabel* intro = new QLabel(tr(
+        "<p>Recover a wallet from a <b>recovery key</b> (the master key you wrote down) or a "
+        "<b>recovery file</b> (a full export you saved). This creates a <b>brand-new wallet</b> on "
+        "this computer and never changes any wallet you already have.</p>"
+        "<p>A recovery <i>key</i> restores the addresses the original wallet generated; a recovery "
+        "<i>file</i> restores everything in it. Either way the blockchain is rescanned, which can "
+        "take a while. The new wallet starts <b>unencrypted</b> \xe2\x80\x94 set a passphrase from "
+        "Settings afterward.</p>"), &dlg);
+    intro->setWordWrap(true);
+    intro->setTextFormat(Qt::RichText);
+    layout->addWidget(intro);
+
+    // --- Mode: recovery key vs recovery file ---------------------------
+    QRadioButton* key_radio = new QRadioButton(tr("I have a recovery key"), &dlg);
+    key_radio->setChecked(true);
+    layout->addWidget(key_radio);
+
+    QLineEdit* key_edit = new QLineEdit(&dlg);
+    key_edit->setEchoMode(QLineEdit::Password);
+    key_edit->setPlaceholderText(tr("Paste your recovery key (a long string starting with P)"));
+    QCheckBox* show_key = new QCheckBox(tr("Show"), &dlg);
+    connect(show_key, &QCheckBox::toggled, key_edit, [key_edit](bool on) {
+        key_edit->setEchoMode(on ? QLineEdit::Normal : QLineEdit::Password);
+    });
+    QHBoxLayout* key_row = new QHBoxLayout;
+    key_row->addWidget(key_edit, 1);
+    key_row->addWidget(show_key);
+    layout->addLayout(key_row);
+
+    QRadioButton* file_radio = new QRadioButton(tr("I have a recovery file (.txt)"), &dlg);
+    layout->addWidget(file_radio);
+
+    QLineEdit* file_edit = new QLineEdit(&dlg);
+    file_edit->setPlaceholderText(tr("Path to recovery file..."));
+    file_edit->setEnabled(false);
+    QPushButton* browse_btn = new QPushButton(tr("Browse..."), &dlg);
+    browse_btn->setEnabled(false);
+    QHBoxLayout* file_row = new QHBoxLayout;
+    file_row->addWidget(file_edit, 1);
+    file_row->addWidget(browse_btn);
+    layout->addLayout(file_row);
+
+    // --- Target wallet name --------------------------------------------
+    QHBoxLayout* name_row = new QHBoxLayout;
+    name_row->addWidget(new QLabel(tr("Name for the restored wallet:"), &dlg));
+    QLineEdit* name_edit = new QLineEdit(&dlg);
+    name_edit->setPlaceholderText(tr("e.g. recovered-2026-06"));
+    name_edit->setValidator(new QRegExpValidator(
+        QRegExp(QStringLiteral("[A-Za-z0-9_][A-Za-z0-9 _-]{0,63}")), &dlg));
+    name_row->addWidget(name_edit, 1);
+    layout->addLayout(name_row);
+
+    QLabel* feedback = new QLabel(&dlg);
+    feedback->setWordWrap(true);
+    feedback->setTextFormat(Qt::RichText);
+    feedback->setMinimumHeight(40);
+    layout->addWidget(feedback);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(&dlg);
+    QPushButton* restore_btn = buttons->addButton(tr("Restore"), QDialogButtonBox::AcceptRole);
+    buttons->addButton(QDialogButtonBox::Cancel);
+    restore_btn->setEnabled(false);
+    layout->addWidget(buttons);
+
+    QDialog* const dlg_ptr = &dlg;
+
+    auto revalidate = [this, key_radio, key_edit, file_edit, name_edit, feedback, restore_btn]() {
+        restore_btn->setEnabled(false);
+        const QString name = name_edit->text().trimmed();
+        if (name.isEmpty()) { feedback->clear(); return; }
+        if (IsReservedWalletName(name)) {
+            feedback->setText(tr("<span style='color:#c0392b;'>That name is reserved. Pick another.</span>"));
+            return;
+        }
+        if (m_wallet_controller->listWalletDir().count(name.toStdString()) ||
+            QDir(RestoreWalletDir(m_node)).exists(name)) {
+            feedback->setText(tr("<span style='color:#c0392b;'>A wallet named <b>%1</b> already exists. Pick a different name.</span>").arg(name.toHtmlEscaped()));
+            return;
+        }
+        if (key_radio->isChecked()) {
+            if (key_edit->text().trimmed().isEmpty()) { feedback->clear(); return; }
+        } else {
+            const QString f = file_edit->text().trimmed();
+            if (f.isEmpty()) { feedback->clear(); return; }
+            const QFileInfo fi(f);
+            if (!fi.exists() || !fi.isFile() || !fi.isReadable()) {
+                feedback->setText(tr("<span style='color:#c0392b;'>That recovery file does not exist or is not readable.</span>"));
+                return;
+            }
+        }
+        feedback->setText(tr("<span style='color:#1e8e3e;'>Ready: a new wallet <b>%1</b> will be created and the blockchain rescanned.</span>").arg(name.toHtmlEscaped()));
+        restore_btn->setEnabled(true);
+    };
+
+    auto update_mode = [key_radio, key_edit, show_key, file_edit, browse_btn, revalidate]() {
+        const bool key_mode = key_radio->isChecked();
+        key_edit->setEnabled(key_mode);
+        show_key->setEnabled(key_mode);
+        file_edit->setEnabled(!key_mode);
+        browse_btn->setEnabled(!key_mode);
+        revalidate();
+    };
+    connect(key_radio, &QRadioButton::toggled, dlg_ptr, [update_mode](bool) { update_mode(); });
+
+    connect(browse_btn, &QPushButton::clicked, dlg_ptr, [this, dlg_ptr, file_edit]() {
+        const QString picked = QFileDialog::getOpenFileName(dlg_ptr, tr("Select recovery file"),
+            QDir::homePath(), tr("Recovery files (*.txt);;All files (*)"));
+        if (!picked.isEmpty()) file_edit->setText(QDir::toNativeSeparators(picked));
+    });
+    connect(key_edit, &QLineEdit::textChanged, dlg_ptr, [revalidate] { revalidate(); });
+    connect(file_edit, &QLineEdit::textChanged, dlg_ptr, [revalidate] { revalidate(); });
+    connect(name_edit, &QLineEdit::textChanged, dlg_ptr, [revalidate] { revalidate(); });
+
+    connect(buttons, &QDialogButtonBox::accepted, dlg_ptr,
+            [this, dlg_ptr, key_radio, key_edit, file_edit, name_edit]() {
+        const bool key_mode = key_radio->isChecked();
+        const QString name = name_edit->text().trimmed();
+        // Re-check collision/reserved at accept time (race with another op).
+        if (name.isEmpty() || IsReservedWalletName(name) ||
+            m_wallet_controller->listWalletDir().count(name.toStdString()) ||
+            QDir(RestoreWalletDir(m_node)).exists(name)) {
+            QMessageBox::critical(dlg_ptr, tr("Restore failed"),
+                tr("That wallet name is reserved or already exists. Pick a different name."));
+            return;
+        }
+        const QString secret = key_mode ? key_edit->text().trimmed() : file_edit->text().trimmed();
+        if (secret.isEmpty()) return;
+
+        dlg_ptr->accept(); // close before the async restore kicks off
+
+        auto* activity = new RestoreRecoveryActivity(m_wallet_controller, this);
+        connect(activity, &RestoreRecoveryActivity::restored, this, &BurritoCoinGUI::setCurrentWallet);
+        connect(activity, &RestoreRecoveryActivity::restored, this, [this](WalletModel*) {
+            QMessageBox::information(this, tr("Wallet restored"),
+                tr("Your wallet was restored. It is currently <b>unencrypted</b> \xe2\x80\x94 protect it "
+                   "with a passphrase via <b>Settings \xe2\x80\xba Change Passphrase</b>. If some funds "
+                   "look missing, run <code>rescanblockchain</code> from the Node window console."));
+        });
+        connect(activity, &RestoreRecoveryActivity::finished, activity, &QObject::deleteLater);
+        activity->restore(name.toStdString(), key_mode, secret.toStdString());
+    });
+    connect(buttons, &QDialogButtonBox::rejected, dlg_ptr, &QDialog::reject);
+
+    update_mode();
+    dlg.exec();
+    // Best-effort scrub of the pasted recovery key.
     key_edit->setText(QString(QLatin1Char(' ')).repeated(key_edit->text().size()));
     key_edit->clear();
 }
@@ -1441,6 +1732,7 @@ void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
     backupWalletAction->setEnabled(enabled);
     m_show_wallet_location_action->setEnabled(enabled);
     m_verify_backup_key_action->setEnabled(enabled);
+    m_recovery_key_action->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);

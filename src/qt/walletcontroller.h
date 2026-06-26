@@ -151,4 +151,25 @@ private:
     void finish();
 };
 
+//! Restore a wallet from recovery material into a brand-new BLANK wallet (never
+//! touching any existing wallet). Runs createWallet + the import + rescan on the
+//! controller's worker thread, with the standard progress dialog.
+class RestoreRecoveryActivity : public WalletControllerActivity
+{
+    Q_OBJECT
+
+public:
+    RestoreRecoveryActivity(WalletController* wallet_controller, QWidget* parent_widget);
+
+    //! from_key=true: `secret` is a seed WIF restored via sethdseed (+ rescan).
+    //! from_key=false: `secret` is a recovery-file path restored via importwallet.
+    void restore(const std::string& wallet_name, bool from_key, const std::string& secret);
+
+Q_SIGNALS:
+    void restored(WalletModel* wallet_model);
+
+private:
+    void finish();
+};
+
 #endif // BURRITOCOIN_QT_WALLETCONTROLLER_H

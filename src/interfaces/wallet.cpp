@@ -8,6 +8,7 @@
 #include <amount.h>
 #include <interfaces/chain.h>
 #include <interfaces/handler.h>
+#include <key_io.h>
 #include <policy/fees.h>
 #include <primitives/transaction.h>
 #include <rpc/server.h>
@@ -227,6 +228,17 @@ public:
         }
         return false;
     };
+    std::string getHDSeedWIF() override
+    {
+        LOCK(m_wallet->cs_wallet);
+        auto spk_man = m_wallet->GetLegacyScriptPubKeyMan();
+        if (!spk_man) return {};
+        CKeyID seed_id = spk_man->GetHDChain().seed_id;
+        if (seed_id.IsNull()) return {};
+        CKey seed;
+        if (!spk_man->GetKey(seed_id, seed)) return {}; // false when wallet locked
+        return EncodeSecret(seed);
+    }
     bool setAddressBook(const CTxDestination& dest, const std::string& name, const std::string& purpose) override
     {
         return m_wallet->SetAddressBook(dest, name, purpose);

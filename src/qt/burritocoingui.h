@@ -159,6 +159,7 @@ private:
     QAction* backupWalletAction = nullptr;
     QAction* m_show_wallet_location_action = nullptr;
     QAction* m_verify_backup_key_action = nullptr;
+    QAction* m_recovery_key_action = nullptr;
     QAction* changePassphraseAction = nullptr;
     QAction* aboutQtAction = nullptr;
     QAction* openRPCConsoleAction = nullptr;
@@ -167,6 +168,7 @@ private:
     QAction* m_create_wallet_action{nullptr};
     QAction* m_open_wallet_action{nullptr};
     QAction* m_restore_wallet_action{nullptr};
+    QAction* m_restore_recovery_action{nullptr};
     QMenu* m_open_wallet_menu{nullptr};
     QAction* m_close_wallet_action{nullptr};
     QAction* m_close_all_wallets_action{nullptr};
@@ -322,8 +324,14 @@ public Q_SLOTS:
     /** Local-only dialog to confirm a written-down WIF belongs to this wallet. */
     void showVerifyBackupKey();
 
+    /** Show the wallet's HD recovery key for paper backup + save a full recovery file. */
+    void showRecoveryKey();
+
     /** Wizard: copy a wallet.dat backup into a new named wallet folder and load it without restarting. */
     void restoreWalletFromBackup();
+
+    /** Wizard: restore a wallet from a recovery key (sethdseed) or recovery file (importwallet). */
+    void restoreFromRecovery();
 
     /** Show open dialog */
     void openClicked();

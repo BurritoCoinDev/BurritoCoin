@@ -14,6 +14,7 @@
 
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
+#include <univalue.h>
 #include <util/string.h>
 #include <util/threadnames.h>
 #include <util/translation.h>
@@ -26,6 +27,7 @@
 #include <QMutexLocker>
 #include <QThread>
 #include <QTimer>
+#include <QUrl>
 #include <QWindow>
 
 WalletController::WalletController(ClientModel& client_model, const PlatformStyle* platform_style, QObject* parent)
@@ -330,5 +332,75 @@ void OpenWalletActivity::open(const std::string& path)
         if (wallet) m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(wallet));
 
         QTimer::singleShot(0, this, &OpenWalletActivity::finish);
+    });
+}
+
+RestoreRecoveryActivity::RestoreRecoveryActivity(WalletController* wallet_controller, QWidget* parent_widget)
+    : WalletControllerActivity(wallet_controller, parent_widget)
+{
+}
+
+void RestoreRecoveryActivity::finish()
+{
+    destroyProgressDialog();
+
+    if (!m_error_message.empty()) {
+        QMessageBox::critical(m_parent_widget, tr("Restore failed"), QString::fromStdString(m_error_message.translated));
+    } else if (!m_warning_message.empty()) {
+        QMessageBox::warning(m_parent_widget, tr("Restore warning"), QString::fromStdString(Join(m_warning_message, Untranslated("\n")).translated));
+    }
+
+    // Only announce success (which switches the GUI to the wallet) when the import
+    // actually succeeded. On failure the blank wallet is left loaded so the user
+    // can inspect or remove it; the error message above explains what happened.
+    if (m_wallet_model && m_error_message.empty()) Q_EMIT restored(m_wallet_model);
+
+    Q_EMIT finished();
+}
+
+void RestoreRecoveryActivity::restore(const std::string& wallet_name, bool from_key, const std::string& secret)
+{
+    showProgressDialog(tr("Restoring wallet <b>%1</b>\xe2\x80\xa6 the blockchain is rescanned, which can take a while.")
+                           .arg(QString::fromStdString(wallet_name).toHtmlEscaped()));
+
+    const QByteArray enc = QUrl::toPercentEncoding(QString::fromStdString(wallet_name));
+    const std::string uri = "/wallet/" + std::string(enc.constData(), enc.length());
+
+    QTimer::singleShot(0, worker(), [this, wallet_name, from_key, secret, uri] {
+        // 1. Create a fresh BLANK, unencrypted wallet. Unencrypted means it is
+        //    unlocked, so the seed/key import below needs no passphrase; the user is
+        //    prompted to encrypt it afterward. We never touch an existing wallet.
+        std::unique_ptr<interfaces::Wallet> wallet =
+            node().walletClient().createWallet(wallet_name, SecureString(), WALLET_FLAG_BLANK_WALLET,
+                                               m_error_message, m_warning_message);
+        if (!wallet) {
+            QTimer::singleShot(0, this, &RestoreRecoveryActivity::finish);
+            return;
+        }
+        m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(wallet));
+
+        // 2. Import the recovery material into the new wallet and rescan.
+        try {
+            if (from_key) {
+                UniValue params(UniValue::VARR);
+                params.push_back(true);   // newkeypool
+                params.push_back(secret); // seed WIF
+                node().executeRpc("sethdseed", params, uri);
+                // sethdseed does not rescan; do it explicitly to find past history.
+                node().executeRpc("rescanblockchain", UniValue(UniValue::VARR), uri);
+            } else {
+                UniValue params(UniValue::VARR);
+                params.push_back(secret); // recovery-file path
+                node().executeRpc("importwallet", params, uri); // importwallet auto-rescans
+            }
+        } catch (const UniValue& e) {
+            const UniValue& msg = find_value(e, "message");
+            m_error_message = Untranslated(msg.isStr() ? msg.get_str()
+                                                       : "The recovery key or file could not be imported.");
+        } catch (const std::exception& e) {
+            m_error_message = Untranslated(e.what());
+        }
+
+        QTimer::singleShot(0, this, &RestoreRecoveryActivity::finish);
     });
 }
