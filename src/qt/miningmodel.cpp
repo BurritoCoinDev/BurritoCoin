@@ -7,6 +7,7 @@
 #include <qt/walletmodel.h>
 
 #include <chainparams.h>
+#include <consensus/merkle.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <key_io.h>
@@ -15,6 +16,7 @@
 #include <outputtype.h>
 #include <pow.h>
 #include <primitives/block.h>
+#include <primitives/transaction.h>
 #include <script/standard.h>
 #include <validation.h>
 
@@ -70,7 +72,12 @@ bool MiningModel::resolveCoinbaseScript(QString& err)
     const QString cached = settings.value(key).toString();
     if (!cached.isEmpty()) {
         dest = DecodeDestination(cached.toStdString());
-        have_dest = IsValidDestination(dest);
+        // Require not just a well-formed address but one this wallet can still
+        // spend. Otherwise a wallet restored from an older backup (or a reused
+        // wallet name pointing at a different file) would keep paying rewards to
+        // an address the user no longer controls. If it's not spendable, fall
+        // through and mint a fresh owned address (which also rewrites the cache).
+        have_dest = IsValidDestination(dest) && m_wallet_model->wallet().isSpendable(dest);
     }
     if (!have_dest) {
         if (!m_wallet_model->wallet().getNewDestination(OutputType::BECH32, "Mining", dest)) {
@@ -175,9 +182,22 @@ void MiningModel::workerLoop(int id)
 
         CBlock block = tmpl->block;
         {
+            // Stamp THIS worker's own extranonce band straight into the coinbase
+            // rather than calling IncrementExtraNonce(): that helper keeps one
+            // process-global static and resets the caller's value to 0 on the
+            // first call after a tip change, which would collapse our per-worker
+            // bands and make two workers grind the identical header. We mirror
+            // IncrementExtraNonce's coinbase layout (BIP34 height-first, scriptSig
+            // <= 100 bytes) exactly, just without the shared static.
             LOCK(cs_main);
-            IncrementExtraNonce(&block, ::ChainActive().Tip(), extra_nonce);
+            const int height = ::ChainActive().Tip()->nHeight + 1;
+            CMutableTransaction coinbase(*block.vtx[0]);
+            coinbase.vin[0].scriptSig = (CScript() << height << CScriptNum(extra_nonce));
+            assert(coinbase.vin[0].scriptSig.size() <= 100);
+            block.vtx[0] = MakeTransactionRef(std::move(coinbase));
+            block.hashMerkleRoot = BlockMerkleRoot(block);
         }
+        ++extra_nonce; // advance this worker's band for the next template
         block.nNonce = 0;
 
         while (m_running.load() && m_epoch.load() == epoch &&
@@ -236,10 +256,11 @@ void MiningModel::poll()
         m_epoch.fetch_add(1);
     }
 
-    // Surface any newly found blocks.
+    // Surface any newly found blocks — one signal per block, so a session that
+    // solves more than one within a single poll interval still counts them all.
     const int found = m_blocks_found.load();
-    if (found != m_last_emitted_found) {
-        m_last_emitted_found = found;
+    while (m_last_emitted_found < found) {
+        ++m_last_emitted_found;
         QString hash;
         {
             std::lock_guard<std::mutex> lock(m_found_mutex);

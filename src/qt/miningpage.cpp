@@ -139,6 +139,11 @@ MiningPage::~MiningPage()
 
 void MiningPage::setClientModel(ClientModel* client_model)
 {
+    // On app shutdown the client model is detached (set to nullptr) on the GUI
+    // thread BEFORE the node — and thus the mempool/chainstate the workers
+    // touch — is torn down. Stop and join the workers here so they can never run
+    // against freed node objects. stop() is a no-op if not mining.
+    if (!client_model && m_miner) m_miner->stop();
     m_client_model = client_model;
     ensureMiner();
     updateControlsEnabled();
