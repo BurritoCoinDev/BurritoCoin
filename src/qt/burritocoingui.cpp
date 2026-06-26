@@ -408,6 +408,13 @@ void BurritoCoinGUI::createActions()
     historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
     tabGroup->addAction(historyAction);
 
+    mineAction = new QAction(platformStyle->SingleColorIcon(":/icons/tx_mined"), tr("&Mine"), this);
+    mineAction->setStatusTip(tr("Mine BurritoCoin into this wallet"));
+    mineAction->setToolTip(mineAction->statusTip());
+    mineAction->setCheckable(true);
+    mineAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    tabGroup->addAction(mineAction);
+
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
@@ -423,6 +430,8 @@ void BurritoCoinGUI::createActions()
     connect(receiveCoinsMenuAction, &QAction::triggered, this, &BurritoCoinGUI::gotoReceiveCoinsPage);
     connect(historyAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(historyAction, &QAction::triggered, this, &BurritoCoinGUI::gotoHistoryPage);
+    connect(mineAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(mineAction, &QAction::triggered, this, &BurritoCoinGUI::gotoMiningPage);
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(tr("E&xit"), this);
@@ -703,6 +712,7 @@ void BurritoCoinGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
+        toolbar->addAction(mineAction);
         overviewAction->setChecked(true);
 
 #ifdef ENABLE_WALLET
@@ -1426,6 +1436,7 @@ void BurritoCoinGUI::setWalletActionsEnabled(bool enabled)
     receiveCoinsAction->setEnabled(enabled);
     receiveCoinsMenuAction->setEnabled(enabled);
     historyAction->setEnabled(enabled);
+    mineAction->setEnabled(enabled);
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     m_show_wallet_location_action->setEnabled(enabled);
@@ -1731,6 +1742,12 @@ void BurritoCoinGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
     if (walletFrame) walletFrame->gotoHistoryPage();
+}
+
+void BurritoCoinGUI::gotoMiningPage()
+{
+    mineAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoMiningPage();
 }
 
 void BurritoCoinGUI::gotoReceiveCoinsPage()
