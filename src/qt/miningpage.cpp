@@ -101,7 +101,7 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
 
     QHBoxLayout* speed_row = new QHBoxLayout;
     QLabel* speed_caption = new QLabel(tr("Speed:"), this);
-    m_hashrate_value = new QLabel(QStringLiteral("\xe2\x80\x94"), this);
+    m_hashrate_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), this);
     speed_row->addWidget(speed_caption);
     speed_row->addWidget(m_hashrate_value);
     speed_row->addStretch(1);
@@ -226,7 +226,7 @@ void MiningPage::onMiningStateChanged(bool mining)
     m_status_value->setText(mining ? tr("Mining") : tr("Idle"));
     m_status_value->setStyleSheet(mining ? "font-weight:bold; color:#1e8e3e;"
                                          : "font-weight:bold;");
-    if (!mining) m_hashrate_value->setText(QStringLiteral("\xe2\x80\x94"));
+    if (!mining) m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
     updateControlsEnabled();
 }
 
