@@ -87,6 +87,21 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     m_all_cores = new QCheckBox(tr("Use all cores"), this);
     layout->addWidget(m_all_cores);
 
+    QSettings pause_settings;
+    m_pause_battery = new QCheckBox(tr("Pause while on battery power"), this);
+    m_pause_battery->setChecked(pause_settings.value(QStringLiteral("mining/pause_on_battery"), true).toBool());
+    connect(m_pause_battery, &QCheckBox::toggled, this, [](bool on) {
+        QSettings().setValue(QStringLiteral("mining/pause_on_battery"), on);
+    });
+    layout->addWidget(m_pause_battery);
+
+    m_pause_busy = new QCheckBox(tr("Pause while I'm using the computer"), this);
+    m_pause_busy->setChecked(pause_settings.value(QStringLiteral("mining/pause_when_busy"), false).toBool());
+    connect(m_pause_busy, &QCheckBox::toggled, this, [](bool on) {
+        QSettings().setValue(QStringLiteral("mining/pause_when_busy"), on);
+    });
+    layout->addWidget(m_pause_busy);
+
     if (max_threads <= 1) {
         // Single-core machine: nothing to choose.
         m_thread_slider->setEnabled(false);
@@ -188,6 +203,7 @@ void MiningPage::ensureMiner()
     connect(m_miner, &MiningModel::hashrateChanged, this, &MiningPage::onHashrate);
     connect(m_miner, &MiningModel::blockFound, this, &MiningPage::onBlockFound);
     connect(m_miner, &MiningModel::error, this, &MiningPage::onMiningError);
+    connect(m_miner, &MiningModel::pauseStateChanged, this, &MiningPage::onPauseStateChanged);
 }
 
 int MiningPage::selectedThreadCount() const
@@ -302,4 +318,18 @@ void MiningPage::onMiningError(const QString& message)
     // A modal would be heavy for transient cases; surface inline in the speed slot.
     m_hashrate_value->setText(QStringLiteral("<span style='color:#c0392b;'>%1</span>")
                                   .arg(message.toHtmlEscaped()));
+}
+
+void MiningPage::onPauseStateChanged(bool paused, const QString& reason)
+{
+    if (!m_miner || !m_miner->isMining()) return;
+    if (paused) {
+        m_status_value->setText(reason);
+        m_status_value->setStyleSheet("font-weight:bold; color:#c47d0e;");
+        m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
+        m_eta_value->setText(QString::fromUtf8("\xe2\x80\x94"));
+    } else {
+        m_status_value->setText(tr("Mining"));
+        m_status_value->setStyleSheet("font-weight:bold; color:#1e8e3e;");
+    }
 }

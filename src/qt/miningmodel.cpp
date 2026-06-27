@@ -4,6 +4,7 @@
 
 #include <qt/miningmodel.h>
 
+#include <qt/miningpower.h>
 #include <qt/walletmodel.h>
 
 #include <chainparams.h>
@@ -166,6 +167,11 @@ void MiningModel::workerLoop(int id)
     const Consensus::Params& consensus = params.GetConsensus();
 
     while (m_running.load()) {
+        if (m_paused.load()) {
+            // Auto-paused (on battery / user busy): idle without burning CPU.
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            continue;
+        }
         const uint32_t epoch = m_epoch.load();
 
         std::unique_ptr<CBlockTemplate> tmpl;
@@ -208,7 +214,7 @@ void MiningModel::workerLoop(int id)
         ++extra_nonce; // advance this worker's band for the next template
         block.nNonce = 0;
 
-        while (m_running.load() && m_epoch.load() == epoch &&
+        while (m_running.load() && !m_paused.load() && m_epoch.load() == epoch &&
                block.nNonce < std::numeric_limits<uint32_t>::max()) {
             if (CheckProofOfWork(block.GetPoWHash(), block.nBits, consensus)) {
                 submitSolved(block);
@@ -275,5 +281,20 @@ void MiningModel::poll()
             hash = m_last_found_hash;
         }
         Q_EMIT blockFound(hash, height);
+    }
+
+    // Auto-pause decision, re-read from settings each tick (cheap, cached).
+    QSettings settings;
+    QString reason;
+    if (settings.value(QStringLiteral("mining/pause_on_battery"), true).toBool() &&
+        MiningPower::OnBattery()) {
+        reason = tr("Paused \xe2\x80\x94 on battery");
+    } else if (settings.value(QStringLiteral("mining/pause_when_busy"), false).toBool() &&
+               MiningPower::IdleSeconds() < 120) {
+        reason = tr("Paused \xe2\x80\x94 you're using the computer");
+    }
+    const bool pause = !reason.isEmpty();
+    if (m_paused.exchange(pause) != pause) {
+        Q_EMIT pauseStateChanged(pause, reason);
     }
 }

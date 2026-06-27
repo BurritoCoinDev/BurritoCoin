@@ -37,6 +37,7 @@ private Q_SLOTS:
     void onHashrate(double hashes_per_sec);
     void onBlockFound(const QString& block_hash, int height);
     void onMiningError(const QString& message);
+    void onPauseStateChanged(bool paused, const QString& reason);
 
 private:
     void ensureMiner();
@@ -52,6 +53,8 @@ private:
     QSlider* m_thread_slider = nullptr;
     QLabel* m_thread_label = nullptr;
     QCheckBox* m_all_cores = nullptr;
+    QCheckBox* m_pause_battery = nullptr;
+    QCheckBox* m_pause_busy = nullptr;
     QPushButton* m_start_stop = nullptr;
     QLabel* m_status_value = nullptr;
     QLabel* m_hashrate_value = nullptr;

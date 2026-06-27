@@ -70,6 +70,8 @@ Q_SIGNALS:
     void hashrateChanged(double hashes_per_sec);
     void blockFound(const QString& block_hash, int height);
     void error(const QString& message);
+    //! Auto-pause state changed; reason is human-readable when paused, empty when resumed.
+    void pauseStateChanged(bool paused, const QString& reason);
 
 private Q_SLOTS:
     void poll();
@@ -90,6 +92,7 @@ private:
     std::vector<std::thread> m_workers;
     std::atomic<bool> m_running{false};
     std::atomic<uint32_t> m_epoch{0};   //!< bumped when the tip changes; workers reload
+    std::atomic<bool> m_paused{false};  //!< auto-pause (battery/idle): workers idle while true
     std::atomic<uint64_t> m_hashes{0};  //!< cumulative hashes this session
     std::atomic<int> m_blocks_found{0};
     int m_active_threads = 0;
