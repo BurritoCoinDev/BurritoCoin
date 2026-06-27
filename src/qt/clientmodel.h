@@ -60,6 +60,8 @@ public:
     //! Return number of connections, default is in- and outbound (total)
     int getNumConnections(unsigned int flags = CONNECTIONS_ALL) const;
     int getNumBlocks() const;
+    //! Network hash rate (H/s) via the getnetworkhashps RPC; 0 if unavailable.
+    double getNetworkHashPS() const;
     uint256 getBestBlockHash();
     int getHeaderTipHeight() const;
     int64_t getHeaderTipTime() const;

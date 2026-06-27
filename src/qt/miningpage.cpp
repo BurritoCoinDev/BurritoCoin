@@ -8,12 +8,16 @@
 #include <qt/miningmodel.h>
 #include <qt/walletmodel.h>
 
+#include <chainparams.h>
+
 #include <QCheckBox>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLocale>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QSettings>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -28,6 +32,17 @@ QString FormatHashrate(double hps)
         return QObject::tr("%1 kH/s").arg(QLocale().toString(hps / 1000.0, 'f', 2));
     }
     return QObject::tr("%1 MH/s").arg(QLocale().toString(hps / 1000000.0, 'f', 2));
+}
+
+//! Human-friendly duration, e.g. "about 9 minutes".
+QString FormatDuration(double seconds)
+{
+    if (seconds < 90.0) return QObject::tr("about %n second(s)", "", qRound(seconds));
+    const double minutes = seconds / 60.0;
+    if (minutes < 90.0) return QObject::tr("about %n minute(s)", "", qRound(minutes));
+    const double hours = minutes / 60.0;
+    if (hours < 48.0) return QObject::tr("about %n hour(s)", "", qRound(hours));
+    return QObject::tr("about %n day(s)", "", qRound(hours / 24.0));
 }
 } // namespace
 
@@ -115,6 +130,14 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     found_row->addStretch(1);
     layout->addLayout(found_row);
 
+    QHBoxLayout* eta_row = new QHBoxLayout;
+    QLabel* eta_caption = new QLabel(tr("Estimated time to a block:"), this);
+    m_eta_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), this);
+    eta_row->addWidget(eta_caption);
+    eta_row->addWidget(m_eta_value);
+    eta_row->addStretch(1);
+    layout->addLayout(eta_row);
+
     QLabel* maturity_note = new QLabel(tr(
         "Note: newly mined coins need 100 confirmations (about 4 hours) before they "
         "can be spent. They will appear as \xe2\x80\x9cimmature\xe2\x80\x9d until then."), this);
@@ -198,6 +221,22 @@ void MiningPage::onStartStopClicked()
     if (m_miner->isMining()) {
         m_miner->stop();
     } else {
+        // One-time disclosure before the very first mining start.
+        QSettings settings;
+        if (!settings.value(QStringLiteral("mining/disclosure_shown"), false).toBool()) {
+            QMessageBox::information(this, tr("About mining"), tr(
+                "Mining runs your processor hard \xe2\x80\x94 it uses electricity and produces heat. "
+                "A few things to know:\n\n"
+                "\xe2\x80\xa2 Your antivirus may flag the wallet as a \xe2\x80\x9ccoin miner\xe2\x80\x9d. "
+                "That is expected for mining software; if it quarantines the wallet, restore it from "
+                "your antivirus's quarantine list.\n\n"
+                "\xe2\x80\xa2 Newly mined coins are \xe2\x80\x9cimmature\xe2\x80\x9d for 100 confirmations "
+                "(about 4 hours) before you can spend them.\n\n"
+                "\xe2\x80\xa2 You can have mining pause automatically on battery or while you're using "
+                "the computer, in Settings \xe2\x80\xba Mining.\n\n"
+                "This won't be shown again."));
+            settings.setValue(QStringLiteral("mining/disclosure_shown"), true);
+        }
         m_miner->start(selectedThreadCount());
     }
 }
@@ -233,6 +272,18 @@ void MiningPage::onMiningStateChanged(bool mining)
 void MiningPage::onHashrate(double hashes_per_sec)
 {
     m_hashrate_value->setText(FormatHashrate(hashes_per_sec));
+
+    // Refresh the (cs_main-locking) network hashrate only every ~10 ticks, then
+    // show the expected solo time to a block: netHashPS * blockSpacing / yourHashPS.
+    if (m_client_model && (m_net_hps_tick++ % 10 == 0)) {
+        m_cached_net_hps = m_client_model->getNetworkHashPS();
+    }
+    if (hashes_per_sec <= 0.0 || m_cached_net_hps <= 0.0) {
+        m_eta_value->setText(QString::fromUtf8("\xe2\x80\x94"));
+        return;
+    }
+    const double spacing = static_cast<double>(Params().GetConsensus().nPowTargetSpacing);
+    m_eta_value->setText(FormatDuration(m_cached_net_hps * spacing / hashes_per_sec));
 }
 
 void MiningPage::onBlockFound(const QString& block_hash, int height)

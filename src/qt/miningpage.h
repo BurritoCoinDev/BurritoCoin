@@ -56,8 +56,11 @@ private:
     QLabel* m_status_value = nullptr;
     QLabel* m_hashrate_value = nullptr;
     QLabel* m_blocks_value = nullptr;
+    QLabel* m_eta_value = nullptr;
 
     int m_blocks_session = 0;
+    double m_cached_net_hps = 0.0;
+    int m_net_hps_tick = 0;
 };
 
 #endif // BURRITOCOIN_QT_MININGPAGE_H
