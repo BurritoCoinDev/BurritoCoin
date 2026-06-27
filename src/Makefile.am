@@ -205,6 +205,7 @@ BURRITOCOIN_CORE_H = \
   memusage.h \
   merkleblock.h \
   miner.h \
+  stratumjob.h \
   mweb/mweb_db.h \
   mweb/mweb_miner.h \
   mweb/mweb_models.h \
@@ -361,6 +362,7 @@ libburritocoin_server_a_SOURCES = \
   interfaces/chain.cpp \
   interfaces/node.cpp \
   miner.cpp \
+  stratumjob.cpp \
   mweb/mweb_miner.cpp \
   mweb/mweb_node.cpp \
   net.cpp \
