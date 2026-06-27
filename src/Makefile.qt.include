@@ -137,6 +137,7 @@ BURRITOCOIN_QT_H = \
   qt/miningmodel.h \
   qt/miningpage.h \
   qt/miningpower.h \
+  qt/miningutil.h \
   qt/paymentserver.h \
   qt/peertablemodel.h \
   qt/platformstyle.h \
@@ -257,6 +258,7 @@ BURRITOCOIN_QT_WALLET_CPP = \
   qt/miningpage.cpp \
   qt/miningmodel.cpp \
   qt/miningpower.cpp \
+  qt/miningutil.cpp \
   qt/paymentserver.cpp \
   qt/psbtoperationsdialog.cpp \
   qt/qrimagewidget.cpp \

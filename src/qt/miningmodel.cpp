@@ -5,6 +5,7 @@
 #include <qt/miningmodel.h>
 
 #include <qt/miningpower.h>
+#include <qt/miningutil.h>
 #include <qt/walletmodel.h>
 
 #include <chainparams.h>
@@ -55,67 +56,18 @@ int MiningModel::maxThreads()
 
 bool MiningModel::resolveCoinbaseScript(QString& err)
 {
-    if (!m_wallet_model) {
-        err = tr("No wallet is loaded to receive the mining reward.");
-        return false;
-    }
-
-    // Cache the payout address per wallet NAME (not process-global) so a
-    // multi-wallet user mining into wallet A while viewing wallet B can't be
-    // silently cross-credited. Reuse a previously chosen address if it is still
-    // a valid destination; otherwise mint a fresh one and remember it.
-    const QString wallet_name = m_wallet_model->getWalletName();
-    QSettings settings;
-    const QString key = QStringLiteral("mining/%1/payout_address").arg(wallet_name);
-
-    CTxDestination dest;
-    bool have_dest = false;
-    const QString cached = settings.value(key).toString();
-    if (!cached.isEmpty()) {
-        dest = DecodeDestination(cached.toStdString());
-        // Require not just a well-formed address but one this wallet can still
-        // spend. Otherwise a wallet restored from an older backup (or a reused
-        // wallet name pointing at a different file) would keep paying rewards to
-        // an address the user no longer controls. If it's not spendable, fall
-        // through and mint a fresh owned address (which also rewrites the cache).
-        have_dest = IsValidDestination(dest) && m_wallet_model->wallet().isSpendable(dest);
-    }
-    if (!have_dest) {
-        if (!m_wallet_model->wallet().getNewDestination(OutputType::BECH32, "Mining", dest)) {
-            err = tr("Could not get a payout address from the wallet. If the wallet is "
-                     "encrypted, unlock it first, then try again.");
-            return false;
-        }
-        settings.setValue(key, QString::fromStdString(EncodeDestination(dest)));
-    }
-
-    m_coinbase_script = GetScriptForDestination(dest);
-    if (m_coinbase_script.empty()) {
-        err = tr("The wallet returned an unusable payout address.");
-        return false;
-    }
-    return true;
+    return MiningUtil::ResolveCoinbaseScript(m_wallet_model, m_coinbase_script, err);
 }
 
 void MiningModel::start(int threads)
 {
     if (m_running.load()) return;
 
-    if (m_node.isInitialBlockDownload()) {
-        Q_EMIT error(tr("BurritoCoin is still syncing. Mining becomes available once "
-                        "the blockchain is up to date."));
-        return;
-    }
-
-    NodeContext* ctx = m_node.context();
-    if (!ctx || !ctx->chainman || !ctx->mempool) {
-        Q_EMIT error(tr("Mining is unavailable right now: the node is not fully started."));
-        return;
-    }
-    m_chainman = ctx->chainman;
-    m_mempool = ctx->mempool.get();
-
     QString err;
+    if (!MiningUtil::CaptureNodeHandles(m_node, m_chainman, m_mempool, err)) {
+        Q_EMIT error(err);
+        return;
+    }
     if (!resolveCoinbaseScript(err)) {
         Q_EMIT error(err);
         return;
@@ -229,21 +181,11 @@ void MiningModel::workerLoop(int id)
 
 void MiningModel::submitSolved(const CBlock& block)
 {
-    auto shared_block = std::make_shared<const CBlock>(block);
-    bool accepted = false;
-    try {
-        // ProcessNewBlock takes cs_main itself (LOCKS_EXCLUDED) — safe to call
-        // from a worker thread, and we deliberately do NOT pre-lock here.
-        accepted = m_chainman->ProcessNewBlock(Params(), shared_block, /*fForceProcessing=*/true,
-                                               /*fNewBlock=*/nullptr);
-    } catch (const std::exception&) {
-        accepted = false;
-    }
-
-    if (accepted) {
+    std::string hash;
+    if (MiningUtil::SubmitBlock(*m_chainman, block, hash)) {
         {
             std::lock_guard<std::mutex> lock(m_found_mutex);
-            m_last_found_hash = QString::fromStdString(block.GetHash().GetHex());
+            m_last_found_hash = QString::fromStdString(hash);
         }
         m_blocks_found.fetch_add(1);
         // Switch every worker onto the new tip immediately rather than waiting
