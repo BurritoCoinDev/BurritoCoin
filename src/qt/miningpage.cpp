@@ -42,7 +42,11 @@ QString FormatDuration(double seconds)
     if (minutes < 90.0) return QObject::tr("about %n minute(s)", "", qRound(minutes));
     const double hours = minutes / 60.0;
     if (hours < 48.0) return QObject::tr("about %n hour(s)", "", qRound(hours));
-    return QObject::tr("about %n day(s)", "", qRound(hours / 24.0));
+    const double days = hours / 24.0;
+    // Guard the int conversion: a near-zero local hashrate can make the estimate
+    // astronomically large, and qRound(double)->int / tr's %n are int-domain.
+    if (days > 365000.0) return QObject::tr("more than a thousand years");
+    return QObject::tr("about %n day(s)", "", qRound(days));
 }
 } // namespace
 

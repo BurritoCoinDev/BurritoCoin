@@ -124,6 +124,7 @@ void MiningModel::start(int threads)
     threads = std::max(1, std::min(threads, maxThreads()));
 
     m_running.store(true);
+    m_paused.store(false); // begin un-paused; the first poll() re-derives the real state
     m_hashes.store(0);
     m_last_hashes = 0;
     m_last_emitted_found = m_blocks_found.load();
