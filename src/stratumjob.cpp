@@ -106,6 +106,9 @@ std::string EncodeStratumPrevhash(const uint256& hash)
 {
     // 32 internal bytes regrouped into 8 four-byte words, each word byte-reversed
     // — the historical Bitcoin/Litecoin stratum word-swap that cpuminer un-swaps.
+    // The exact word ordering is the classic stratum ambiguity (le32 vs be32 in
+    // the miner's stratum_gen_work); it MUST be pinned against the specific
+    // cpuminer build the bridge targets during phase-5 real-miner integration.
     const unsigned char* b = hash.begin();
     std::string out;
     out.reserve(64);

@@ -15,7 +15,9 @@
 
 #include <test/util/setup_common.h>
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include <boost/test/unit_test.hpp>
 
@@ -75,6 +77,45 @@ BOOST_AUTO_TEST_CASE(coinbase_split_merkle_and_submit_roundtrip)
         m_node.chainman->ProcessNewBlock(params, shared, /*fForceProcessing=*/true, &new_block);
     BOOST_CHECK(accepted);
     BOOST_CHECK(new_block);
+
+    // NOTE: regtest does not activate MWEB by height 100 (it is BIP9-gated, not
+    // always-active, so the 100-block setup helper has no HogEx), and the mempool
+    // here is empty — so the round-trip above exercises the coinbase-only,
+    // empty-merkle-branch path. The MWEB HogEx/mweb_block carry-through is covered
+    // by the production design and the native mainnet/testnet end-to-end run with
+    // a real cpuminer (phase 5); the deterministic merkle-branch coverage that the
+    // empty path misses is provided by the next test.
+}
+
+// Deterministic, chain-independent validation of the riskiest logic in this file
+// — the hand-built coinbase merkle branch — against ComputeMerkleRoot (the
+// consensus oracle), across non-coinbase counts that exercise odd-duplication at
+// several levels (the regtest round-trip above can only ever produce an empty
+// branch).
+BOOST_AUTO_TEST_CASE(merkle_branch_matches_consensus_oracle)
+{
+    auto make_txid = [](int i) {
+        std::vector<unsigned char> bytes(32, 0);
+        bytes[0] = static_cast<unsigned char>(i + 1);
+        bytes[31] = 0xab;
+        return uint256(bytes);
+    };
+    const uint256 coinbase = make_txid(100);
+
+    for (size_t n = 0; n <= 6; ++n) {
+        std::vector<uint256> others;
+        for (size_t i = 0; i < n; ++i) others.push_back(make_txid(static_cast<int>(i)));
+
+        std::vector<uint256> leaves;
+        leaves.push_back(coinbase);
+        leaves.insert(leaves.end(), others.begin(), others.end());
+
+        const uint256 expected = ComputeMerkleRoot(leaves);
+        const std::vector<uint256> branch = stratum::CoinbaseMerkleBranch(others);
+        const uint256 got = stratum::FoldMerkleBranch(coinbase, branch);
+        BOOST_CHECK_MESSAGE(got == expected,
+                            "merkle branch mismatch for " << n << " non-coinbase txids");
+    }
 }
 
 // Pin the stratum wire byte-order helpers (the other classic break point).
@@ -93,10 +134,18 @@ BOOST_AUTO_TEST_CASE(wire_helpers_roundtrip)
     BOOST_CHECK_EQUAL(bytes[0], 0xaa);
     BOOST_CHECK(!stratum::DecodeHexBytes("abc", bytes)); // odd length
 
-    // Prevhash word-swap is 64 hex chars and reverses each 4-byte word.
+    // Prevhash word-swap: 64 hex chars and a pure permutation of the input's 32
+    // bytes (the exact word ordering is pinned against the target cpuminer build
+    // during phase-5 real-miner integration; here we catch gross errors).
     uint256 h = uint256S("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
     const std::string pv = stratum::EncodeStratumPrevhash(h);
-    BOOST_CHECK_EQUAL(pv.size(), 64u);
+    BOOST_REQUIRE_EQUAL(pv.size(), 64u);
+    std::vector<unsigned char> pv_bytes;
+    BOOST_REQUIRE(stratum::DecodeHexBytes(pv, pv_bytes));
+    std::vector<unsigned char> in_bytes(h.begin(), h.end());
+    std::sort(in_bytes.begin(), in_bytes.end());
+    std::sort(pv_bytes.begin(), pv_bytes.end());
+    BOOST_CHECK(in_bytes == pv_bytes);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
