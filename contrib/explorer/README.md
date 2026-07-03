@@ -24,6 +24,18 @@ customization that turns vanilla btc-rpc-explorer into the BRTO explorer:
   the genesis coinbase). Files: app/api/rpcApi.js, routes/baseRouter.js.
 - BTC-only marketing copy removed (app/coins/btcQuotes.js emptied).
 
+The Mining Summary dup-row fix is kept OUT of the binary patch (see below):
+
+- Mining Summary dup-row fix (views/mining-summary.pug): the vendor page
+  leaks its 125ms status-poll timer between loads and re-renders by appending
+  rows without a reset, so toggling the 1d/3d range buttons makes one build's
+  miner rows render two-or-more times (doubled rows, inflated "Total"). Two
+  idempotency guards fix it. Applied by fix-mining-summary-dedup.js instead of
+  the binary patch, so it is immune to upstream whitespace drift and safe to
+  re-run. (The donut's >1%-revenue slice threshold is left as-is — that is
+  vendor-intended, not a bug: sub-1% miners fold into "Other" in the chart but
+  still appear in the Data table.)
+
 ## Upstream base
 
 The patch applies cleanly on top of upstream commit 26e282a
@@ -36,6 +48,7 @@ The patch applies cleanly on top of upstream commit 26e282a
     cd btc-rpc-explorer
     git checkout 26e282a
     git apply /root/BurritoCoin/contrib/explorer/burritocoin-explorer.patch
+    node /root/BurritoCoin/contrib/explorer/fix-mining-summary-dedup.js   # Mining Summary dup-row fix (idempotent)
     npm install
     # Copy your existing .env from the running box (RPC creds, port, etc.)
     systemctl enable --now btc-rpc-explorer
@@ -47,3 +60,8 @@ The patch applies cleanly on top of upstream commit 26e282a
     cd /root/BurritoCoin
     git add contrib/explorer/burritocoin-explorer.patch
     git commit -m "Update explorer patch"
+
+The Mining Summary dup-row fix is maintained as fix-mining-summary-dedup.js
+rather than in the binary patch. It is idempotent (a no-op if already
+present), so regenerating the patch above is safe whether or not that edit was
+committed into the explorer checkout first.
