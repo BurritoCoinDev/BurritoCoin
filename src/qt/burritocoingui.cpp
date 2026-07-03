@@ -374,7 +374,7 @@ void BurritoCoinGUI::createActions()
     QActionGroup *tabGroup = new QActionGroup(this);
     connect(modalOverlay, &ModalOverlay::triggered, tabGroup, &QActionGroup::setEnabled);
 
-    overviewAction = new QAction(platformStyle->SingleColorIcon(":/icons/overview"), tr("&Overview"), this);
+    overviewAction = new QAction(platformStyle->SingleColorIcon(":/icons/overview"), tr("&Home"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
     overviewAction->setToolTip(overviewAction->statusTip());
     overviewAction->setCheckable(true);
@@ -403,7 +403,7 @@ void BurritoCoinGUI::createActions()
     receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
     receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
-    historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history"), tr("&Transactions"), this);
+    historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history"), tr("&History"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);
@@ -1124,8 +1124,10 @@ void BurritoCoinGUI::showRecoveryKey()
     QVBoxLayout* layout = new QVBoxLayout(&dlg);
 
     QLabel* intro = new QLabel(tr(
-        "<p>This is the <b>master key</b> to every address this wallet generates. "
-        "Anyone who sees it can take your coins \xe2\x80\x94 so before you reveal it:</p>"
+        "<p style='color:#c0392b; font-weight:bold; font-size:14px;'>\xe2\x9a\xa0 This reveals the "
+        "master key to every coin this wallet will ever hold \xe2\x80\x94 anyone who sees it can take "
+        "them all.</p>"
+        "<p>Before you reveal it:</p>"
         "<ul>"
         "<li>Make sure <b>no one can see your screen</b>, and that you are <b>not screen-sharing "
         "or recording</b>.</li>"
@@ -1909,7 +1911,7 @@ QString BurritoCoinGUI::faqHtml() const
     for (const QA& item : items) {
         body += "<p style='color:#f5a623; font-weight:bold; font-size:16px; margin-bottom:2px;'>"
               + tr(item.q) + "</p>";
-        body += "<p style='color:#d6c4a3; margin-top:0;'>" + tr(item.a) + "</p>";
+        body += "<p style='color:#f0e0c0; margin-top:0;'>" + tr(item.a) + "</p>";
     }
     body += "</div>";
     return body;
