@@ -22,19 +22,17 @@
   <!-- NAV -->
   <a href="#main" class="skip-link">Skip to main content</a>
   <nav>
-    <div class="nav-logo">
+    <a class="nav-logo" href="/">
       <img src="logo.svg" alt="BurritoCoin logo" />
       BurritoCoin
-    </div>
+    </a>
     <div class="nav-links">
-      <a href="#about">About</a>
-      <a href="#specs">Specs</a>
-      <a href="#network">Network</a>
+      <a href="/wallets.html">Wallets</a>
       <a href="/mine.html">Mine</a>
       <a href="/run-a-node.html">Run a Node</a>
-      <a href="/wallets.html">Wallets</a>
       <a href="/spec.html">Spec</a>
       <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
     </div>
   </nav>
 
@@ -44,13 +42,17 @@
     <h1>BurritoCoin</h1>
     <div class="hero-ticker">BRTO</div>
     <p class="hero-tagline">
-      The world's most delicious cryptocurrency. Decentralized, flavor-packed,
-      and statistically indistinguishable from throwing your money into a trash fire.
+      A friendly, CPU-mineable cryptocurrency. Grab a wallet, get an address, and
+      mine your first coins in about twenty minutes — no exchange, no sign-up.
     </p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href="https://explorer.burritoco.in" target="_blank" rel="noopener">Block Explorer</a>
-      <a class="btn btn-secondary" href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="/wallets.html">Get Started</a>
+      <a class="btn btn-secondary" href="/mine.html">Start Mining</a>
     </div>
+    <p style="margin-top:1.2rem; font-size:0.85rem; color:var(--muted);">
+      or dig into the <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">block explorer</a>
+      · <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
   </div>
 
   <hr class="divider" />
@@ -75,7 +77,7 @@
 
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon">🌯</span>
+        <span class="feature-icon" aria-hidden="true">🌯</span>
         <h3>Fully Decentralized</h3>
         <p>No central authority. No board meetings. No one to blame when things go sideways. Just you, the nodes, and the open source code.</p>
       </div>
@@ -87,7 +89,7 @@
       <div class="feature-card">
         <span class="feature-icon">⛏️</span>
         <h3>Scrypt Proof of Work</h3>
-        <p>Minable with consumer hardware. Each block takes ~2.5 minutes and rewards 10 BRTO, which is worth approximately 10 BRTO.</p>
+        <p>Minable with everyday CPUs and GPUs. Each block takes about 2.5 minutes and pays 10 BRTO to whoever finds it — including you.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🍴</span>
@@ -137,7 +139,7 @@
       <div class="stat-card">
         <div class="stat-label">Genesis Premine</div>
         <div class="stat-value">148,000,000</div>
-        <div class="stat-note">BRTO — mostly sitting there looking sad</div>
+        <div class="stat-note">BRTO — founder premine, held transparently on-chain</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">P2P Port</div>
@@ -147,7 +149,7 @@
       <div class="stat-card">
         <div class="stat-label">Ticker</div>
         <div class="stat-value">BRTO</div>
-        <div class="stat-note">Not listed anywhere. Yet. Probably never.</div>
+        <div class="stat-note">Not on exchanges — mine it or trade peer-to-peer</div>
       </div>
     </div>
   </section>
@@ -230,7 +232,7 @@
 
   <!-- FOOTER -->
   <footer>
-    <div class="footer-logo">🌯 BurritoCoin</div>
+    <div class="footer-logo"><span aria-hidden="true">🌯</span> BurritoCoin</div>
     <p>
       <a href="/">Home</a> · <a href="/spec.html">Spec</a>
       · <a href="/mine.html">Mining guides</a>

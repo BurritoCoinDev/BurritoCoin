@@ -8,7 +8,8 @@
   --warm-bg: #1a0f05;
   --card-bg: #2a1608;
   --text: #f0e0c0;
-  --muted: #9a7a55;
+  --muted: #b89a72;      /* ~6.5:1 on --card-bg — was #9a7a55 (~4.3:1, below AA) */
+  --muted-dim: #9a7a55;  /* only for large/bold eyebrow labels where dim is intentional */
   --border: #5a3010;
   --code-bg: #0f0803;
 }
@@ -46,12 +47,15 @@ nav {
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--gold);
+  text-decoration: none;
 }
+.nav-logo:hover { text-decoration: none; color: var(--gold-light); }
 
 .nav-logo img { width: 32px; height: 32px; }
 
 .nav-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
   font-size: 0.9rem;
   font-weight: 500;
@@ -81,6 +85,7 @@ nav {
 .hero h1 {
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 800;
+  color: var(--gold); /* solid-gold fallback where background-clip:text is unsupported */
   background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -123,6 +128,7 @@ nav {
 .hero-sm h1 {
   font-size: clamp(2rem, 4.5vw, 3rem);
   font-weight: 800;
+  color: var(--gold); /* solid-gold fallback where background-clip:text is unsupported */
   background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
