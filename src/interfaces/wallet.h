@@ -1,4 +1,5 @@
-// Copyright (c) 2018-2020 The BurritoCoin Core developers
+// Copyright (c) 2018-2020 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -81,6 +82,13 @@ public:
 
     //! Back up wallet.
     virtual bool backupWallet(const std::string& filename) = 0;
+
+    //! Get the wallet's active HD seed as a WIF private key. This is the same
+    //! value dumpwallet writes on its hdseed=1 line, and the value sethdseed
+    //! consumes — so it round-trips for "recovery key" backup/restore. Returns
+    //! empty if the wallet has no HD seed or is locked (the caller must unlock
+    //! first; the key is read straight from memory, never written to disk).
+    virtual std::string getHDSeedWIF() = 0;
 
     //! Get wallet name.
     virtual std::string getWalletName() = 0;

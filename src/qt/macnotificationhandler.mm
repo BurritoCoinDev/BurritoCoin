@@ -13,7 +13,7 @@
 - (NSString *)__bundleIdentifier
 {
     if (self == [NSBundle mainBundle]) {
-        return @"org.burritocoin.BurritoCoin-Qt";
+        return @"in.burritoco.BurritoCoin-Qt";
     } else {
         return [self __bundleIdentifier];
     }

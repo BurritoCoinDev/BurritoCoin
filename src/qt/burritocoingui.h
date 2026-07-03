@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -49,6 +50,7 @@ struct BlockAndHeaderTipInfo;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
+class QDockWidget;
 class QMenu;
 class QProgressBar;
 class QProgressDialog;
@@ -122,17 +124,23 @@ private:
     UnitDisplayStatusBarControl* unitDisplayControl = nullptr;
     QLabel* labelWalletEncryptionIcon = nullptr;
     QLabel* labelWalletHDStatusIcon = nullptr;
+    GUIUtil::ClickableLabel* m_backup_status_label = nullptr;
     GUIUtil::ClickableLabel* labelProxyIcon = nullptr;
     GUIUtil::ClickableLabel* connectionsControl = nullptr;
     GUIUtil::ClickableLabel* labelBlocksIcon = nullptr;
     QLabel* progressBarLabel = nullptr;
     GUIUtil::ClickableProgressBar* progressBar = nullptr;
     QProgressDialog* progressDialog = nullptr;
+    /** Rotating "back up your wallet" safety tip shown in the status bar. */
+    QLabel* m_safety_tip_label = nullptr;
+    /** Right-side dockable Help & FAQ panel. */
+    QDockWidget* m_faq_dock = nullptr;
 
     QMenuBar* appMenuBar = nullptr;
     QToolBar* appToolBar = nullptr;
     QAction* overviewAction = nullptr;
     QAction* historyAction = nullptr;
+    QAction* mineAction = nullptr;
     QAction* quitAction = nullptr;
     QAction* sendCoinsAction = nullptr;
     QAction* sendCoinsMenuAction = nullptr;
@@ -149,6 +157,9 @@ private:
     QAction* toggleHideAction = nullptr;
     QAction* encryptWalletAction = nullptr;
     QAction* backupWalletAction = nullptr;
+    QAction* m_show_wallet_location_action = nullptr;
+    QAction* m_verify_backup_key_action = nullptr;
+    QAction* m_recovery_key_action = nullptr;
     QAction* changePassphraseAction = nullptr;
     QAction* aboutQtAction = nullptr;
     QAction* openRPCConsoleAction = nullptr;
@@ -156,6 +167,8 @@ private:
     QAction* showHelpMessageAction = nullptr;
     QAction* m_create_wallet_action{nullptr};
     QAction* m_open_wallet_action{nullptr};
+    QAction* m_restore_wallet_action{nullptr};
+    QAction* m_restore_recovery_action{nullptr};
     QMenu* m_open_wallet_menu{nullptr};
     QAction* m_close_wallet_action{nullptr};
     QAction* m_close_all_wallets_action{nullptr};
@@ -181,6 +194,9 @@ private:
     int prevBlocks = 0;
     int spinnerFrame = 0;
 
+    /** Ensure the per-launch backup / seed reminders only fire once. */
+    bool m_safety_reminders_done = false;
+
     const PlatformStyle *platformStyle;
     const NetworkStyle* const m_network_style;
 
@@ -205,6 +221,16 @@ private:
     void updateNetworkState();
 
     void updateHeadersSyncProgressLabel();
+
+    /** Build the rotating wallet-safety tip shown in the status bar. */
+    void createSafetyTipBanner();
+    /** Build the right-side Help & FAQ dock panel. */
+    void createFaqPanel();
+    /** The rich-text content shown in the Help & FAQ panel. */
+    QString faqHtml() const;
+    /** Once per launch, encourage the user to back up wallet.dat and their
+        recovery seed, and remind them where the wallet file lives. */
+    void showWalletSafetyReminders(WalletModel* wallet_model);
 
     /** Open the OptionsDialog on the specified tab index */
     void openOptionsDialogWithTab(OptionsDialog::Tab tab);
@@ -254,6 +280,12 @@ private:
      */
     void setHDStatus(bool privkeyDisabled, int hdEnabled);
 
+    /** Set the wallet-backup status badge shown in the status bar. */
+    void setBackupStatus(WalletModel* wallet_model);
+
+    /** First-run onboarding: offer to create + back up a wallet for new users. */
+    void maybeShowOnboarding();
+
 public Q_SLOTS:
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
@@ -272,6 +304,8 @@ public Q_SLOTS:
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
+    /** Switch to the mining page */
+    void gotoMiningPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -283,6 +317,21 @@ public Q_SLOTS:
     void gotoVerifyMessageTab(QString addr = "");
     /** Load Partially Signed BurritoCoin Transaction from file or clipboard */
     void gotoLoadPSBT(bool from_clipboard = false);
+
+    /** Show where the current wallet's wallet.dat file is stored on disk. */
+    void showWalletLocation();
+
+    /** Local-only dialog to confirm a written-down WIF belongs to this wallet. */
+    void showVerifyBackupKey();
+
+    /** Show the wallet's HD recovery key for paper backup + save a full recovery file. */
+    void showRecoveryKey();
+
+    /** Wizard: copy a wallet.dat backup into a new named wallet folder and load it without restarting. */
+    void restoreWalletFromBackup();
+
+    /** Wizard: restore a wallet from a recovery key (sethdseed) or recovery file (importwallet). */
+    void restoreFromRecovery();
 
     /** Show open dialog */
     void openClicked();

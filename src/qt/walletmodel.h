@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -85,6 +86,17 @@ public:
 
     // Check address for validity
     bool validateAddress(const QString &address);
+
+    // Result of checkPrivKeyOwnership().
+    enum KeyOwnership {
+        KeyInvalid,      // not a valid private key for this network
+        KeyNotInWallet,  // a valid key, but this wallet does not hold it
+        KeyInWallet      // a valid key the wallet can spend from
+    };
+
+    // Locally verify whether a WIF private key is owned (spendable) by this
+    // wallet. The key never leaves the process and is never logged.
+    KeyOwnership checkPrivKeyOwnership(const QString& wif) const;
 
     // Return status record for SendCoins, contains error id + information
     struct SendCoinsReturn

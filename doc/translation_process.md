@@ -65,7 +65,7 @@ username = USERNAME
 The Transifex BurritoCoin project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need to change anything.
 
 ### Synchronising translations
-To assist in updating translations, a helper script is available in the [maintainer-tools repo](https://github.com/burritocoin-core/burritocoin-maintainer-tools).
+To assist in updating translations, a helper script is available in the [maintainer-tools repo](https://github.com/BurritoCoinDev/burritocoin-maintainer-tools).
 
 1. `python3 ../burritocoin-maintainer-tools/update-translations.py`
 2. `git add` new translations from `src/qt/locale/`
@@ -104,6 +104,8 @@ To create a new language template, you will need to edit the languages manifest 
 **Note:** that the language translation file **must end in `.qm`** (the compiled extension), and not `.ts`.
 
 ### Questions and general assistance
-The BurritoCoin-Core translation maintainers include *tcatm, seone, Diapolo, wumpus and luke-jr*. You can find them, and others, in the Freenode IRC chatroom - `irc.freenode.net #burritocoin-core-dev`.
-
-If you are a translator, you should also subscribe to the mailing list, https://groups.google.com/forum/#!forum/burritocoin-translators. Announcements will be posted during application pre-releases to notify translators to check for updates.
+BurritoCoin Core does not yet have a translation team. If you'd like to
+contribute translations, open an issue at
+<https://github.com/BurritoCoinDev/BurritoCoin/issues> tagged `translation`.
+A dedicated translation channel and Transifex project will be set up once
+the project has enough translator interest to justify them.

@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -43,6 +44,7 @@
 #include <memory>
 
 #include <QApplication>
+#include <QFont>
 #include <QDebug>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -467,6 +469,18 @@ int GuiMain(int argc, char* argv[])
 #endif
 
     BurritoCoinApplication app;
+
+    // Scale the base application font up for readability. Derived from the
+    // platform default font, so it stays responsive to the user's DPI and
+    // font-size settings rather than hardcoding a pixel size.
+    {
+        QFont appFont = app.font();
+        const qreal basePt = appFont.pointSizeF();
+        if (basePt > 0) {
+            appFont.setPointSizeF(basePt * 1.25);
+            app.setFont(appFont);
+        }
+    }
 
     /// 2. Parse command-line options. We do this after qt in order to show an error if there are problems parsing these
     // Command-line options take precedence:

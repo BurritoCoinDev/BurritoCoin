@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,6 +23,7 @@
 #include <interfaces/node.h>
 #include <key_io.h>
 #include <node/ui_interface.h>
+#include <outputtype.h>
 #include <psbt.h>
 #include <util/system.h> // for GetBoolArg
 #include <util/translation.h>
@@ -141,6 +143,26 @@ void WalletModel::updateWatchOnlyFlag(bool fHaveWatchonly)
 bool WalletModel::validateAddress(const QString &address)
 {
     return IsValidDestinationString(address.toStdString());
+}
+
+WalletModel::KeyOwnership WalletModel::checkPrivKeyOwnership(const QString& wif) const
+{
+    // Decode the WIF locally. DecodeSecret returns an invalid CKey (it does not
+    // throw) when the string is not a private key for this network.
+    const CKey key = DecodeSecret(wif.trimmed().toStdString());
+    if (!key.IsValid()) return KeyInvalid;
+    const CPubKey pubkey = key.GetPubKey();
+    if (!pubkey.IsValid()) return KeyInvalid;
+
+    // Enumerate the standard destinations for this key (P2PKH, P2SH-P2WPKH,
+    // P2WPKH). A null scan secret skips MWEB derivation, which is correct for a
+    // plain WIF a user would have written down. isSpendable() is true only when
+    // the wallet holds the private key for that destination (ISMINE_SPENDABLE),
+    // and it locks the wallet internally. Nothing here touches the network.
+    for (const CTxDestination& dest : GetAllDestinationsForKey(pubkey, SecretKey())) {
+        if (m_wallet->isSpendable(dest)) return KeyInWallet;
+    }
+    return KeyNotInWallet;
 }
 
 WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransaction &transaction, const CCoinControl& coinControl)

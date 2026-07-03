@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2020 The BurritoCoin Core developers
+# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """upgradewallet RPC functional test
@@ -79,7 +80,7 @@ class UpgradeWalletTest(BurritoCoinTestFramework):
         v0.15.2 is only being used to test for version upgrade
         and master hash key presence.
         v0.16.3 is being used to test for version upgrade and balances.
-        Further info: https://github.com/burritocoin/burritocoin/pull/18774#discussion_r416967844
+        Further info: https://github.com/BurritoCoinDev/BurritoCoin/pull/18774#discussion_r416967844
         """
         node_from = self.nodes[0]
         v16_3_node = self.nodes[1]

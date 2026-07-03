@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BurritoCoin — Integrator Spec &amp; Reference</title>
+  <meta name="description" content="Network identity, address formats, RPC interface, and brand assets for integrating BurritoCoin (BRTO) into wallets, exchanges, and explorers." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BurritoCoin — Integrator Spec &amp; Reference" />
+  <meta property="og:description" content="Network identity, address formats, RPC interface, and brand assets for integrating BurritoCoin (BRTO) into wallets, exchanges, and explorers." />
+  <meta property="og:url" content="https://burritoco.in/spec.html" />
+  <meta property="og:image" content="https://burritoco.in/apple-touch-icon.png" />
+  <meta property="og:site_name" content="BurritoCoin" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="canonical" href="https://burritoco.in/spec.html" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#network">Network</a>
+      <a href="/mine.html">Mine</a>
+      <a href="/run-a-node.html">Run a Node</a>
+      <a href="/wallets.html">Wallets</a>
+      <a href="/spec.html" class="active">Spec</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero-sm">
+    <h1>BurritoCoin Spec</h1>
+    <p>
+      Everything an exchange, wallet developer, block explorer, or mining pool needs to
+      integrate BurritoCoin. This page is the canonical source — when in doubt, the C++ in
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/src/chainparams.cpp" target="_blank" rel="noopener"><code>src/chainparams.cpp</code></a>
+      is the absolute truth, but everything below is mirrored from there.
+    </p>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- NETWORK IDENTITY -->
+  <div id="main"></div>
+  <section id="network-identity">
+    <div class="section-label">1 — Network Identity</div>
+    <h2>Network Identity</h2>
+    <p>
+      Mainnet parameters baked into the daemon. None are secret; they're all visible on any
+      running node.
+    </p>
+
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
+      <tr><th>Coin name</th><td>BurritoCoin</td></tr>
+      <tr><th>Ticker</th><td>BRTO</td></tr>
+      <tr><th>P2P Port</th><td>9227</td></tr>
+      <tr><th>RPC Port</th><td>9226</td></tr>
+      <tr><th>Network magic bytes</th><td><code>0x42 0x52 0x54 0x4f</code> <span class="spec-note">(ASCII "BRTO")</span></td></tr>
+      <tr><th>Genesis block hash</th><td><code>0x44615751d966cf772a051f65b8df4f3987adc48be1749a699369a18517418dce</code></td></tr>
+      <tr><th>Algorithm</th><td>Scrypt (N=1024, r=1, p=1)</td></tr>
+      <tr><th>Target block time</th><td>2.5 minutes</td></tr>
+      <tr><th>Difficulty retarget</th><td>Every 2016 blocks (~3.5 days at target)</td></tr>
+      <tr><th>Block reward</th><td>10 BRTO per block</td></tr>
+      <tr><th>Halving interval</th><td>1,042,600,000 blocks (~4,960 years; effectively non-halving)</td></tr>
+      <tr><th>Total supply cap</th><td>21,000,000,000 BRTO</td></tr>
+      <tr><th>Genesis premine</th><td>148,000,000 BRTO (genesis coinbase output, P2PK)</td></tr>
+      <tr><th>BIP34 / 65 / 66 height</th><td>1 (genesis exempt; enforced from height 1)</td></tr>
+      <tr><th>CSV / SegWit height</th><td>1 (active from height 1)</td></tr>
+      <tr><th>MWEB</th><td>Supported (MimbleWimble Extension Blocks)</td></tr>
+      <tr><th>DNS seed</th><td><code>seed.burritoco.in</code></td></tr>
+    </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ADDRESS FORMATS -->
+  <section id="addresses">
+    <div class="section-label">2 — Address Formats</div>
+    <h2>Address Formats</h2>
+    <p>
+      BurritoCoin supports the same address types as Litecoin/Bitcoin Core, with BurritoCoin-specific
+      version bytes and HRPs. Wallets generate bech32 (P2WPKH) by default; legacy formats are accepted
+      for backwards compatibility.
+    </p>
+
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
+      <tr>
+        <th>P2PKH (legacy)</th>
+        <td>
+          version byte <code>25</code> · starts with <code>B</code><br />
+          example: <code>BBjCg3PerpEVecoKfcbs6rf5bTqSMBKFzx</code>
+        </td>
+      </tr>
+      <tr>
+        <th>P2SH</th>
+        <td>
+          version byte <code>5</code> · starts with <code>3</code><br />
+          <span class="spec-note">example coming soon</span>
+        </td>
+      </tr>
+      <tr>
+        <th>P2SH (legacy variant)</th>
+        <td>
+          version byte <code>28</code> · starts with <code>C</code><br />
+          <span class="spec-note">Accepted for legacy compatibility; new addresses should use the version-5 form above.</span>
+        </td>
+      </tr>
+      <tr>
+        <th>Bech32 v0 P2WPKH (segwit)</th>
+        <td>
+          HRP <code>brto</code> · 44 chars total<br />
+          example: <code>brto1q675hvplaa9udwt8uplvfv4cndt8z9x87sk324w</code>
+        </td>
+      </tr>
+      <tr>
+        <th>Bech32 v0 P2WSH (segwit)</th>
+        <td>
+          HRP <code>brto</code> · 64 chars total<br />
+          <span class="spec-note">example coming soon</span>
+        </td>
+      </tr>
+      <tr>
+        <th>MWEB stealth address</th>
+        <td>
+          HRP <code>brtomweb</code><br />
+          <span class="spec-note">example coming soon</span>
+        </td>
+      </tr>
+      <tr>
+        <th>WIF private key</th>
+        <td>
+          version byte <code>153</code> · starts with <code>P</code> (compressed)
+        </td>
+      </tr>
+      <tr>
+        <th>HD extended public key</th>
+        <td>
+          version <code>0x0188D9CE</code> · starts with <code>Ktub</code>
+        </td>
+      </tr>
+      <tr>
+        <th>HD extended private key</th>
+        <td>
+          version <code>0x0188D26A</code> · starts with <code>Ktpv</code>
+        </td>
+      </tr>
+    </table>
+    </div>
+
+    <div class="callout">
+      <strong>Default address format:</strong> wallets created by BurritoCoin Core generate
+      bech32 P2WPKH addresses by default. Most user-facing addresses you'll encounter start
+      with <code>brto1q…</code>. Always validate against the HRP — a string with the right
+      bech32 length but the wrong HRP is a different chain's address.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- TESTNET / REGTEST -->
+  <section id="testnet">
+    <div class="section-label">3 — Testnet &amp; Regtest</div>
+    <h2>Testnet &amp; Regtest</h2>
+    <p>
+      For integration testing without spending real BRTO. Both networks use the same
+      consensus rules as mainnet but with separate genesis blocks, address spaces, and ports.
+    </p>
+
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
+      <tr><th>Testnet P2P / RPC ports</th><td>19227 / 19226</td></tr>
+      <tr><th>Testnet bech32 HRP</th><td><code>tbrto</code> (P2WPKH/P2WSH), <code>tbrtomweb</code> (MWEB)</td></tr>
+      <tr><th>Testnet P2PKH / P2SH bytes</th><td><code>111</code> / <code>196</code> &mdash; addresses start with <code>m</code>/<code>n</code> (P2PKH), <code>2</code> (P2SH)</td></tr>
+      <tr><th>Regtest P2P / RPC ports</th><td>19554 / 19553</td></tr>
+      <tr><th>Regtest bech32 HRP</th><td><code>rbrto</code> (P2WPKH/P2WSH), <code>rbrtomweb</code> (MWEB)</td></tr>
+      <tr><th>Regtest P2PKH / P2SH bytes</th><td><code>111</code> / <code>196</code> &mdash; same prefixes as testnet (<code>m</code>/<code>n</code>, <code>2</code>)</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- RPC -->
+  <section id="rpc">
+    <div class="section-label">4 — RPC Interface</div>
+    <h2>RPC Interface</h2>
+    <p>
+      BurritoCoin Core exposes the same JSON-RPC interface as Bitcoin Core / Litecoin Core.
+      All standard wallet, blockchain, and network RPCs are available. Run
+      <code>burritocoin-cli help</code> against a running node for the full list.
+    </p>
+
+    <h3>Connecting</h3>
+    <pre><code>curl --user &lt;rpcuser&gt;:&lt;rpcpassword&gt; \
+     --data '{"jsonrpc":"1.0","id":"x","method":"getblockchaininfo","params":[]}' \
+     -H 'content-type: text/plain;' \
+     http://&lt;node&gt;:9226/</code></pre>
+
+    <h3>Common reads</h3>
+    <pre><code># Chain status
+burritocoin-cli getblockchaininfo
+
+# Get a block by hash, with full transactions
+burritocoin-cli getblock &lt;blockhash&gt; 2
+
+# Get a transaction
+burritocoin-cli getrawtransaction &lt;txid&gt; true
+
+# Validate an address
+burritocoin-cli validateaddress &lt;address&gt;</code></pre>
+
+    <h3>Common writes (require an unlocked, funded wallet)</h3>
+    <pre><code># Generate a fresh receive address
+burritocoin-cli getnewaddress "label" bech32
+
+# Send to an address
+burritocoin-cli sendtoaddress &lt;address&gt; &lt;amount&gt;
+
+# Create a raw transaction
+burritocoin-cli createrawtransaction '[{"txid":"...","vout":0}]' '{"&lt;addr&gt;":1.0}'</code></pre>
+
+    <h3>Mining</h3>
+    <p>
+      External miners using <code>getblocktemplate</code> must request both
+      <code>segwit</code> <em>and</em> <code>mweb</code> in the rules array — the daemon
+      rejects template requests that omit <code>mweb</code>, even though MWEB itself doesn't
+      need to be active for the requested block. This is inherited from Litecoin's MWEB rollout.
+    </p>
+    <pre><code># Correct
+burritocoin-cli getblocktemplate '{"rules":["segwit","mweb"]}'
+
+# Will error -8 "rule not supported"
+burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
+
+    <h3>RPC differences from Bitcoin Core</h3>
+    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+      <li>Default ports are 9226 / 9227 (mainnet), not 8332 / 8333.</li>
+      <li><code>getblocktemplate</code> requires <code>mweb</code> in <code>rules</code> as noted above.</li>
+      <li>Address formats use the BurritoCoin prefixes documented in section 2.</li>
+      <li>All other RPCs behave identically to Bitcoin Core 0.21.</li>
+    </ul>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- GENESIS PREMINE NOTE -->
+  <section id="premine">
+    <div class="section-label">5 — Genesis Premine Note</div>
+    <h2>Genesis Premine Note</h2>
+    <p>
+      The genesis block contains a single coinbase output of 148,000,000 BRTO locked to a
+      raw public key (P2PK), <em>not</em> a hashed address (P2PKH). This is deliberately
+      preserved in the chainstate — daemons and indexers must not strip the genesis coinbase
+      as unspendable (the way some Bitcoin-derived indexers do by default), or transactions
+      that later spend the premine will fail validation.
+    </p>
+    <p>
+      If you're building an explorer, indexer, or auditing tool: query the genesis transaction
+      by txid (<code>d347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83</code>),
+      not by any derived address. The premine output has no canonical base58/bech32 address
+      because P2PK outputs aren't address-indexed by convention.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SOFTWARE / RELEASES -->
+  <section id="software">
+    <div class="section-label">6 — Software &amp; Releases</div>
+    <h2>Software &amp; Releases</h2>
+    <p>
+      Source code is published at
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">github.com/BurritoCoinDev/BurritoCoin</a>.
+      Tagged releases (binaries for Linux, macOS, Windows) appear on the
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/releases" target="_blank" rel="noopener">Releases page</a>.
+    </p>
+
+    <h3>Building from source (Linux)</h3>
+    <pre><code># Daemon + CLI only (headless server build)
+git clone https://github.com/BurritoCoinDev/BurritoCoin
+cd BurritoCoin
+sudo apt install -y build-essential libtool autotools-dev automake \
+                    pkg-config bsdmainutils python3 libssl-dev libevent-dev \
+                    libboost-system-dev libboost-filesystem-dev \
+                    libboost-thread-dev libboost-test-dev \
+                    libdb-dev libdb++-dev libminiupnpc-dev libfmt-dev
+./autogen.sh
+./configure --without-gui --with-incompatible-bdb
+make -j$(nproc)
+# Output: src/burritocoind, src/burritocoin-cli, src/burritocoin-tx,
+# src/burritocoin-wallet
+
+# Add Qt deps for the GUI wallet (burritocoin-qt)
+sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools libqrencode-dev
+./configure --with-incompatible-bdb     # without --without-gui this time
+make -j$(nproc)
+# Output additionally: src/qt/burritocoin-qt</code></pre>
+
+    <h3>Cross-compilation</h3>
+    <p>
+      The standard <code>depends/</code> system from Bitcoin Core works for Windows
+      (<code>HOST=x86_64-w64-mingw32</code>) and macOS (<code>HOST=x86_64-apple-darwin</code>).
+      See <code>doc/build-windows.md</code> in the repo.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- BRAND ASSETS -->
+  <section id="brand">
+    <div class="section-label">7 — Brand Assets</div>
+    <h2>Brand Assets</h2>
+    <p>
+      For wallet UIs, exchange listings, explorer logos, and similar uses. Free to use as long
+      as you don't recolor or modify the wordmark.
+    </p>
+
+    <div class="spec-table-wrapper">
+      <table class="spec-table">
+      <tr><th>Coin name</th><td>BurritoCoin</td></tr>
+      <tr><th>Ticker</th><td>BRTO</td></tr>
+      <tr><th>Logo (SVG)</th><td><a href="/logo.svg" target="_blank">/logo.svg</a> — vector master</td></tr>
+      <tr><th>Logo (PNG, multiple sizes)</th><td><span class="spec-note">coming soon — for now, render <a href="/logo.svg">/logo.svg</a> at the size you need</span></td></tr>
+      <tr><th>Favicon (PNG, 32×32)</th><td><a href="/favicon-32.png" target="_blank">/favicon-32.png</a></td></tr>
+      <tr><th>Apple touch icon (256×256)</th><td><a href="/apple-touch-icon.png" target="_blank">/apple-touch-icon.png</a></td></tr>
+      <tr><th>Primary color</th><td><code>#f5a623</code> <span class="spec-note">(BurritoCoin gold)</span></td></tr>
+      <tr><th>Background color</th><td><code>#1a0f05</code> <span class="spec-note">(warm dark brown)</span></td></tr>
+      <tr><th>Accent color</th><td><code>#3b1f0a</code> <span class="spec-note">(brown)</span></td></tr>
+    </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-label">8 — Contact</div>
+    <h2>Contact</h2>
+    <p>
+      For exchange listing applications, wallet integration support, and partnership inquiries:
+    </p>
+    <p style="font-size: 1.1rem; margin-top: 1rem;">
+      <strong>GitHub Issues:</strong> <a href="https://github.com/BurritoCoinDev/BurritoCoin/issues" target="_blank" rel="noopener">github.com/BurritoCoinDev/BurritoCoin/issues</a>
+    </p>
+    <p style="margin-top: 0.5rem;">
+      A dedicated listings email is forthcoming. In the meantime, open a GitHub issue tagged
+      <code>listing</code> or <code>integration</code> and we'll respond there.
+    </p>
+    <p style="margin-top: 1.5rem;">
+      For technical bugs and code-level questions, open an issue at
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/issues" target="_blank" rel="noopener">GitHub Issues</a>.
+    </p>
+    <p style="margin-top: 1rem;">
+      Public-key signed proof-of-association (e.g., for sanctions screening or to confirm a
+      wallet ownership claim) can be coordinated via the email above.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="/spec.html">Spec</a>
+      · <a href="/mine.html">Mining guides</a>
+      · <a href="/run-a-node.html">Run a node</a>
+      · <a href="/wallets.html">Wallets</a>
+      · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      · <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>

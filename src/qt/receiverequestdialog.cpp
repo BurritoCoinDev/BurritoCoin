@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -89,6 +90,11 @@ void ReceiveRequestDialog::setInfo(const SendCoinsRecipient &_info)
         ui->wallet_tag->hide();
         ui->wallet_content->hide();
     }
+
+    // Make copying the receiving address the prominent, default action so the
+    // user can share it in one click (or by pressing Enter).
+    ui->btnCopyAddress->setDefault(true);
+    ui->btnCopyAddress->setFocus();
 }
 
 void ReceiveRequestDialog::updateDisplayUnit()

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2020 The BurritoCoin Core developers
+# Copyright (c) 2014-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test logic for skipping signature validation on old blocks.
 
 Test logic for skipping signature validation on blocks which we've assumed
-valid (https://github.com/burritocoin/burritocoin/pull/9484)
+valid (https://github.com/BurritoCoinDev/BurritoCoin/pull/9484)
 
 We build a chain that includes and invalid signature for one of the
 transactions:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2020 The BurritoCoin Core developers
+# Copyright (c) 2014-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Run regression test suite.
@@ -204,7 +205,7 @@ BASE_SCRIPTS = [
     'rpc_getblockfilter.py',
     'rpc_invalidateblock.py',
     'feature_rbf.py',
-    'ltc_replacebyfee.py',
+    'brto_replacebyfee.py',
     'mempool_packages.py',
     'mempool_package_onemore.py',
     'rpc_createmultisig.py',
@@ -694,7 +695,7 @@ class TestResult():
 def check_script_prefixes():
     """Check that test scripts start with one of the allowed name prefixes."""
 
-    good_prefixes_re = re.compile("(example|feature|interface|mempool|mining|p2p|rpc|wallet|tool|ltc|mweb)_")
+    good_prefixes_re = re.compile("(example|feature|interface|mempool|mining|p2p|rpc|wallet|tool|brto|ltc|mweb)_")
     bad_script_names = [script for script in ALL_SCRIPTS if good_prefixes_re.match(script) is None]
 
     if bad_script_names:

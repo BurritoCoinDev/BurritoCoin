@@ -74,9 +74,9 @@ if ! grep -q "^class BurritoCoin" "$COINS_PY"; then
 
 
 class BurritoCoin(Coin):
-    """BurritoCoin — Litecoin-derived chain, Scrypt PoW.
+    """BurritoCoin — Scrypt PoW cryptocurrency.
 
-    Constants mirror src/chainparams.cpp on the burritocoindev/burritocoin
+    Constants mirror src/chainparams.cpp on the BurritoCoinDev/BurritoCoin
     repo. If BurritoCoin parameters change (new prefixes, new network magic),
     update them here too and reindex the ElectrumX DB.
     """
@@ -100,9 +100,10 @@ class BurritoCoin(Coin):
 
     @classmethod
     def genesis_block(cls, block):
-        # The 148M BRTO premine sits in this coinbase. Do NOT strip it the way
-        # Bitcoin's default Coin.genesis_block() does, otherwise any later tx
-        # spending the premine fails with "UTXO not found in h table".
+        # The 148M BRTO premine sits in this coinbase. The default
+        # Coin.genesis_block() strips the genesis coinbase as unspendable,
+        # which would cause any later tx spending the premine to fail with
+        # "UTXO not found in h table". Override to preserve the UTXO.
         from electrumx.lib.hash import hash_to_hex_str
         header = cls.block_header(block, 0)
         header_hex_hash = hash_to_hex_str(cls.header_hash(header))

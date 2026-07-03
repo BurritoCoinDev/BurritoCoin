@@ -19,10 +19,6 @@ ExecStart=/usr/bin/burritocoind -daemon \
                             -conf=/etc/burritocoin/burritocoin.conf \
                             -datadir=/var/lib/burritocoind
 
-# Make sure the config directory is readable by the service user
-PermissionsStartOnly=true
-ExecStartPre=/bin/chgrp burritocoin /etc/burritocoin
-
 # Process management
 ####################
 

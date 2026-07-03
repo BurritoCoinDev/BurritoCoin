@@ -8,7 +8,8 @@
   --warm-bg: #1a0f05;
   --card-bg: #2a1608;
   --text: #f0e0c0;
-  --muted: #9a7a55;
+  --muted: #b89a72;      /* ~6.5:1 on --card-bg — was #9a7a55 (~4.3:1, below AA) */
+  --muted-dim: #9a7a55;  /* only for large/bold eyebrow labels where dim is intentional */
   --border: #5a3010;
   --code-bg: #0f0803;
 }
@@ -46,12 +47,15 @@ nav {
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--gold);
+  text-decoration: none;
 }
+.nav-logo:hover { text-decoration: none; color: var(--gold-light); }
 
 .nav-logo img { width: 32px; height: 32px; }
 
 .nav-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
   font-size: 0.9rem;
   font-weight: 500;
@@ -81,6 +85,7 @@ nav {
 .hero h1 {
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 800;
+  color: var(--gold); /* solid-gold fallback where background-clip:text is unsupported */
   background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -123,6 +128,7 @@ nav {
 .hero-sm h1 {
   font-size: clamp(2rem, 4.5vw, 3rem);
   font-weight: 800;
+  color: var(--gold); /* solid-gold fallback where background-clip:text is unsupported */
   background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -273,37 +279,6 @@ section li { margin-bottom: 0.4rem; }
 }
 
 /* ── WORTH BOX ── */
-.worth-box {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--gold);
-  border-radius: 0 12px 12px 0;
-  padding: 1.5rem 1.8rem;
-  margin-top: 1.5rem;
-}
-
-.worth-price {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: var(--gold);
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.worth-price span {
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--muted);
-  margin-left: 0.5rem;
-}
-
-.worth-box p {
-  font-size: 0.95rem;
-  color: var(--muted);
-  margin-bottom: 0.5rem;
-}
-
-.worth-box p:last-child { margin-bottom: 0; }
 
 .disclaimer {
   font-size: 0.75rem;
@@ -461,6 +436,71 @@ section li { margin-bottom: 0.4rem; }
   margin-bottom: 0.8rem;
 }
 
+/* ── SPEC TABLE ── */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.spec-table th,
+.spec-table td {
+  text-align: left;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.spec-table tr:last-child th,
+.spec-table tr:last-child td {
+  border-bottom: none;
+}
+.spec-table th {
+  font-weight: 600;
+  color: var(--muted);
+  width: 32%;
+  white-space: nowrap;
+}
+.spec-table td {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  word-break: break-all;
+  font-size: 0.92rem;
+}
+.spec-table td code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--gold-light);
+  font-size: inherit;
+}
+.spec-table .spec-note {
+  color: var(--muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-left: 0.5rem;
+}
+
+/* Prose variant of spec-table — readable sentences instead of monospace
+   hashes. Used on the wallets page comparison table. Overrides the
+   monospace + word-break:break-all that the technical key/value tables
+   rely on (those need to wrap long hex strings; prose must not split words). */
+.spec-table.prose td {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  word-break: normal;
+  overflow-wrap: break-word;
+  font-size: 0.95rem;
+  color: rgba(240, 224, 192, 0.85);
+}
+.spec-table.prose th {
+  white-space: normal;
+}
+
+@media (max-width: 600px) {
+  .spec-table th { white-space: normal; width: 38%; }
+  .spec-table th, .spec-table td { padding: 0.625rem 0.875rem; font-size: 0.82rem; }
+}
+
 /* ── CODE ── */
 code {
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
@@ -532,5 +572,40 @@ footer .footer-logo {
   nav { padding: 0.8rem 1rem; }
   .nav-links { gap: 1rem; font-size: 0.82rem; }
   .hero { padding: 3rem 1rem 2.5rem; }
-  pre { font-size: 0.8rem; }
+  pre { font-size: 0.8rem; -webkit-overflow-scrolling: touch; }
+  .hero-logo { width: clamp(80px, 22vw, 120px); height: auto; }
+  .spec-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ── ACCESSIBILITY ── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  background: var(--gold);
+  color: var(--brown);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  border-radius: 0 0 6px 0;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+  outline: 3px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.cpu-btn:focus-visible,
+.nav-links a:focus-visible,
+.os-card:focus-visible,
+a.skip-link:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+/* Wrap .spec-table in <div class="spec-table-wrapper"> for mobile horizontal scroll */
+.spec-table-wrapper {
+  width: 100%;
 }

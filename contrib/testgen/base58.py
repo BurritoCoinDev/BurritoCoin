@@ -1,10 +1,11 @@
-# Copyright (c) 2012-2018 The BurritoCoin Core developers
+# Copyright (c) 2012-2018 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
 BurritoCoin base58 encoding and decoding.
 
-Based on https://burritocointalk.org/index.php?topic=1026.0 (public domain)
+Based on https://bitcointalk.org/index.php?topic=1026.0 (public domain)
 '''
 import hashlib
 

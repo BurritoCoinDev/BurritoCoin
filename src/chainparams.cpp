@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2020 The BurritoCoin Core developers
+// Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -46,7 +47,9 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * P2PK output whose private key is held by the project founders. Its outputs
  * are added to the UTXO set when the block is connected.
  *
- * BurritoCoin genesis blocks (scrypt PoW, mined 2026-04-11):
+ * BurritoCoin genesis blocks (scrypt PoW). The chain first went live
+ * 2026-04-11; the genesis nTime (1773844916 / 2026-03-18 14:41:56 UTC) is
+ * back-dated to match the WSJ headline in the coinbase message below.
  *
  * Mainnet:
  *   nTime       = 1773844916
@@ -108,7 +111,7 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 6048; // 75% of 8064
-        consensus.nMinerConfirmationWindow = 8064; // ~3.5 days at 2.5 min/block
+        consensus.nMinerConfirmationWindow = 8064; // ~14 days at 2.5 min/block
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
@@ -146,8 +149,10 @@ public:
         pchMessageStart[3] = 0x4f; // 'O'
         nDefaultPort = 9227;
         nPruneAfterHeight = 100000;
-        m_assumed_blockchain_size = 40;
-        m_assumed_chain_state_size = 2;
+        // BurritoCoin mainnet launched 2026-04-11. These sizes are forward-looking
+        // estimates for new-node disk planning; revise upward as the chain grows.
+        m_assumed_blockchain_size = 1;
+        m_assumed_chain_state_size = 1;
 
         // Genesis block carries the 148,000,000 BRTO premine (spendable).
         genesis = CreateGenesisBlock(1773844916, 1958489, 0x1e0ffff0, 1, 148000000 * COIN);
@@ -158,7 +163,7 @@ public:
         vSeeds.clear();
         vSeeds.emplace_back("seed.burritoco.in"); // A record → 50.116.17.170; replace with a proper DNS seeder once one is deployed.
 
-        // BurritoCoin-specific prefixes (unique, not shared with Bitcoin or Litecoin):
+        // BurritoCoin Base58 prefixes:
         //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
         //   SECRET_KEY     = 153 → WIF private keys start with 'P' (compressed)
         //   SCRIPT_ADDRESS2 = 28 → Legacy P2SH-2 addresses start with 'C'
@@ -251,7 +256,8 @@ public:
         pchMessageStart[3] = 0x4e; // 'N' (BurriTo testNet)
         nDefaultPort = 19227;
         nPruneAfterHeight = 1000;
-        m_assumed_blockchain_size = 4;
+        // Testnet is small and resets periodically; 1 GB is a generous upper bound.
+        m_assumed_blockchain_size = 1;
         m_assumed_chain_state_size = 1;
 
         // Genesis block carries the 148,000,000 BRTO testnet premine (spendable).
@@ -310,7 +316,7 @@ public:
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in functional tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in functional tests)
         consensus.CSVHeight = 432; // CSV activated on regtest (Used in rpc activation tests)
-        consensus.SegwitHeight = 1; // SEGWIT is always activated on regtest unless overridden
+        consensus.SegwitHeight = 0; // SEGWIT is always activated on regtest unless overridden
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 3.5 * 24 * 60 * 60; // 3.5 days
@@ -353,6 +359,7 @@ public:
         genesis = CreateGenesisBlock(1296688602, 0, 0x207fffff, 1, 148000000 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0xc85abc7b5671cab1c04ca19cbd99a6ea6e22043e7007e4cd0e9c66b8177e8991"));
+        assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.

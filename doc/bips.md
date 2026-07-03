@@ -51,8 +51,12 @@ BIPs that are implemented by BurritoCoin Core (up-to-date up to **v0.21.1**):
 
 ------------------
 
-LIPs implemented by BurritoCoin Core (up-to-date up to v0.21.3)
-* [`LIP002`](https://github.com/litecoin-project/lips/blob/master/lip-0002.mediawiki): Extension blocks as a mechanism to implement new protocols to BurritoCoin without relaxing any consensus rules.
-* [`LIP003`](https://github.com/litecoin-project/lips/blob/master/lip-0003.mediawiki): Opt-in MimbleWimble through Extension Blocks.
-* [`LIP004`](https://github.com/litecoin-project/lips/blob/master/lip-0004.mediawiki): One sided MimbleWimble transactions without needing to build a transaction interactively with the receiving party. 
-* [`LIP006`](https://github.com/litecoin-project/lips/blob/c01068d06136fb21bf35fd6dac2977de60057714/LIP-0006.mediawiki): New p2p messages for supporting light-client syncing of MWEB components.
+BurritoCoin Core implements the following Litecoin Improvement Proposals
+(LIPs) as the basis of its MimbleWimble Extension Block (MWEB) feature.
+The specifications below are the upstream LIPs from the Litecoin project;
+BurritoCoin's implementation matches them, with adjustments for BurritoCoin's
+network parameters (magic bytes, HRPs, ports).
+* [`LIP-0002`](https://github.com/litecoin-project/lips/blob/master/lip-0002.mediawiki) — Extension blocks as a mechanism to implement new protocols without relaxing consensus rules.
+* [`LIP-0003`](https://github.com/litecoin-project/lips/blob/master/lip-0003.mediawiki) — Opt-in MimbleWimble through Extension Blocks.
+* [`LIP-0004`](https://github.com/litecoin-project/lips/blob/master/lip-0004.mediawiki) — One-sided MimbleWimble transactions without interactive setup.
+* [`LIP-0006`](https://github.com/litecoin-project/lips/blob/c01068d06136fb21bf35fd6dac2977de60057714/LIP-0006.mediawiki) — New P2P messages for light-client syncing of MWEB components.

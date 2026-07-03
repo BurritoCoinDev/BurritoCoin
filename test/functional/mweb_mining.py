@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2020 The BurritoCoin Core developers
+# Copyright (c) 2014-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test mining RPCs for MWEB blocks"""
@@ -8,7 +9,7 @@ from test_framework.blocktools import (create_coinbase, NORMAL_GBT_REQUEST_PARAM
 from test_framework.messages import (CBlock, MWEBBlock)
 from test_framework.test_framework import BurritoCoinTestFramework
 from test_framework.util import assert_equal
-from test_framework.ltc_util import create_hogex, get_mweb_header, setup_mweb_chain
+from test_framework.brto_util import create_hogex, get_mweb_header, setup_mweb_chain
 
 class MWEBMiningTest(BurritoCoinTestFramework):
     def set_test_params(self):

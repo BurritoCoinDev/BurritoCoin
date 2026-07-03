@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2015-2020 The BurritoCoin Core developers
+# Copyright (c) 2015-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
@@ -322,7 +323,7 @@ CHECKS = {
 ]
 }
 
-def identify_executable(executable) -> Optional[str]:
+def identify_executable(filename) -> Optional[str]:
     with open(filename, 'rb') as f:
         magic = f.read(4)
     if magic.startswith(b'MZ'):

@@ -1,4 +1,5 @@
-// Copyright (c) 2018-2020 The BurritoCoin Core developers
+// Copyright (c) 2018-2020 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -21,7 +22,7 @@
 #define CLIENT_VERSION_MINOR 21
 
 /* Build revision */
-#define CLIENT_VERSION_REVISION 3
+#define CLIENT_VERSION_REVISION 4
 
 /* Copyright holder(s) before %s replacement */
 #define COPYRIGHT_HOLDERS "The %s developers"
@@ -33,7 +34,7 @@
 #define COPYRIGHT_HOLDERS_SUBSTITUTION "BurritoCoin Core"
 
 /* Copyright year */
-#define COPYRIGHT_YEAR 2024
+#define COPYRIGHT_YEAR 2026
 
 /* Define to 1 to enable wallet functions */
 #define ENABLE_WALLET 1
@@ -247,22 +248,22 @@
 #define LT_OBJDIR ".libs/"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "https://github.com/burritocoin-project/burritocoin/issues"
+#define PACKAGE_BUGREPORT "https://github.com/BurritoCoinDev/BurritoCoin/issues"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "BurritoCoin Core"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "BurritoCoin Core 0.21.3"
+#define PACKAGE_STRING "BurritoCoin Core 0.21.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "burritocoin"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "https://burritocoin.org/"
+#define PACKAGE_URL "https://burritoco.in/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.21.3"
+#define PACKAGE_VERSION "0.21.4"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */

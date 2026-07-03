@@ -22,7 +22,7 @@ libtool
 pkg-config
 python37
 
-git clone https://github.com/burritocoindev/burritocoin.git
+git clone https://github.com/BurritoCoinDev/BurritoCoin.git
 ```
 
 See [dependencies.md](dependencies.md) for a complete overview.

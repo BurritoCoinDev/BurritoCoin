@@ -2,40 +2,39 @@
 
 #### Preparation:
 
-Make sure you obtain the proper release signing key and verify the fingerprint with several independent sources.
+Once BurritoCoin Core publishes its first signed release, the canonical
+release-signing key fingerprint will be added to
+[`contrib/gitian-keys/keys.txt`](../gitian-keys/keys.txt) and listed on the
+GitHub Releases page. Until that release exists, no canonical signing key
+is published — anyone claiming to sign BurritoCoin Core releases right now
+should not be trusted.
+
+When the key is published, fetch it and verify the fingerprint against the
+copy on the GitHub Releases page (and any other authoritative location):
 
 ```sh
-$ gpg --fingerprint "BurritoCoin Core binary release signing key"
-pub   4096R/36C2E964 2015-06-24 [expires: YYYY-MM-DD]
-      Key fingerprint = 01EA 5486 DE18 A882 D4C2  6845 90C8 019E 36C2 E964
-uid                  Wladimir J. van der Laan (BurritoCoin Core binary release signing key) <laanwj@gmail.com>
+gpg --fingerprint "<future fingerprint>"
 ```
 
 #### Usage:
 
-This script attempts to download the signature file `SHA256SUMS.asc` from https://burritocoin.org.
+This script attempts to download a release-checksum signature
+(`SHA256SUMS.asc`) from a release manifest URL and verify both the
+signature and the per-file hashes.
 
-It first checks if the signature passes, and then downloads the files specified in the file, and checks if the hashes of these files match those that are specified in the signature file.
-
-The script returns 0 if everything passes the checks. It returns 1 if either the signature check or the hash check doesn't pass. If an error occurs the return value is 2.
-
+It returns 0 if everything passes, 1 if either check fails, and 2 on any
+unexpected error.
 
 ```sh
-./verify.sh burritocoin-core-0.11.2
-./verify.sh burritocoin-core-0.12.0
-./verify.sh burritocoin-core-0.13.0-rc3
+./verify.sh burritocoin-core-0.1.0
+./verify.sh burritocoin-core-0.1.0-linux
+./verify.sh burritocoin-core-0.1.0-win64
+./verify.sh burritocoin-core-0.1.0-osx
 ```
 
-If you only want to download the binaries of certain platform, add the corresponding suffix, e.g.:
+If you don't want to keep the downloaded binaries, pass any value as the
+second argument:
 
 ```sh
-./verify.sh burritocoin-core-0.11.2-osx
-./verify.sh 0.12.0-linux
-./verify.sh burritocoin-core-0.13.0-rc3-win64
-```
-
-If you do not want to keep the downloaded binaries, specify anything as the second parameter.
-
-```sh
-./verify.sh burritocoin-core-0.13.0 delete
+./verify.sh burritocoin-core-0.1.0 delete
 ```

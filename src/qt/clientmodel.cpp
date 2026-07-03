@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,6 +15,7 @@
 #include <interfaces/node.h>
 #include <net.h>
 #include <netbase.h>
+#include <univalue.h>
 #include <util/system.h>
 #include <util/threadnames.h>
 #include <validation.h>
@@ -116,6 +118,17 @@ int ClientModel::getNumBlocks() const
         m_cached_num_blocks = m_node.getNumBlocks();
     }
     return m_cached_num_blocks;
+}
+
+double ClientModel::getNetworkHashPS() const
+{
+    try {
+        const UniValue res = m_node.executeRpc("getnetworkhashps", UniValue(UniValue::VARR), "");
+        if (res.isNum()) return res.get_real();
+    } catch (...) {
+        // RPC may be transiently unavailable (e.g. during shutdown) — treat as unknown.
+    }
+    return 0.0;
 }
 
 uint256 ClientModel::getBestBlockHash()

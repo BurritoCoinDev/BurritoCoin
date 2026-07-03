@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2019 The BurritoCoin Core developers
+# Copyright (c) 2018-2019 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Verify commits against a trusted keys list."""
@@ -16,7 +17,7 @@ GIT = os.getenv('GIT', 'git')
 def tree_sha512sum(commit='HEAD'):
     """Calculate the Tree-sha512 for the commit.
 
-    This is copied from github-merge.py. See https://github.com/burritocoin-core/burritocoin-maintainer-tools."""
+    This is copied from github-merge.py. See https://github.com/BurritoCoinDev/burritocoin-maintainer-tools."""
 
     # request metadata for entire tree, recursively
     files = []

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2020 The BurritoCoin Core developers
+# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Backwards compatibility functional test
@@ -291,7 +292,7 @@ class BackwardsCompatibilityTest(BurritoCoinTestFramework):
             os.path.join(node_master_wallets_dir, "u1_v16")
         )
         load_res = node_master.loadwallet("u1_v16")
-        # Make sure this wallet opens without warnings. See https://github.com/burritocoin/burritocoin/pull/19054
+        # Make sure this wallet opens without warnings. See https://github.com/BurritoCoinDev/BurritoCoin/pull/19054
         assert_equal(load_res['warning'], '')
         wallet = node_master.get_wallet_rpc("u1_v16")
         info = wallet.getaddressinfo(v16_addr)

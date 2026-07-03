@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wallets, Addresses &amp; Keys — How BurritoCoin Storage Actually Works</title>
+  <meta name="description" content="A plain-language guide to BurritoCoin (BRTO) wallets: the difference between a wallet and an address, why your address keeps changing, and the two secrets — your passphrase and your seed — that actually control your coins." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Wallets, Addresses & Keys — How BurritoCoin Storage Actually Works" />
+  <meta property="og:description" content="The difference between a wallet and an address, why your address keeps changing, and the two secrets that actually control your coins." />
+  <meta property="og:url" content="https://burritoco.in/wallets.html" />
+  <meta property="og:image" content="https://burritoco.in/apple-touch-icon.png" />
+  <meta property="og:site_name" content="BurritoCoin" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="canonical" href="https://burritoco.in/wallets.html" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
+</head>
+<body>
+
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <nav>
+    <a href="/" class="nav-logo" style="text-decoration:none;">
+      <img src="logo.svg" alt="BurritoCoin logo" />
+      BurritoCoin
+    </a>
+    <div class="nav-links">
+      <a href="/#about">About</a>
+      <a href="/#specs">Specs</a>
+      <a href="/#network">Network</a>
+      <a href="/mine.html">Mine</a>
+      <a href="/run-a-node.html">Run a Node</a>
+      <a href="/wallets.html" class="active">Wallets</a>
+      <a href="/spec.html">Spec</a>
+      <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+    </div>
+  </nav>
+
+  <div class="hero-sm">
+    <div class="breadcrumb"><a href="/">Home</a> → Wallets &amp; Keys</div>
+    <h1>Wallets, Addresses &amp; Keys</h1>
+    <p>
+      Everyone gets confused by this at first, and the confusion is completely
+      reasonable — the words "wallet," "address," "key," and "seed" get thrown
+      around as if they mean the same thing. They don't. Here's what each one
+      actually is, in plain language.
+    </p>
+  </div>
+
+  <hr class="divider" />
+
+  <section id="main">
+    <div class="section-label">The 10-Second Version</div>
+    <h2>One Sentence, Then We'll Unpack It</h2>
+    <p>
+      A <strong>wallet</strong> is a keychain that holds many keys. An
+      <strong>address</strong> is a single slot inside it. You
+      <strong>receive</strong> coins <em>to an address</em>, but you
+      <strong>spend</strong> coins <em>from a wallet</em> — because spending needs
+      the secret key, and the key lives in the wallet.
+    </p>
+    <div class="callout">
+      <strong>The big realization:</strong> you can hand out a hundred different
+      addresses and they all funnel into the <em>same</em> wallet. Addresses are
+      cheap, disposable, and unlimited. The wallet is the thing that actually
+      matters — and the thing you have to back up.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">The Core Distinction</div>
+    <h2>A Wallet Is Not an Address</h2>
+    <p>
+      Picture a wall of numbered mailboxes at a post office, and you own the whole
+      wall. Each individual mailbox is an <strong>address</strong> — anyone can
+      drop mail (coins) into any of them. The <strong>wallet</strong> is your master
+      key to the entire wall: it can open every box, collect what's inside, and
+      send it back out.
+    </p>
+    <p>
+      You can paint as many new mailbox numbers on the wall as you like — they cost
+      nothing and there's a practically infinite supply. Handing someone a mailbox
+      number lets them <em>pay you</em>. It does <strong>not</strong> let them open
+      the box, see your balance, or spend anything. Only the wallet's master key
+      does that.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🔑</span>
+        <h3>Wallet</h3>
+        <p>A file (or a seed phrase) that holds your private keys. One wallet contains hundreds of addresses. This is what you protect and back up.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📬</span>
+        <h3>Address</h3>
+        <p>A public destination like <code>brto1q…</code>. Safe to share, infinite supply, disposable. Lets people pay you — nothing more.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔏</span>
+        <h3>Private Key</h3>
+        <p>The secret behind an address that authorizes spending. Your wallet stores these for you. You almost never touch them directly.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:1.5rem;">
+      A BurritoCoin address usually looks like
+      <code>brto1qcyqdfumd8drep5027sh9a83ej3pma7fevpav7c</code> (the modern
+      "bech32" format) or starts with a capital <code>B</code> (the older "legacy"
+      format). Both are just public destinations. Neither one reveals anything
+      secret.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">The Part That Surprises Everyone</div>
+    <h2>Why Your Address Keeps Changing</h2>
+    <p>
+      Here's the detail that makes "just use the address" fall apart: <strong>the
+      address holding your money changes almost every time you spend.</strong> This
+      isn't a bug — it's how the chain works, and it's actually good for your
+      privacy.
+    </p>
+    <p>
+      BurritoCoin doesn't track balances like a bank ledger. It tracks
+      <strong>chunks of coin</strong> (the technical term is "UTXOs" — unspent
+      transaction outputs). Think of them as physical bills in your pocket. When you
+      pay, you hand over whole bills and get change back.
+    </p>
+
+    <div class="callout">
+      <strong>The burrito-stand analogy:</strong> you buy a $3 burrito with a $20
+      bill. You can't tear off exactly $3 — you hand over the whole $20 and the
+      cashier gives you $17 back. BurritoCoin works the same way: to send 3 BRTO
+      out of a 20-BRTO chunk, your wallet spends the whole 20 and sends 17 back to
+      you as <strong>change</strong>.
+    </div>
+
+    <p>
+      And here's the kicker: that 17 BRTO of change doesn't go back to the address
+      it came from. Your wallet automatically sends it to a brand-new
+      <strong>change address</strong> that it generated just for this purpose. So
+      after a single payment, the bulk of your money is sitting at an address you've
+      never seen and never wrote down.
+    </p>
+    <p>
+      This is exactly why you can't think in terms of addresses. The address is a
+      moving target. The <em>wallet</em> is the stable thing that always knows where
+      all your chunks are — across every address it has ever generated, including
+      all the automatic change ones. When a wallet shows you "your balance," it's
+      quietly adding up coins scattered across dozens of addresses behind the scenes.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">What Actually Controls Your Money</div>
+    <h2>The Two Secrets That Matter</h2>
+    <p>
+      If addresses are disposable and public, what's the part you guard with your
+      life? There are two, and they do different jobs. Confusing them is the most
+      common — and most expensive — mistake in crypto.
+    </p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      <h3>The seed / wallet file — the keys themselves</h3>
+      <p>
+        This is the <em>actual</em> control over your coins. It comes in one of two
+        forms depending on your wallet:
+      </p>
+      <ul>
+        <li><strong>A wallet file</strong> (<code>wallet.dat</code>) — what
+          BurritoCoin Core (<code>burritocoin-qt</code>) uses. Back it up by copying
+          the file, or by exporting its master key.</li>
+        <li><strong>A seed phrase</strong> — a list of 12 or 24 plain English words
+          used by lightweight and hardware wallets. Those words can mathematically
+          regenerate every key in the wallet, on any device, forever.</li>
+      </ul>
+      <p>
+        Whoever holds this holds the coins. Full stop. Write it on paper, store it
+        somewhere safe and offline, and never type it into a website, a chat, an
+        email, or a photo.
+      </p>
+    </div>
+
+    <div class="step">
+      <span class="step-number">2</span>
+      <h3>The passphrase — the lock on the file</h3>
+      <p>
+        A passphrase encrypts your wallet so that even someone who steals the file
+        can't spend from it without also knowing the passphrase. It's a second layer
+        — useful, but on its own it controls <em>nothing</em>. A passphrase with no
+        wallet file (and no seed) recovers exactly zero coins, because there's
+        nothing for it to unlock.
+      </p>
+    </div>
+
+    <div class="callout warn">
+      <strong>There is no "forgot password" button.</strong> No company holds a
+      backup. No support team can reset it. If you lose <em>both</em> your wallet
+      file and your seed, the coins are gone permanently — not frozen, not
+      recoverable, gone. This is the trade-off for there being no bank: total
+      control means total responsibility.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">In Practice</div>
+    <h2>How You'll Actually Use a Wallet</h2>
+    <p>
+      The command-line gymnastics you might see in our guides are just the wires
+      exposed. Most people never touch them. Here's how the three common kinds of
+      wallet feel to use:
+    </p>
+
+    <table class="spec-table prose">
+      <tr>
+        <th>Desktop wallet<br /><span class="spec-note">burritocoin-qt</span></th>
+        <td>
+          A normal app window with <strong>Balance</strong>, <strong>Send</strong>,
+          and <strong>Receive</strong> buttons. Click "Receive" to get an address to
+          hand out; click "Send," paste the recipient's address, type your passphrase,
+          done. It manages all the change addresses invisibly. Back up by saving the
+          wallet file.
+        </td>
+      </tr>
+      <tr>
+        <th>Mobile / hardware<br /><span class="spec-note">Electrum-style, Ledger, Trezor</span></th>
+        <td>
+          <strong>Seed-phrase first.</strong> You write down 12–24 words at setup and
+          that <em>is</em> your backup. A PIN or password adds protection but the words
+          are what restore your funds on any device. This is what most people use today.
+        </td>
+      </tr>
+      <tr>
+        <th>Exchange account<br /><span class="spec-note">custodial</span></th>
+        <td>
+          Just a username, password, and 2FA — but you hold <em>no</em> keys. The
+          exchange controls the coins on your behalf. Convenient, but "not your keys,
+          not your coins." If the exchange vanishes, so does your balance.
+        </td>
+      </tr>
+    </table>
+
+    <p>
+      The first two are <strong>self-custody</strong> — you and only you hold the
+      keys. The third is <strong>custodial</strong> — someone else does. BurritoCoin
+      is designed for self-custody; that's the whole point of a decentralized coin.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">The Cheat Sheet</div>
+    <h2>What You Actually Need to Remember</h2>
+    <p>
+      Strip away everything above and this is the entire mental model:
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📝</span>
+        <h3>Guard your seed / wallet file</h3>
+        <p>On paper, offline. This is your coins. Everything else is replaceable; this is not.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔐</span>
+        <h3>Remember your passphrase</h3>
+        <p>It unlocks the wallet for spending. Useless to anyone without the file, essential to you.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📤</span>
+        <h3>Know the recipient's address</h3>
+        <p>The only address you ever need to type is someone else's, when you're paying them.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤷</span>
+        <h3>Ignore your own addresses</h3>
+        <p>Your wallet tracks them all — including the auto-generated change ones — so you don't have to.</p>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:1.5rem;">
+      <strong>Nobody legitimate will ever ask for your seed or passphrase.</strong>
+      Not us, not "support," not a website, not an airdrop, not a giveaway. Anyone
+      who asks is trying to rob you. <strong>burritoco.in will never ask you to
+      enter a seed phrase or passphrase anywhere.</strong> Typing your seed into a
+      website is the single most common way people lose everything.
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section>
+    <div class="section-label">Frequently Asked Questions</div>
+    <h2>The Questions Everyone Eventually Asks</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>My address changed after I sent coins. Did I lose money?</h3>
+        <p>No. The leftover (your change) moved to a new address inside the same wallet. Your wallet still controls it and counts it in your balance. You only "lost" the old address as a label — the coins never left your control.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What's the difference between my passphrase and my seed?</h3>
+        <p>The seed (or wallet file) <em>is</em> the keys — it can recreate your whole wallet from scratch. The passphrase is just a lock on top of the file. Seed alone = full recovery. Passphrase alone = nothing. You need the seed/file to recover; the passphrase only unlocks an existing one for spending.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I reuse an address, or do I need a new one each time?</h3>
+        <p>You <em>can</em> reuse one and it'll keep working forever. But generating a fresh address per payment is better for privacy, since it makes it harder for outsiders to link all your transactions together. Wallets give you a new one on demand for free.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Someone paid an old address of mine. Is that money stuck?</h3>
+        <p>Not at all. Every address your wallet has ever generated stays spendable as long as you have the wallet (or its seed). Old addresses don't expire. The funds show up in your balance like any other.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Could two people randomly end up with the same address?</h3>
+        <p>Practically, no. There are more possible addresses than there are atoms in a very large number of planets. The odds of a collision are so small that the entire system safely assumes it never happens.</p>
+      </div>
+      <div class="faq-item">
+        <h3>If I back up my wallet today, does the backup cover addresses I make later?</h3>
+        <p>Yes — for modern wallets. They're "hierarchical deterministic" (HD), meaning every future address is derived from the same seed you already backed up. One seed backup covers all past <em>and</em> future addresses. (Very old wallet styles needed re-backups; today's don't.)</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="tight">
+    <div class="callout">
+      <strong>Next step:</strong> ready to actually hold some BRTO? You'll need a
+      node and a wallet — start with the
+      <a href="/run-a-node.html">Run a Node</a> guide, or jump into a
+      <a href="/mine.html">mining guide</a> to earn your first coins. Want the
+      deep technical parameters instead? See the <a href="/spec.html">full spec</a>.
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">🌯 BurritoCoin</div>
+    <p>
+      <a href="/">Home</a> · <a href="/spec.html">Spec</a>
+      · <a href="/mine.html">Mining guides</a>
+      · <a href="/run-a-node.html">Run a node</a>
+      · <a href="/wallets.html">Wallets</a>
+      · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
+      · <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
+    </p>
+    <p style="margin-top:0.8rem; font-size:0.78rem; opacity:0.5;">
+      This page is general education about how cryptocurrency wallets work. It is not
+      financial advice. BRTO is a burrito-themed cryptocurrency. Guard your keys.
+    </p>
+  </footer>
+
+</body>
+</html>

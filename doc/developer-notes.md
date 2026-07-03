@@ -280,7 +280,7 @@ run-time checks to keep track of which locks are held and adds warnings to the
 
 Valgrind is a programming tool for memory debugging, memory leak detection, and
 profiling. The repo contains a Valgrind suppressions file
-([`valgrind.supp`](https://github.com/litecoin-project/litecoin/blob/master/contrib/valgrind.supp))
+([`valgrind.supp`](https://github.com/BurritoCoinDev/BurritoCoin/blob/master/contrib/valgrind.supp))
 which includes known Valgrind warnings in our dependencies that cannot be fixed
 in-tree. Example use:
 
@@ -423,7 +423,7 @@ and its `cs_KeyStore` lock for example).
 Threads
 -------
 
-- [Main thread (`burritocoind`)](https://doxygen.bitcoincore.org/burritocoind_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
+- [Main thread (`burritocoind`)](https://doxygen.bitcoincore.org/bitcoind_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
   : Started from `main()` in `burritocoind.cpp`. Responsible for starting up and
   shutting down the application.
 
@@ -950,13 +950,13 @@ Current subtrees include:
   - Upstream at https://github.com/google/crc32c ; Maintained by Google.
 
 - src/secp256k1
-  - Upstream at https://github.com/burritocoin-core/secp256k1/ ; actively maintained by Core contributors.
+  - Upstream at https://github.com/BurritoCoinDev/secp256k1/ ; actively maintained by Core contributors.
 
 - src/crypto/ctaes
-  - Upstream at https://github.com/burritocoin-core/ctaes ; actively maintained by Core contributors.
+  - Upstream at https://github.com/BurritoCoinDev/ctaes ; actively maintained by Core contributors.
 
 - src/univalue
-  - Upstream at https://github.com/burritocoin-core/univalue ; actively maintained by Core contributors, deviates from upstream https://github.com/jgarzik/univalue
+  - Upstream at https://github.com/BurritoCoinDev/univalue ; actively maintained by Core contributors, deviates from upstream https://github.com/jgarzik/univalue
 
 Upgrading LevelDB
 ---------------------
@@ -1074,8 +1074,8 @@ Release notes should be written for any PR that:
 
 Release notes should be added to a PR-specific release note file at
 `/doc/release-notes-<PR number>.md` to avoid conflicts between multiple PRs.
-All `release-notes*` files are merged into a single
-[/doc/release-notes.md](/doc/release-notes.md) file prior to the release.
+All draft `release-notes*` snippets accumulated under [/doc/release-notes/](/doc/release-notes/)
+are merged into a single `release-notes-X.Y.Z.md` file at release time.
 
 RPC interface guidelines
 --------------------------

@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2020 The BurritoCoin Core developers
+// Copyright (c) 2009-2020 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -627,7 +628,7 @@ bool BerkeleyDatabase::Backup(const std::string& strDest) const
                         return false;
                     }
 
-                    fs::copy_file(pathSrc, pathDest, fs::copy_options::overwrite_existing);
+                    fs::copy_file(pathSrc, pathDest, fs::copy_option::overwrite_if_exists);
                     LogPrintf("copied %s to %s\n", strFile, pathDest.string());
                     return true;
                 } catch (const fs::filesystem_error& e) {

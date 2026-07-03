@@ -267,7 +267,7 @@
             <item row="3" column="0">
              <widget class="QLabel" name="labelImmatureText">
               <property name="text">
-               <string>Immature:</string>
+               <string>Newly mined (maturing):</string>
               </property>
              </widget>
             </item>
@@ -326,7 +326,7 @@
             <item row="0" column="2">
              <widget class="QLabel" name="labelWatchonly">
               <property name="text">
-               <string>Watch-only:</string>
+               <string>Watch-only (view only):</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -336,7 +336,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="labelBalanceText">
               <property name="text">
-               <string>Available:</string>
+               <string>Spendable now:</string>
               </property>
              </widget>
             </item>
@@ -395,14 +395,14 @@
             <item row="2" column="0">
              <widget class="QLabel" name="labelPendingText">
               <property name="text">
-               <string>Pending:</string>
+               <string>Incoming (unconfirmed):</string>
               </property>
              </widget>
             </item>
             <item row="0" column="1">
              <widget class="QLabel" name="labelSpendable">
               <property name="text">
-               <string>Spendable:</string>
+               <string>Your wallet:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

@@ -1,23 +1,23 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F4C430"/>
-      <stop offset="100%" stop-color="#C8941F"/>
+      <stop offset="0%" stop-color="#ffd170"/>
+      <stop offset="100%" stop-color="#f5a623"/>
     </linearGradient>
     <clipPath id="coinclip"><circle cx="256" cy="256" r="220"/></clipPath>
   </defs>
-  <circle cx="256" cy="256" r="232" fill="#B8860B"/>
+  <circle cx="256" cy="256" r="232" fill="#c47d0e"/>
   <circle cx="256" cy="256" r="220" fill="url(#gold)"/>
   <circle cx="256" cy="256" r="220" fill="none" stroke="#8B6914" stroke-width="4"/>
   <circle cx="256" cy="256" r="193" fill="none" stroke="#8B6914" stroke-width="2" stroke-dasharray="4,6"/>
   <g clip-path="url(#coinclip)">
     <path d="M 130 298 Q 120 246 172 215 Q 235 191 319 199 Q 392 211 402 256 Q 398 308 350 329 Q 266 343 193 335 Q 141 329 130 298 Z" fill="#8B6914" opacity="0.92"/>
-    <path d="M 130 298 Q 109 287 120 256 Q 130 235 156 231" fill="none" stroke="#6B4F0A" stroke-width="4"/>
-    <path d="M 402 256 Q 419 252 415 287 Q 406 314 381 322" fill="none" stroke="#6B4F0A" stroke-width="4"/>
-    <path d="M 203 211 Q 224 268 213 329" fill="none" stroke="#6B4F0A" stroke-width="2.5" opacity="0.7"/>
-    <path d="M 277 199 Q 294 268 283 339" fill="none" stroke="#6B4F0A" stroke-width="2.5" opacity="0.7"/>
-    <path d="M 350 207 Q 360 268 350 333" fill="none" stroke="#6B4F0A" stroke-width="2.5" opacity="0.7"/>
+    <path d="M 130 298 Q 109 287 120 256 Q 130 235 156 231" fill="none" stroke="#3b1f0a" stroke-width="4"/>
+    <path d="M 402 256 Q 419 252 415 287 Q 406 314 381 322" fill="none" stroke="#3b1f0a" stroke-width="4"/>
+    <path d="M 203 211 Q 224 268 213 329" fill="none" stroke="#3b1f0a" stroke-width="2.5" opacity="0.7"/>
+    <path d="M 277 199 Q 294 268 283 339" fill="none" stroke="#3b1f0a" stroke-width="2.5" opacity="0.7"/>
+    <path d="M 350 207 Q 360 268 350 333" fill="none" stroke="#3b1f0a" stroke-width="2.5" opacity="0.7"/>
   </g>
-  <text x="256" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="600" fill="#6B4F0A" letter-spacing="6">BRTO</text>
-  <text x="256" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="600" fill="#6B4F0A" letter-spacing="4">BURRITOCOIN</text>
+  <text x="256" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="600" fill="#3b1f0a" letter-spacing="6">BRTO</text>
+  <text x="256" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="600" fill="#3b1f0a" letter-spacing="4">BURRITOCOIN</text>
 </svg>

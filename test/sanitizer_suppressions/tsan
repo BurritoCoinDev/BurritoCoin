@@ -47,4 +47,4 @@ deadlock:src/qt/test/*
 # External libraries
 deadlock:libdb
 race:libzmq
-race:epoll_ctl  # https://github.com/burritocoin/burritocoin/pull/20218
+race:epoll_ctl  # https://github.com/BurritoCoinDev/BurritoCoin/pull/20218

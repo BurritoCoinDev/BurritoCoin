@@ -5,12 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mine BurritoCoin on macOS — Setup Guide</title>
   <meta name="description" content="Step-by-step guide to mining BurritoCoin (BRTO) on macOS using cpuminer-opt. Works on Intel and Apple Silicon." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Mine BurritoCoin on macOS — Setup Guide" />
+  <meta property="og:description" content="Step-by-step guide to mining BurritoCoin (BRTO) on macOS using cpuminer-opt. Works on Intel and Apple Silicon." />
+  <meta property="og:url" content="https://burritoco.in/mine-mac.html" />
+  <meta property="og:image" content="https://burritoco.in/apple-touch-icon.png" />
+  <meta property="og:site_name" content="BurritoCoin" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="canonical" href="https://burritoco.in/mine-mac.html" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
   <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
 </head>
 <body>
 
+  <a href="#main" class="skip-link">Skip to main content</a>
   <nav>
     <a href="/" class="nav-logo" style="text-decoration:none;">
       <img src="logo.svg" alt="BurritoCoin logo" />
@@ -19,9 +28,11 @@
     <div class="nav-links">
       <a href="/#about">About</a>
       <a href="/#specs">Specs</a>
-      <a href="/#worth">Worth</a>
+      <a href="/#network">Network</a>
       <a href="/mine.html" class="active">Mine</a>
       <a href="/run-a-node.html">Run a Node</a>
+      <a href="/wallets.html">Wallets</a>
+      <a href="/spec.html">Spec</a>
       <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
     </div>
   </nav>
@@ -35,11 +46,11 @@
 
   <hr class="divider" />
 
-  <section>
+  <section id="main">
     <div class="section-label">Step 1 of 5</div>
     <h2>Install BurritoCoin Core</h2>
 
-    <div class="step">
+    <div class="step" id="step-1">
       <span class="step-number">1</span>
       <h3>Open Terminal</h3>
       <p>Press <code>⌘ + Space</code>, type "Terminal", press Enter.</p>
@@ -63,7 +74,7 @@
     <div class="step">
       <span class="step-number">4</span>
       <h3>Clone the repo and build Berkeley DB 4.8</h3>
-      <pre><code>git clone https://github.com/burritocoindev/burritocoin.git
+      <pre><code>git clone https://github.com/BurritoCoinDev/BurritoCoin.git
 cd burritocoin
 ./contrib/install_db4.sh .</code></pre>
       <p>This downloads and builds BDB 4.8 into a <code>db4/</code> subfolder. Takes about
@@ -93,7 +104,7 @@ sudo make install</code></pre>
 
     <div class="callout">
       <strong>Full build instructions</strong> (including troubleshooting) are in
-      <a href="https://github.com/burritocoindev/burritocoin/blob/master/doc/build-osx.md" target="_blank" rel="noopener">doc/build-osx.md</a>.
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-osx.md" target="_blank" rel="noopener">doc/build-osx.md</a>.
     </div>
   </section>
 
@@ -258,6 +269,16 @@ burritocoin-cli listwallets</code></pre>
       <p>You're mining. The thread count matches your CPU's logical cores (yours
          may differ). The kH/s lines repeat continuously — that's normal idle
          hashing.</p>
+
+      <div class="callout">
+        <strong>If <code>cpuminer</code> errors with <code>rule not supported</code> or <code>error -8</code>:</strong>
+        BurritoCoin's daemon requires both <code>segwit</code> and <code>mweb</code> in
+        <code>getblocktemplate</code>'s <code>rules</code> array. Most recent
+        <code>cpuminer-opt</code> builds send these correctly. If yours doesn't, update to
+        the latest release from
+        <a href="https://github.com/JayDDee/cpuminer-opt/releases" target="_blank" rel="noopener">JayDDee/cpuminer-opt</a>
+        or use a fork that supports MWEB rules.
+      </div>
     </div>
 
     <div class="callout">
@@ -310,9 +331,12 @@ burritocoin-cli listwallets</code></pre>
   <footer>
     <div class="footer-logo">🌯 BurritoCoin</div>
     <p>
-      <a href="/">Home</a> · <a href="/mine.html">All mining guides</a>
+      <a href="/">Home</a> · <a href="/spec.html">Spec</a>
+      · <a href="/mine.html">Mining guides</a>
+      · <a href="/run-a-node.html">Run a node</a>
+      · <a href="/wallets.html">Wallets</a>
       · <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">Explorer</a>
-      · <a href="https://github.com/burritocoindev/burritocoin" target="_blank" rel="noopener">GitHub</a>
+      · <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
     </p>
   </footer>
 

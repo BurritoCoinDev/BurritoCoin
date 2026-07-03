@@ -1,4 +1,5 @@
-# Copyright (c) 2013-2016 The BurritoCoin Core developers
+# Copyright (c) 2013-2016 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -204,6 +205,7 @@ BURRITOCOIN_CORE_H = \
   memusage.h \
   merkleblock.h \
   miner.h \
+  stratumjob.h \
   mweb/mweb_db.h \
   mweb/mweb_miner.h \
   mweb/mweb_models.h \
@@ -360,6 +362,7 @@ libburritocoin_server_a_SOURCES = \
   interfaces/chain.cpp \
   interfaces/node.cpp \
   miner.cpp \
+  stratumjob.cpp \
   mweb/mweb_miner.cpp \
   mweb/mweb_node.cpp \
   net.cpp \

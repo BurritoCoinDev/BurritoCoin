@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018-2020 The BurritoCoin Core developers
+# Copyright (c) 2018-2020 The Bitcoin Core developers
+# Copyright (c) 2026 The BurritoCoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #
@@ -75,7 +76,7 @@ def download_binary(tag, args) -> int:
     os = 'linux' # TODO
     tarball = 'burritocoin-{tag}-{platform}.tar.gz'.format(
         tag=tag[1:], platform=args.platform)
-    tarballUrl = 'https://download.burritocoin.org/{release_path}/{os}/{tarball}'.format(
+    tarballUrl = 'https://download.burritoco.in/{release_path}/{os}/{tarball}'.format(
         release_path=release_path, os=os, tarball=tarball)
 
     print('Fetching: {tarballUrl}'.format(tarballUrl=tarballUrl))
@@ -117,7 +118,7 @@ def download_binary(tag, args) -> int:
 
 
 def build_release(tag, args) -> int:
-    githubUrl = "https://github.com/burritocoin-project/burritocoin"
+    githubUrl = "https://github.com/BurritoCoinDev/BurritoCoin"
     if args.remove_dir:
         if Path(tag).is_dir():
             shutil.rmtree(tag)

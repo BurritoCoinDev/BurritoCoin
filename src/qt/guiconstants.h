@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2026 The BurritoCoin Core developers
+// Copyright (c) 2011-2026 The Bitcoin Core developers
+// Copyright (c) 2026 The BurritoCoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -43,7 +44,7 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "BurritoCoin"
-#define QAPP_ORG_DOMAIN "burritocoin.org"
+#define QAPP_ORG_DOMAIN "burritoco.in"
 #define QAPP_APP_NAME_DEFAULT "BurritoCoin-Qt"
 #define QAPP_APP_NAME_TESTNET "BurritoCoin-Qt-testnet"
 #define QAPP_APP_NAME_SIGNET "BurritoCoin-Qt-signet"
