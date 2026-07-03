@@ -22,7 +22,10 @@ customization that turns vanilla btc-rpc-explorer into the BRTO explorer:
   exist for BRTO. Fix guards the branch so it falls through to the live
   RPC, which serves the tx (BRTO, unlike upstream Bitcoin, does index
   the genesis coinbase). Files: app/api/rpcApi.js, routes/baseRouter.js.
-- BTC-only marketing copy removed (app/coins/btcQuotes.js emptied).
+- Rotating quotes rewritten from Satoshi/Bitcoin lore to BurritoCoin bits
+  (app/coins/btcQuotes.js). The canonical, extensible list lives at
+  contrib/explorer/btcQuotes.js and is copied over app/coins/btcQuotes.js on
+  deploy (see below) — add new quotes there, not in the binary patch.
 
 The Mining Summary dup-row fix is kept OUT of the binary patch (see below):
 
@@ -49,6 +52,7 @@ The patch applies cleanly on top of upstream commit 26e282a
     git checkout 26e282a
     git apply /root/BurritoCoin/contrib/explorer/burritocoin-explorer.patch
     node /root/BurritoCoin/contrib/explorer/fix-mining-summary-dedup.js   # Mining Summary dup-row fix (idempotent)
+    cp /root/BurritoCoin/contrib/explorer/btcQuotes.js app/coins/btcQuotes.js   # canonical rotating quotes
     npm install
     # Copy your existing .env from the running box (RPC creds, port, etc.)
     systemctl enable --now btc-rpc-explorer
@@ -65,3 +69,12 @@ The Mining Summary dup-row fix is maintained as fix-mining-summary-dedup.js
 rather than in the binary patch. It is idempotent (a no-op if already
 present), so regenerating the patch above is safe whether or not that edit was
 committed into the explorer checkout first.
+
+## Adding rotating quotes
+
+Quotes live in contrib/explorer/btcQuotes.js (the canonical list), not in the
+binary patch. To add more: edit that file, then on the box copy it into place
+and restart:
+
+    cp /root/BurritoCoin/contrib/explorer/btcQuotes.js /opt/btc-rpc-explorer/app/coins/btcQuotes.js
+    systemctl restart btc-rpc-explorer
