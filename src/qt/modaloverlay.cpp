@@ -46,6 +46,11 @@ ModalOverlay::~ModalOverlay()
     delete ui;
 }
 
+void ModalOverlay::setWarningIcon(const QIcon& icon)
+{
+    ui->warningIcon->setIcon(icon);
+}
+
 bool ModalOverlay::eventFilter(QObject * obj, QEvent * ev) {
     if (obj == parent()) {
         if (ev->type() == QEvent::Resize) {

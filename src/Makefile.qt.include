@@ -110,6 +110,8 @@ BURRITOCOIN_QT_H = \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
   qt/bantablemodel.h \
+  qt/brand.h \
+  qt/brandstyle.h \
   qt/burritocoinaddressvalidator.h \
   qt/burritocoinamountfield.h \
   qt/burritocoin.h \
@@ -220,6 +222,7 @@ RES_ICONS = \
 
 BURRITOCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
+  qt/brandstyle.cpp \
   qt/burritocoin.cpp \
   qt/burritocoinaddressvalidator.cpp \
   qt/burritocoinamountfield.cpp \

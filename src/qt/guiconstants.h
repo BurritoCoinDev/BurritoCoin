@@ -19,21 +19,25 @@ static const int STATUSBAR_ICONSIZE = 16;
 
 static const bool DEFAULT_SPLASHSCREEN = true;
 
-/* Invalid field background style */
-#define STYLE_INVALID "background:#FF8080"
+/* These colors are PAINTED (model foreground roles / delegates), so the
+   app-wide stylesheet can't reach them. They are tuned for the warm-dark
+   brand theme (backgrounds #1a0f05/#2a1608 — see qt/brand.h). */
 
-/* Transaction list -- unconfirmed transaction */
-#define COLOR_UNCONFIRMED QColor(128, 128, 128)
-/* Transaction list -- negative amount */
-#define COLOR_NEGATIVE QColor(255, 0, 0)
-/* Transaction list -- bare address (without label) */
-#define COLOR_BAREADDRESS QColor(140, 140, 140)
+/* Invalid field background style */
+#define STYLE_INVALID "background:#5c1a14; color:#f0e0c0; border:1px solid #c0392b"
+
+/* Transaction list -- unconfirmed transaction (brand muted) */
+#define COLOR_UNCONFIRMED QColor(184, 154, 114)
+/* Transaction list -- negative amount (bright warm red, readable at 12px) */
+#define COLOR_NEGATIVE QColor(255, 93, 77)
+/* Transaction list -- bare address (without label) (brand muted-grey) */
+#define COLOR_BAREADDRESS QColor(154, 122, 85)
 /* Transaction list -- TX status decoration - open until date */
-#define COLOR_TX_STATUS_OPENUNTILDATE QColor(64, 64, 255)
+#define COLOR_TX_STATUS_OPENUNTILDATE QColor(122, 160, 255)
 /* Transaction list -- TX status decoration - danger, tx needs attention */
-#define COLOR_TX_STATUS_DANGER QColor(200, 100, 100)
-/* Transaction list -- TX status decoration - default color */
-#define COLOR_BLACK QColor(0, 0, 0)
+#define COLOR_TX_STATUS_DANGER QColor(224, 96, 77)
+/* Transaction list -- TX status decoration - default color (brand text) */
+#define COLOR_TX_STATUS_DEFAULT QColor(240, 224, 192)
 
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.

@@ -8,6 +8,7 @@
 #endif
 
 #include <qt/burritocoin.h>
+#include <qt/brandstyle.h>
 #include <qt/burritocoingui.h>
 
 #include <chainparams.h>
@@ -481,6 +482,11 @@ int GuiMain(int argc, char* argv[])
             app.setFont(appFont);
         }
     }
+
+    // Install the BurritoCoin warm-dark theme now: before the first dialog can
+    // appear (the first-run Intro shows ahead of the main window) and before
+    // setupPlatformStyle() below snapshots the palette for icon colorization.
+    brand::ApplyAppTheme(app);
 
     /// 2. Parse command-line options. We do this after qt in order to show an error if there are problems parsing these
     // Command-line options take precedence:

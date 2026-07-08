@@ -13,6 +13,7 @@
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
+#include <qt/brand.h>
 #include <qt/guiutil.h>
 #include <qt/networkstyle.h>
 #include <qt/walletmodel.h>
@@ -55,12 +56,12 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     pixmap.setDevicePixelRatio(devicePixelRatio);
 
     QPainter pixPaint(&pixmap);
-    pixPaint.setPen(QColor(100,100,100));
+    pixPaint.setPen(QColor(brand::Muted));
 
-    // draw a slightly radial gradient
+    // draw a slightly radial gradient (warm-dark, matching the app theme)
     QRadialGradient gradient(QPoint(0,0), splashSize.width()/devicePixelRatio);
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, QColor(247,247,247));
+    gradient.setColorAt(0, QColor(brand::CardBg));
+    gradient.setColorAt(1, QColor(0x14, 0x0a, 0x04));
     QRect rGradient(QPoint(0,0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
@@ -83,7 +84,9 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     pixPaint.setFont(QFont(font, 33*fontFactor));
     fm = pixPaint.fontMetrics();
     titleTextWidth  = GUIUtil::TextWidth(fm, titleText);
+    pixPaint.setPen(QColor(brand::Gold));
     pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight,paddingTop,titleText);
+    pixPaint.setPen(QColor(brand::Muted));
 
     pixPaint.setFont(QFont(font, 13*fontFactor));
 
@@ -176,7 +179,7 @@ static void InitMessage(SplashScreen *splash, const std::string &message)
         Qt::QueuedConnection,
         Q_ARG(QString, QString::fromStdString(message)),
         Q_ARG(int, Qt::AlignBottom|Qt::AlignHCenter),
-        Q_ARG(QColor, QColor(55,55,55)));
+        Q_ARG(QColor, QColor(brand::Text)));
     assert(invoked);
 }
 

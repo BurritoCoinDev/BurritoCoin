@@ -19,8 +19,12 @@ static const struct {
     /** Extra padding/spacing in transactionview */
     const bool useExtraSpacing;
 } platform_styles[] = {
-    {"macosx", false, false, true},
-    {"windows", true, false, false},
+    // colorizeIcons is on for every platform: the BurritoCoin warm-dark theme
+    // (see brandstyle.cpp, installed before PlatformStyle is instantiated)
+    // makes the raw dark icon glyphs invisible, and colorizing derives a
+    // brand-gold tint from the palette's Highlight color.
+    {"macosx", false, true, true},
+    {"windows", true, true, false},
     /* Other: linux, unix, ... */
     {"other", true, true, false}
 };

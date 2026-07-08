@@ -485,7 +485,7 @@ QVariant TransactionTableModel::txStatusDecoration(const WalletTxRecord *wtx) co
     case WalletTxStatus::NotAccepted:
         return QIcon(":/icons/transaction_0");
     default:
-        return COLOR_BLACK;
+        return COLOR_TX_STATUS_DEFAULT;
     }
 }
 

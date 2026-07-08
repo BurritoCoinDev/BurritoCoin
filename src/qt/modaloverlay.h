@@ -7,6 +7,7 @@
 #define BURRITOCOIN_QT_MODALOVERLAY_H
 
 #include <QDateTime>
+#include <QIcon>
 #include <QPropertyAnimation>
 #include <QWidget>
 
@@ -25,6 +26,10 @@ class ModalOverlay : public QWidget
 public:
     explicit ModalOverlay(bool enable_wallet, QWidget *parent);
     ~ModalOverlay();
+
+    //! Replace the raw warning glyph with a platform-tinted one (the raw
+    //! resource is near-black and invisible on the dark overlay card).
+    void setWarningIcon(const QIcon& icon);
 
     void tipUpdate(int count, const QDateTime& blockDate, double nVerificationProgress);
     void setKnownBestHeight(int count, const QDateTime& blockDate);

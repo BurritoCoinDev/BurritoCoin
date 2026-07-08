@@ -4,6 +4,7 @@
 
 #include <qt/miningpage.h>
 
+#include <qt/brand.h>
 #include <qt/clientmodel.h>
 #include <qt/miningmodel.h>
 #include <qt/walletmodel.h>
@@ -18,6 +19,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
+#include <QSizePolicy>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -48,17 +50,73 @@ QString FormatDuration(double seconds)
     if (days > 365000.0) return QObject::tr("more than a thousand years");
     return QObject::tr("about %n day(s)", "", qRound(days));
 }
+
+//! Rounded card frame shared by the hero / stats / settings sections.
+QFrame* MakeCard(QWidget* parent)
+{
+    QFrame* card = new QFrame(parent);
+    card->setObjectName(QStringLiteral("miningCard"));
+    card->setStyleSheet(QStringLiteral(
+        "QFrame#miningCard { background-color:%1; border:1px solid %2; border-radius:12px; }")
+        .arg(QLatin1String(brand::CardBg), QLatin1String(brand::Border)));
+    return card;
+}
+
+//! Small uppercase caption used above the big stat values.
+QLabel* MakeCaption(const QString& text, QWidget* parent)
+{
+    QLabel* caption = new QLabel(text, parent);
+    caption->setStyleSheet(QStringLiteral("color:%1; font-size:11px; font-weight:bold;")
+        .arg(QLatin1String(brand::Muted)));
+    return caption;
+}
+
+//! Status pill styles (Idle / Mining / Paused).
+QString PillStyle(const char* bg, const char* fg)
+{
+    return QStringLiteral(
+        "background-color:%1; color:%2; border-radius:11px; padding:4px 14px; font-weight:bold;")
+        .arg(QLatin1String(bg), QLatin1String(fg));
+}
+QString PillIdle()   { return PillStyle(brand::Surface, brand::Muted); }
+QString PillMining() { return PillStyle("#123f1e", brand::SuccessLight); }
+QString PillPaused() { return PillStyle("#4a2c08", brand::Gold); }
+
+//! The primary CTA: gold while idle ("Start Mining"), danger outline while
+//! mining ("Stop Mining").
+QString StartButtonStyle()
+{
+    return QStringLiteral(
+        "QPushButton { background-color:%1; color:%2; border:none; border-radius:8px;"
+        "  padding:10px 26px; font-weight:bold; font-size:14px; }"
+        "QPushButton:hover { background-color:%3; }"
+        "QPushButton:pressed { background-color:%4; }"
+        "QPushButton:disabled { background-color:%5; color:%6; }")
+        .arg(QLatin1String(brand::Gold), QLatin1String(brand::Brown),
+             QLatin1String(brand::Hover), QLatin1String(brand::GoldDark),
+             QLatin1String(brand::Surface), QLatin1String(brand::Disabled));
+}
+QString StopButtonStyle()
+{
+    return QStringLiteral(
+        "QPushButton { background-color:transparent; color:%1; border:1px solid %2;"
+        "  border-radius:8px; padding:10px 26px; font-weight:bold; font-size:14px; }"
+        "QPushButton:hover { background-color:#3a120d; }"
+        "QPushButton:pressed { background-color:#2a0d09; }")
+        .arg(QLatin1String(brand::DangerLight), QLatin1String(brand::Danger));
+}
 } // namespace
 
 MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     : QWidget(parent), m_platform_style(platform_style)
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(24, 18, 24, 18);
-    layout->setSpacing(12);
+    layout->setContentsMargins(28, 22, 28, 22);
+    layout->setSpacing(14);
 
     QLabel* title = new QLabel(tr("\xe2\x9b\x8f\xef\xb8\x8f  Mine BurritoCoin"), this);
-    title->setStyleSheet("font-size:18px; font-weight:bold; color:#f5a623;");
+    title->setStyleSheet(QStringLiteral("font-size:20px; font-weight:bold; color:%1;")
+        .arg(QLatin1String(brand::Gold)));
     layout->addWidget(title);
 
     QLabel* intro = new QLabel(tr(
@@ -68,43 +126,112 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
         "the rest of your computer responsive."), this);
     intro->setWordWrap(true);
     intro->setTextFormat(Qt::RichText);
+    intro->setStyleSheet(QStringLiteral("color:%1;").arg(QLatin1String(brand::Muted)));
     layout->addWidget(intro);
 
-    // --- Core selector -------------------------------------------------
+    // --- Hero card: status pill, live speed, start/stop CTA ---------------
+    QFrame* hero = MakeCard(this);
+    QVBoxLayout* hero_layout = new QVBoxLayout(hero);
+    hero_layout->setContentsMargins(20, 16, 20, 16);
+    hero_layout->setSpacing(6);
+
+    QHBoxLayout* hero_top = new QHBoxLayout;
+    m_status_value = new QLabel(tr("Idle"), hero);
+    m_status_value->setStyleSheet(PillIdle());
+    hero_top->addWidget(m_status_value, 0, Qt::AlignVCenter);
+    hero_top->addStretch(1);
+    m_start_stop = new QPushButton(tr("Start Mining"), hero);
+    m_start_stop->setMinimumHeight(44);
+    m_start_stop->setMinimumWidth(190);
+    m_start_stop->setCursor(Qt::PointingHandCursor);
+    m_start_stop->setStyleSheet(StartButtonStyle());
+    hero_top->addWidget(m_start_stop, 0, Qt::AlignVCenter);
+    hero_layout->addLayout(hero_top);
+
+    m_hashrate_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), hero);
+    m_hashrate_value->setStyleSheet(QStringLiteral("font-size:34px; font-weight:bold; color:%1;")
+        .arg(QLatin1String(brand::GoldLight)));
+    m_hashrate_value->setTextFormat(Qt::RichText); // errors surface here as small red text
+    hero_layout->addWidget(m_hashrate_value);
+
+    hero_layout->addWidget(MakeCaption(tr("CURRENT SPEED"), hero));
+    layout->addWidget(hero);
+
+    // --- Stat cards: blocks found + expected time to a block --------------
+    QHBoxLayout* stats_row = new QHBoxLayout;
+    stats_row->setSpacing(14);
+
+    QFrame* found_card = MakeCard(this);
+    QVBoxLayout* found_layout = new QVBoxLayout(found_card);
+    found_layout->setContentsMargins(20, 14, 20, 14);
+    found_layout->setSpacing(4);
+    found_layout->addWidget(MakeCaption(tr("BLOCKS FOUND THIS SESSION"), found_card));
+    m_blocks_value = new QLabel(QStringLiteral("0"), found_card);
+    m_blocks_value->setStyleSheet(QStringLiteral("font-size:18px; font-weight:bold; color:%1;")
+        .arg(QLatin1String(brand::Text)));
+    found_layout->addWidget(m_blocks_value);
+    stats_row->addWidget(found_card, 1);
+
+    QFrame* eta_card = MakeCard(this);
+    QVBoxLayout* eta_layout = new QVBoxLayout(eta_card);
+    eta_layout->setContentsMargins(20, 14, 20, 14);
+    eta_layout->setSpacing(4);
+    eta_layout->addWidget(MakeCaption(tr("ESTIMATED TIME TO A BLOCK"), eta_card));
+    m_eta_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), eta_card);
+    m_eta_value->setStyleSheet(QStringLiteral("font-size:18px; font-weight:bold; color:%1;")
+        .arg(QLatin1String(brand::Text)));
+    eta_layout->addWidget(m_eta_value);
+    stats_row->addWidget(eta_card, 1);
+
+    layout->addLayout(stats_row);
+
+    // --- Settings card: core selector + auto-pause options ----------------
     const int max_threads = MiningModel::maxThreads();
 
+    QFrame* settings_card = MakeCard(this);
+    QVBoxLayout* settings_layout = new QVBoxLayout(settings_card);
+    settings_layout->setContentsMargins(20, 14, 20, 16);
+    settings_layout->setSpacing(10);
+
+    QLabel* settings_header = new QLabel(tr("Mining settings"), settings_card);
+    settings_header->setStyleSheet(QStringLiteral("font-size:13px; font-weight:bold; color:%1;")
+        .arg(QLatin1String(brand::Gold)));
+    settings_layout->addWidget(settings_header);
+
     QHBoxLayout* cores_row = new QHBoxLayout;
-    QLabel* cores_caption = new QLabel(tr("Processor cores:"), this);
-    m_thread_slider = new QSlider(Qt::Horizontal, this);
+    QLabel* cores_caption = new QLabel(tr("Processor cores:"), settings_card);
+    m_thread_slider = new QSlider(Qt::Horizontal, settings_card);
     m_thread_slider->setMinimum(1);
     m_thread_slider->setMaximum(max_threads);
     m_thread_slider->setValue(1); // conservative default: a single core
     m_thread_slider->setPageStep(1);
     m_thread_slider->setTickPosition(QSlider::TicksBelow);
-    m_thread_label = new QLabel(this);
+    m_thread_label = new QLabel(settings_card);
     m_thread_label->setMinimumWidth(110);
     cores_row->addWidget(cores_caption);
     cores_row->addWidget(m_thread_slider, 1);
     cores_row->addWidget(m_thread_label);
-    layout->addLayout(cores_row);
+    settings_layout->addLayout(cores_row);
 
-    m_all_cores = new QCheckBox(tr("Use all cores"), this);
-    layout->addWidget(m_all_cores);
+    m_all_cores = new QCheckBox(tr("Use all cores"), settings_card);
+    settings_layout->addWidget(m_all_cores);
 
     QSettings pause_settings;
-    m_pause_battery = new QCheckBox(tr("Pause while on battery power"), this);
+    m_pause_battery = new QCheckBox(tr("Pause while on battery power"), settings_card);
     m_pause_battery->setChecked(pause_settings.value(QStringLiteral("mining/pause_on_battery"), true).toBool());
     connect(m_pause_battery, &QCheckBox::toggled, this, [](bool on) {
         QSettings().setValue(QStringLiteral("mining/pause_on_battery"), on);
     });
-    layout->addWidget(m_pause_battery);
+    settings_layout->addWidget(m_pause_battery);
 
-    m_pause_busy = new QCheckBox(tr("Pause while I'm using the computer"), this);
+    m_pause_busy = new QCheckBox(tr("Pause while I'm using the computer"), settings_card);
     m_pause_busy->setChecked(pause_settings.value(QStringLiteral("mining/pause_when_busy"), false).toBool());
     connect(m_pause_busy, &QCheckBox::toggled, this, [](bool on) {
         QSettings().setValue(QStringLiteral("mining/pause_when_busy"), on);
     });
-    layout->addWidget(m_pause_busy);
+    settings_layout->addWidget(m_pause_busy);
+
+    layout->addWidget(settings_card);
 
     if (max_threads <= 1) {
         // Single-core machine: nothing to choose.
@@ -112,56 +239,12 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
         m_all_cores->setEnabled(false);
     }
 
-    // --- Start / Stop --------------------------------------------------
-    m_start_stop = new QPushButton(tr("Start Mining"), this);
-    m_start_stop->setMinimumHeight(36);
-    m_start_stop->setStyleSheet("font-weight:bold;");
-    layout->addWidget(m_start_stop);
-
-    // --- Status readout ------------------------------------------------
-    QFrame* line = new QFrame(this);
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
-    layout->addWidget(line);
-
-    QHBoxLayout* status_row = new QHBoxLayout;
-    QLabel* status_caption = new QLabel(tr("Status:"), this);
-    m_status_value = new QLabel(tr("Idle"), this);
-    m_status_value->setStyleSheet("font-weight:bold;");
-    status_row->addWidget(status_caption);
-    status_row->addWidget(m_status_value);
-    status_row->addStretch(1);
-    layout->addLayout(status_row);
-
-    QHBoxLayout* speed_row = new QHBoxLayout;
-    QLabel* speed_caption = new QLabel(tr("Speed:"), this);
-    m_hashrate_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), this);
-    speed_row->addWidget(speed_caption);
-    speed_row->addWidget(m_hashrate_value);
-    speed_row->addStretch(1);
-    layout->addLayout(speed_row);
-
-    QHBoxLayout* found_row = new QHBoxLayout;
-    QLabel* found_caption = new QLabel(tr("Blocks found this session:"), this);
-    m_blocks_value = new QLabel(QStringLiteral("0"), this);
-    found_row->addWidget(found_caption);
-    found_row->addWidget(m_blocks_value);
-    found_row->addStretch(1);
-    layout->addLayout(found_row);
-
-    QHBoxLayout* eta_row = new QHBoxLayout;
-    QLabel* eta_caption = new QLabel(tr("Estimated time to a block:"), this);
-    m_eta_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), this);
-    eta_row->addWidget(eta_caption);
-    eta_row->addWidget(m_eta_value);
-    eta_row->addStretch(1);
-    layout->addLayout(eta_row);
-
     QLabel* maturity_note = new QLabel(tr(
         "Note: newly mined coins need 100 confirmations (about 4 hours) before they "
         "can be spent. They will appear as \xe2\x80\x9cimmature\xe2\x80\x9d until then."), this);
     maturity_note->setWordWrap(true);
-    maturity_note->setStyleSheet("color:#888;");
+    maturity_note->setStyleSheet(QStringLiteral("color:%1; font-size:12px;")
+        .arg(QLatin1String(brand::MutedGrey)));
     layout->addWidget(maturity_note);
 
     layout->addStretch(1);
@@ -282,9 +365,9 @@ void MiningPage::onThreadSliderChanged(int value)
 void MiningPage::onMiningStateChanged(bool mining)
 {
     m_start_stop->setText(mining ? tr("Stop Mining") : tr("Start Mining"));
+    m_start_stop->setStyleSheet(mining ? StopButtonStyle() : StartButtonStyle());
     m_status_value->setText(mining ? tr("Mining") : tr("Idle"));
-    m_status_value->setStyleSheet(mining ? "font-weight:bold; color:#1e8e3e;"
-                                         : "font-weight:bold;");
+    m_status_value->setStyleSheet(mining ? PillMining() : PillIdle());
     if (!mining) m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
     updateControlsEnabled();
 }
@@ -318,10 +401,11 @@ void MiningPage::onBlockFound(const QString& block_hash, int height)
 void MiningPage::onMiningError(const QString& message)
 {
     m_status_value->setText(tr("Idle"));
-    m_status_value->setStyleSheet("font-weight:bold;");
-    // A modal would be heavy for transient cases; surface inline in the speed slot.
-    m_hashrate_value->setText(QStringLiteral("<span style='color:#c0392b;'>%1</span>")
-                                  .arg(message.toHtmlEscaped()));
+    m_status_value->setStyleSheet(PillIdle());
+    // A modal would be heavy for transient cases; surface inline in the speed
+    // slot (small, so a long message doesn't render at hero size).
+    m_hashrate_value->setText(QStringLiteral("<span style='font-size:13px; color:%1;'>%2</span>")
+                                  .arg(QLatin1String(brand::DangerLight), message.toHtmlEscaped()));
 }
 
 void MiningPage::onPauseStateChanged(bool paused, const QString& reason)
@@ -329,11 +413,11 @@ void MiningPage::onPauseStateChanged(bool paused, const QString& reason)
     if (!m_miner || !m_miner->isMining()) return;
     if (paused) {
         m_status_value->setText(reason);
-        m_status_value->setStyleSheet("font-weight:bold; color:#c47d0e;");
+        m_status_value->setStyleSheet(PillPaused());
         m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
         m_eta_value->setText(QString::fromUtf8("\xe2\x80\x94"));
     } else {
         m_status_value->setText(tr("Mining"));
-        m_status_value->setStyleSheet("font-weight:bold; color:#1e8e3e;");
+        m_status_value->setStyleSheet(PillMining());
     }
 }

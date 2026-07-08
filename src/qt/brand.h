@@ -30,6 +30,15 @@ constexpr const char* Success = "#1e8e3e"; // done / safe / confirmed
 constexpr const char* Warning = "#c47d0e"; // caution (brand gold-dark)
 constexpr const char* MutedGrey = "#9a7a55"; // de-emphasized notes
 
+// Dark-theme derivatives (small text on WarmBg/CardBg needs brighter status
+// hues than the tokens above, which were tuned for large/bold copy)
+constexpr const char* Surface      = "#38220e"; // raised control surface (buttons)
+constexpr const char* AltRow       = "#221105"; // alternate table row on CodeBg
+constexpr const char* Hover        = "#ffc04d"; // gold hover (established in walletframe)
+constexpr const char* Disabled     = "#7a6444"; // disabled text on warm surfaces
+constexpr const char* DangerLight  = "#e0604d"; // danger text on dark backgrounds
+constexpr const char* SuccessLight = "#2eb85c"; // success text on dark backgrounds
+
 } // namespace brand
 
 #endif // BURRITOCOIN_QT_BRAND_H

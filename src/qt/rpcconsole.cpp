@@ -791,15 +791,17 @@ void RPCConsole::clear(bool clearHistory)
 
     // Set default style sheet
     QFontInfo fixedFontInfo(GUIUtil::fixedPitchFont());
+    // Colors tuned for the dark console (QTextDocument CSS is separate from
+    // the app-wide stylesheet, so brand values are repeated here; see brand.h).
     ui->messagesWidget->document()->setDefaultStyleSheet(
         QString(
                 "table { }"
-                "td.time { color: #808080; font-size: %2; padding-top: 3px; } "
+                "td.time { color: #9a7a55; font-size: %2; padding-top: 3px; } "
                 "td.message { font-family: %1; font-size: %2; white-space:pre-wrap; } "
-                "td.cmd-request { color: #006060; } "
-                "td.cmd-error { color: red; } "
-                ".secwarning { color: red; }"
-                "b { color: #006060; } "
+                "td.cmd-request { color: #ffd170; } "
+                "td.cmd-error { color: #e0604d; } "
+                ".secwarning { color: #e0604d; }"
+                "b { color: #ffd170; } "
             ).arg(fixedFontInfo.family(), QString("%1pt").arg(consoleFontSize))
         );
 

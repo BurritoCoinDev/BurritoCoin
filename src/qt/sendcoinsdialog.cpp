@@ -382,7 +382,7 @@ bool SendCoinsDialog::PrepareSendText(QString& question_string, QString& informa
         question_string.append(" (" + QString::number((double)m_current_transaction->getTransactionSize() / 1000) + " kB): ");
 
         // append transaction fee value
-        question_string.append("<span style='color:#aa0000; font-weight:bold;'>");
+        question_string.append("<span style='color:#e0604d; font-weight:bold;'>");
         question_string.append(BurritoCoinUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), txFee));
         question_string.append("</span><br />");
 
@@ -936,7 +936,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         m_coin_control->destChange = CNoDestination();
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:#e0604d;}"); // brand::DangerLight
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -962,13 +962,13 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditCoinControlChange->setText("");
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:#f0e0c0;}"); // brand::Text
                     ui->labelCoinControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:#f0e0c0;}"); // brand::Text
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);
