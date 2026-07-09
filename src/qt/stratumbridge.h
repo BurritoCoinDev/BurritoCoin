@@ -20,6 +20,8 @@ class CTxMemPool;
 class ChainstateManager;
 namespace interfaces { class Node; }
 
+class UniValue;
+
 QT_BEGIN_NAMESPACE
 class QTcpServer;
 class QTcpSocket;
@@ -92,6 +94,9 @@ private:
 
     void handleLine(Session& s, const QString& line);
     void sendJson(Session& s, const QString& obj);
+    void reply(Session& s, const UniValue& id, const UniValue& result, const UniValue& error);
+    void sendNotification(Session& s, const char* method, const UniValue& params);
+    void sendSetDifficulty(Session& s);
     void notifyJob(Session& s, bool clean_jobs);
     void notifyAll(bool clean_jobs);
     bool processSubmit(Session& s, const QString& job_id,
