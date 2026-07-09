@@ -543,6 +543,17 @@ void MiningPage::startExternal()
     if (!m_client_model) { onMiningError(tr("The node isn't ready yet.")); return; }
     if (!m_wallet_model) { onMiningError(tr("Open a wallet before mining.")); return; }
 
+    // Refuse to overlap runs. ExternalMiner::stop() is asynchronous (SIGTERM
+    // then a delayed hard-kill), so just after Stop the previous miner process
+    // may still be alive. Starting now would silently no-op ExternalMiner::start()
+    // and leave a phantom "Mining" state with no miner attached, which the old
+    // process's stopped() signal would then quietly revert to Idle. Ask the user
+    // to retry once the previous miner has fully exited.
+    if (m_external && m_external->isRunning()) {
+        onMiningError(tr("The previous miner is still shutting down \xe2\x80\x94 give it a moment, then press Start again."));
+        return;
+    }
+
     const QString program = m_miner_path ? m_miner_path->text().trimmed() : QString();
     if (program.isEmpty()) {
         onMiningError(tr("Choose a miner program first (Browse\xe2\x80\xa6)."));

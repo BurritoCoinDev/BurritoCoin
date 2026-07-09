@@ -52,6 +52,7 @@ constexpr int TIP_POLL_MS = 1500;     // new-tip detection
 constexpr int RATE_MS = 2000;         // hashrate estimate tick
 constexpr qint64 HASHRATE_WINDOW_MS = 15000;
 constexpr size_t JOB_RING = 8;        // recent jobs kept for stale-share tolerance
+constexpr int MAX_LINE_BYTES = 16 * 1024; // drop a client streaming a line past this
 } // namespace
 
 //! Per-connection state. Defined here (the header only forward-declares it).
@@ -165,6 +166,13 @@ void StratumBridge::onClientReadyRead()
     Session& s = *it.value();
 
     s.buffer += sock->readAll();
+    // A stratum request line is well under 1 KB. If a client streams past this
+    // cap without ever sending a newline, it is broken or hostile — drop it
+    // rather than let this single QByteArray grow until the process is OOM-killed.
+    if (s.buffer.size() > MAX_LINE_BYTES) {
+        sock->disconnectFromHost();
+        return;
+    }
     int nl;
     while ((nl = s.buffer.indexOf('\n')) >= 0) {
         const QByteArray raw = s.buffer.left(nl);
