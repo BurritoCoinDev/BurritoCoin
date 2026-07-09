@@ -1919,9 +1919,13 @@ QString BurritoCoinGUI::faqHtml() const
             "any old unencrypted copies.")},
     };
 
+    // The header is a plain block (not <h2>) with an explicit line-height: Qt's
+    // rich-text engine gives headings a tight intrinsic line spacing, so when the
+    // title wraps in the narrow dock it draws the second line on top of the first.
     QString body =
         "<div style='font-size:15px; line-height:1.4;'>"
-        "<h2 style='color:#f5a623; margin-bottom:2px;'>\xf0\x9f\x8c\xaf BurritoCoin \xe2\x80\x94 Help &amp; FAQ</h2>"
+        "<div style='color:#f5a623; font-size:18px; font-weight:bold; line-height:1.3; "
+        "margin:0 0 2px 0;'>\xf0\x9f\x8c\xaf BurritoCoin \xe2\x80\x94 Help &amp; FAQ</div>"
         "<p style='color:#c47d0e; margin-top:0;'>Keeping your coins safe.</p>";
     for (const QA& item : items) {
         body += "<p style='color:#f5a623; font-weight:bold; font-size:16px; margin-bottom:2px;'>"

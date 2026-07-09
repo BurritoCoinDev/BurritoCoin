@@ -591,11 +591,15 @@ void MiningPage::startExternal()
     if (m_miner_log) m_miner_log->clear();
     // scrypt over the localhost bridge; the miner's worker/password are ignored
     // (the bridge pays to the wallet-resolved script, not the stratum user).
+    // -t bounds the miner to the chosen core count; without it cpuminer grabs
+    // every core and ignores the slider. (Takes effect at launch — changing the
+    // core count while running requires Stop/Start.)
     const QStringList args = {
         QStringLiteral("-a"), QStringLiteral("scrypt"),
         QStringLiteral("-o"), QStringLiteral("stratum+tcp://127.0.0.1:%1").arg(port),
         QStringLiteral("-u"), QStringLiteral("brto"),
         QStringLiteral("-p"), QStringLiteral("x"),
+        QStringLiteral("-t"), QString::number(selectedThreadCount()),
     };
     m_external->start(program, args);
     QSettings().setValue(QStringLiteral("mining/external_path"), program);
