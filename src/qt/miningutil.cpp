@@ -69,15 +69,18 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
 bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
                         CTxMemPool*& mempool, QString& err)
 {
-    if (node.isInitialBlockDownload()) {
-        err = QObject::tr("BurritoCoin is still syncing. Mining becomes available once "
-                          "the blockchain is up to date.");
-        return false;
-    }
-
+    // Resolve the node context first. isInitialBlockDownload() dereferences the
+    // active chainstate, so calling it before we know the node is fully started
+    // could assert during a narrow startup window; check the context is up first.
     NodeContext* ctx = node.context();
     if (!ctx || !ctx->chainman || !ctx->mempool) {
         err = QObject::tr("Mining is unavailable right now: the node is not fully started.");
+        return false;
+    }
+
+    if (node.isInitialBlockDownload()) {
+        err = QObject::tr("BurritoCoin is still syncing. Mining becomes available once "
+                          "the blockchain is up to date.");
         return false;
     }
     chainman = ctx->chainman;
@@ -87,6 +90,7 @@ bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
 
 bool SubmitBlock(ChainstateManager& chainman, const CBlock& block, std::string& hashOut)
 {
+    bool new_block = false;
     bool accepted = false;
     try {
         // ProcessNewBlock takes cs_main itself (LOCKS_EXCLUDED) — safe to call
@@ -95,12 +99,24 @@ bool SubmitBlock(ChainstateManager& chainman, const CBlock& block, std::string& 
         // Stratum bridge gets the exact same full validation as an in-process one.
         auto shared_block = std::make_shared<const CBlock>(block);
         accepted = chainman.ProcessNewBlock(Params(), shared_block, /*fForceProcessing=*/true,
-                                            /*fNewBlock=*/nullptr);
+                                            /*fNewBlock=*/&new_block);
     } catch (const std::exception&) {
-        accepted = false;
+        return false;
     }
-    if (accepted) hashOut = block.GetHash().GetHex();
-    return accepted;
+    // ProcessNewBlock returns true even for a block we ALREADY have (its
+    // fAlreadyHave short-circuit returns true with fNewBlock left false) and for
+    // a valid block that lands on a side branch without becoming our tip.
+    // Reporting either as "found" would double-count a resent winning share or
+    // miscount an orphaned sibling. Only report a genuinely-new block that is
+    // now the active chain tip.
+    if (!accepted || !new_block) return false;
+    {
+        LOCK(cs_main);
+        const CBlockIndex* tip = chainman.ActiveTip();
+        if (!tip || tip->GetBlockHash() != block.GetHash()) return false;
+    }
+    hashOut = block.GetHash().GetHex();
+    return true;
 }
 
 } // namespace MiningUtil
