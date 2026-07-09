@@ -121,10 +121,10 @@ QString AppStyleSheet()
         "QTabBar::tab:hover { color: @TEXT@; }"
         "QTabBar::tab:selected { color: @GOLD@; border-bottom: 2px solid @GOLD@; }"
 
-        // Dock (Help & FAQ panel)
-        "QDockWidget { color: @GOLD@; font-weight: bold; }"
-        "QDockWidget::title { background-color: @CARD@; padding: 6px 10px;"
-        "  border-bottom: 1px solid @BORDER@; }"
+        // NOTE: the Help & FAQ dock title is deliberately NOT styled here.
+        // Styling QDockWidget::title breaks the title-bar geometry (the content
+        // widget overlaps the title). Fusion draws a clean dark title from the
+        // palette instead.
 
         // Card panels on the main pages (scoped by page to avoid QFrame blast radius)
         "QWidget#OverviewPage QFrame#frame, QWidget#OverviewPage QFrame#frame_2,"

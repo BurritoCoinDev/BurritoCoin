@@ -300,6 +300,11 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     progressBarLabel->setVisible(false);
     progressBar = new GUIUtil::ProgressBar();
     progressBar->setAlignment(Qt::AlignCenter);
+    // Reserve enough width for the "N units behind" sync text. The stretchy
+    // safety-tip banner beside it otherwise squeezes the bar down to ~"100%"
+    // width, clipping the text into a cramped little box.
+    progressBar->setMinimumWidth(GUIUtil::TextWidth(progressBar->fontMetrics(),
+                                                    QStringLiteral("199 minutes behind")) + 28);
     progressBar->setVisible(false);
 
     // Fusion renders the bar from the palette and flips the centered label
