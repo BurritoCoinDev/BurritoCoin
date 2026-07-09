@@ -8,12 +8,16 @@
 #include <QWidget>
 
 class ClientModel;
+class ExternalMiner;
 class MiningModel;
 class PlatformStyle;
+class StratumBridge;
 class WalletModel;
 
 class QCheckBox;
 class QLabel;
+class QLineEdit;
+class QPlainTextEdit;
 class QPushButton;
 class QSlider;
 
@@ -38,6 +42,10 @@ private Q_SLOTS:
     void onBlockFound(const QString& block_hash, int height);
     void onMiningError(const QString& message);
     void onPauseStateChanged(bool paused, const QString& reason);
+    void onUseExternalToggled(bool checked);
+    void onBrowseMiner();
+    void onExternalStopped(int exit_code);
+    void onMinerLog(const QString& line);
 
 private:
     void ensureMiner();
@@ -45,16 +53,32 @@ private:
     void updateControlsEnabled();
     int selectedThreadCount() const;
 
+    //! External-miner (Stratum-bridge) engine.
+    void startExternal();
+    void stopExternal();
+    void applyMiningUi(bool mining); //!< engine-agnostic hero pill/button update
+    bool isBusy() const;             //!< built-in mining OR external running
+
     const PlatformStyle* m_platform_style;
     ClientModel* m_client_model = nullptr;
     WalletModel* m_wallet_model = nullptr;
     MiningModel* m_miner = nullptr;
+
+    // External-miner engine: a localhost Stratum bridge fed by a child miner
+    // process (cpuminer-opt for tuned CPU, ccminer/sgminer for GPU).
+    StratumBridge* m_bridge = nullptr;
+    ExternalMiner* m_external = nullptr;
+    bool m_external_active = false;
 
     QSlider* m_thread_slider = nullptr;
     QLabel* m_thread_label = nullptr;
     QCheckBox* m_all_cores = nullptr;
     QCheckBox* m_pause_battery = nullptr;
     QCheckBox* m_pause_busy = nullptr;
+    QCheckBox* m_use_external = nullptr;
+    QLineEdit* m_miner_path = nullptr;
+    QPushButton* m_browse_button = nullptr;
+    QPlainTextEdit* m_miner_log = nullptr;
     QPushButton* m_start_stop = nullptr;
     QLabel* m_status_value = nullptr;
     QLabel* m_hashrate_value = nullptr;

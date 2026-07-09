@@ -6,17 +6,25 @@
 
 #include <qt/brand.h>
 #include <qt/clientmodel.h>
+#include <qt/externalminer.h>
 #include <qt/miningmodel.h>
+#include <qt/miningutil.h>
+#include <qt/stratumbridge.h>
 #include <qt/walletmodel.h>
 
 #include <chainparams.h>
+#include <script/script.h>
 
 #include <QCheckBox>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QLocale>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSettings>
 #include <QSlider>
@@ -231,6 +239,26 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     });
     settings_layout->addWidget(m_pause_busy);
 
+    // --- Advanced: mine with an external program (tuned CPU / GPU) ----------
+    // The wallet runs a private localhost Stratum bridge and feeds it with the
+    // chosen miner (cpuminer-opt for tuned CPU, ccminer/sgminer for GPU), which
+    // are far faster than the in-process engine. (Phase 3 makes the GPU case
+    // auto-detect + auto-download; for now the path is chosen here.)
+    m_use_external = new QCheckBox(
+        tr("Use an external miner program (advanced \xe2\x80\x94 much faster / GPU)"), settings_card);
+    settings_layout->addWidget(m_use_external);
+
+    QHBoxLayout* miner_row = new QHBoxLayout;
+    QLabel* miner_caption = new QLabel(tr("Miner program:"), settings_card);
+    m_miner_path = new QLineEdit(settings_card);
+    m_miner_path->setPlaceholderText(tr("path to cpuminer / ccminer / sgminer"));
+    m_miner_path->setText(QSettings().value(QStringLiteral("mining/external_path")).toString());
+    m_browse_button = new QPushButton(tr("Browse\xe2\x80\xa6"), settings_card);
+    miner_row->addWidget(miner_caption);
+    miner_row->addWidget(m_miner_path, 1);
+    miner_row->addWidget(m_browse_button);
+    settings_layout->addLayout(miner_row);
+
     layout->addWidget(settings_card);
 
     if (max_threads <= 1) {
@@ -238,6 +266,20 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
         m_thread_slider->setEnabled(false);
         m_all_cores->setEnabled(false);
     }
+
+    // External-miner output, shown only while the external engine is selected so
+    // a failed handshake is visible instead of a black box.
+    m_miner_log = new QPlainTextEdit(this);
+    m_miner_log->setReadOnly(true);
+    m_miner_log->setMaximumBlockCount(500);
+    m_miner_log->setFixedHeight(140);
+    m_miner_log->setPlaceholderText(tr("Miner output will appear here."));
+    m_miner_log->setStyleSheet(QStringLiteral(
+        "QPlainTextEdit { background:%1; color:%2; border:1px solid %3; border-radius:8px;"
+        " font-family:Consolas,'Courier New',monospace; font-size:11px; padding:6px; }")
+        .arg(QLatin1String(brand::CodeBg), QLatin1String(brand::Muted), QLatin1String(brand::Border)));
+    m_miner_log->setVisible(false);
+    layout->addWidget(m_miner_log);
 
     QLabel* maturity_note = new QLabel(tr(
         "Note: newly mined coins need 100 confirmations (about 4 hours) before they "
@@ -252,6 +294,8 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     connect(m_start_stop, &QPushButton::clicked, this, &MiningPage::onStartStopClicked);
     connect(m_all_cores, &QCheckBox::toggled, this, &MiningPage::onUseAllCoresToggled);
     connect(m_thread_slider, &QSlider::valueChanged, this, &MiningPage::onThreadSliderChanged);
+    connect(m_use_external, &QCheckBox::toggled, this, &MiningPage::onUseExternalToggled);
+    connect(m_browse_button, &QPushButton::clicked, this, &MiningPage::onBrowseMiner);
 
     updateThreadLabel();
     updateControlsEnabled();
@@ -268,7 +312,14 @@ void MiningPage::setClientModel(ClientModel* client_model)
     // thread BEFORE the node — and thus the mempool/chainstate the workers
     // touch — is torn down. Stop and join the workers here so they can never run
     // against freed node objects. stop() is a no-op if not mining.
-    if (!client_model && m_miner) m_miner->stop();
+    if (!client_model) {
+        if (m_miner) m_miner->stop();
+        // Kill the external miner and stop the bridge before the node (and the
+        // chainstate/mempool the bridge holds) is torn down.
+        if (m_external) m_external->stop();
+        if (m_bridge) m_bridge->stop();
+        m_external_active = false;
+    }
     m_client_model = client_model;
     ensureMiner();
     updateControlsEnabled();
@@ -308,40 +359,54 @@ void MiningPage::updateThreadLabel()
 
 void MiningPage::updateControlsEnabled()
 {
-    const bool mining = m_miner && m_miner->isMining();
-    const bool can_mine = (m_miner != nullptr) && (m_wallet_model != nullptr);
+    const bool busy = isBusy();
+    const bool ext = m_use_external && m_use_external->isChecked();
+    const bool can_mine = m_wallet_model != nullptr && (ext || m_miner != nullptr);
     const int max_threads = MiningModel::maxThreads();
 
-    m_start_stop->setEnabled(can_mine || mining);
-    // Core selection is locked while mining; stop first to change it.
-    m_thread_slider->setEnabled(!mining && max_threads > 1);
-    m_all_cores->setEnabled(!mining && max_threads > 1);
+    m_start_stop->setEnabled(can_mine || busy);
+
+    // Built-in core controls apply to the in-process engine only, and lock while
+    // busy; the external miner manages its own threads.
+    const bool core_ok = !busy && !ext && max_threads > 1;
+    m_thread_slider->setEnabled(core_ok);
+    m_all_cores->setEnabled(core_ok);
+    if (m_pause_battery) m_pause_battery->setEnabled(!busy && !ext);
+    if (m_pause_busy) m_pause_busy->setEnabled(!busy && !ext);
+
+    // Engine choice + miner path can only change while stopped.
+    if (m_use_external) m_use_external->setEnabled(!busy);
+    if (m_miner_path) m_miner_path->setEnabled(ext && !busy);
+    if (m_browse_button) m_browse_button->setEnabled(ext && !busy);
 }
 
 void MiningPage::onStartStopClicked()
 {
-    if (!m_miner) return;
-    if (m_miner->isMining()) {
-        m_miner->stop();
-    } else {
-        // One-time disclosure before the very first mining start.
-        QSettings settings;
-        if (!settings.value(QStringLiteral("mining/disclosure_shown"), false).toBool()) {
-            QMessageBox::information(this, tr("About mining"), tr(
-                "Mining runs your processor hard \xe2\x80\x94 it uses electricity and produces heat. "
-                "A few things to know:\n\n"
-                "\xe2\x80\xa2 Your antivirus may flag the wallet as a \xe2\x80\x9ccoin miner\xe2\x80\x9d. "
-                "That is expected for mining software; if it quarantines the wallet, restore it from "
-                "your antivirus's quarantine list.\n\n"
-                "\xe2\x80\xa2 Newly mined coins are \xe2\x80\x9cimmature\xe2\x80\x9d for 100 confirmations "
-                "(about 4 hours) before you can spend them.\n\n"
-                "\xe2\x80\xa2 You can have mining pause automatically on battery or while you're using "
-                "the computer, in Settings \xe2\x80\xba Mining.\n\n"
-                "This won't be shown again."));
-            settings.setValue(QStringLiteral("mining/disclosure_shown"), true);
-        }
-        m_miner->start(selectedThreadCount());
+    const bool ext = m_use_external && m_use_external->isChecked();
+
+    // Stop path.
+    if (m_external_active) { stopExternal(); return; }
+    if (!ext && m_miner && m_miner->isMining()) { m_miner->stop(); return; }
+
+    // Start path — the one-time disclosure applies to any engine.
+    QSettings settings;
+    if (!settings.value(QStringLiteral("mining/disclosure_shown"), false).toBool()) {
+        QMessageBox::information(this, tr("About mining"), tr(
+            "Mining runs your processor hard \xe2\x80\x94 it uses electricity and produces heat. "
+            "A few things to know:\n\n"
+            "\xe2\x80\xa2 Your antivirus may flag the wallet or the miner as a \xe2\x80\x9ccoin "
+            "miner\xe2\x80\x9d. That is expected for mining software; if it quarantines it, restore "
+            "it from your antivirus's quarantine list.\n\n"
+            "\xe2\x80\xa2 Newly mined coins are \xe2\x80\x9cimmature\xe2\x80\x9d for 100 confirmations "
+            "(about 4 hours) before you can spend them.\n\n"
+            "\xe2\x80\xa2 You can have mining pause automatically on battery or while you're using "
+            "the computer, in Settings \xe2\x80\xba Mining.\n\n"
+            "This won't be shown again."));
+        settings.setValue(QStringLiteral("mining/disclosure_shown"), true);
     }
+
+    if (ext) startExternal();
+    else if (m_miner) m_miner->start(selectedThreadCount());
 }
 
 void MiningPage::onUseAllCoresToggled(bool checked)
@@ -364,12 +429,7 @@ void MiningPage::onThreadSliderChanged(int value)
 
 void MiningPage::onMiningStateChanged(bool mining)
 {
-    m_start_stop->setText(mining ? tr("Stop Mining") : tr("Start Mining"));
-    m_start_stop->setStyleSheet(mining ? StopButtonStyle() : StartButtonStyle());
-    m_status_value->setText(mining ? tr("Mining") : tr("Idle"));
-    m_status_value->setStyleSheet(mining ? PillMining() : PillIdle());
-    if (!mining) m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
-    updateControlsEnabled();
+    applyMiningUi(mining);
 }
 
 void MiningPage::onHashrate(double hashes_per_sec)
@@ -405,6 +465,14 @@ void MiningPage::onBlockFound(const QString& block_hash, int height)
 
 void MiningPage::onMiningError(const QString& message)
 {
+    // If the external engine errored (launch failure / bridge issue / crash),
+    // tear it down before surfacing the message.
+    if (m_external_active) {
+        if (m_external) m_external->stop();
+        if (m_bridge) m_bridge->stop();
+        m_external_active = false;
+        applyMiningUi(false);
+    }
     m_status_value->setText(tr("Idle"));
     m_status_value->setStyleSheet(PillIdle());
     // A modal would be heavy for transient cases; surface inline in the speed
@@ -425,4 +493,117 @@ void MiningPage::onPauseStateChanged(bool paused, const QString& reason)
         m_status_value->setText(tr("Mining"));
         m_status_value->setStyleSheet(PillMining());
     }
+}
+
+// --- External-miner (Stratum-bridge) engine ------------------------------
+
+bool MiningPage::isBusy() const
+{
+    return (m_miner && m_miner->isMining()) || m_external_active;
+}
+
+void MiningPage::applyMiningUi(bool mining)
+{
+    m_start_stop->setText(mining ? tr("Stop Mining") : tr("Start Mining"));
+    m_start_stop->setStyleSheet(mining ? StopButtonStyle() : StartButtonStyle());
+    m_status_value->setText(mining ? tr("Mining") : tr("Idle"));
+    m_status_value->setStyleSheet(mining ? PillMining() : PillIdle());
+    if (!mining) m_hashrate_value->setText(QString::fromUtf8("\xe2\x80\x94"));
+    updateControlsEnabled();
+}
+
+void MiningPage::onUseExternalToggled(bool checked)
+{
+    if (m_miner_log) m_miner_log->setVisible(checked);
+    updateControlsEnabled();
+}
+
+void MiningPage::onMinerLog(const QString& line)
+{
+    if (m_miner_log) m_miner_log->appendPlainText(line);
+}
+
+void MiningPage::onBrowseMiner()
+{
+    const QString current = m_miner_path ? m_miner_path->text() : QString();
+    const QString start_dir = current.isEmpty() ? QString() : QFileInfo(current).absolutePath();
+    const QString file = QFileDialog::getOpenFileName(
+        this, tr("Choose miner program"), start_dir,
+#ifdef Q_OS_WIN
+        tr("Programs (*.exe);;All files (*)")
+#else
+        tr("All files (*)")
+#endif
+    );
+    if (!file.isEmpty() && m_miner_path) m_miner_path->setText(file);
+}
+
+void MiningPage::startExternal()
+{
+    if (!m_client_model) { onMiningError(tr("The node isn't ready yet.")); return; }
+    if (!m_wallet_model) { onMiningError(tr("Open a wallet before mining.")); return; }
+
+    const QString program = m_miner_path ? m_miner_path->text().trimmed() : QString();
+    if (program.isEmpty()) {
+        onMiningError(tr("Choose a miner program first (Browse\xe2\x80\xa6)."));
+        return;
+    }
+
+    // Resolve the wallet payout (same cache/behaviour as the in-process miner).
+    CScript payout;
+    QString err;
+    if (!MiningUtil::ResolveCoinbaseScript(m_wallet_model, payout, err)) {
+        onMiningError(err);
+        return;
+    }
+
+    if (!m_bridge) {
+        m_bridge = new StratumBridge(m_client_model->node(), this);
+        connect(m_bridge, &StratumBridge::hashrateChanged, this, &MiningPage::onHashrate);
+        connect(m_bridge, &StratumBridge::blockFound, this, &MiningPage::onBlockFound);
+        connect(m_bridge, &StratumBridge::error, this, &MiningPage::onMiningError);
+    }
+    const quint16 port = m_bridge->start(payout, 0);
+    if (port == 0) {
+        onMiningError(tr("Could not start the local mining bridge."));
+        return;
+    }
+
+    if (!m_external) {
+        m_external = new ExternalMiner(this);
+        connect(m_external, &ExternalMiner::failed, this, &MiningPage::onMiningError);
+        connect(m_external, &ExternalMiner::stopped, this, &MiningPage::onExternalStopped);
+        connect(m_external, &ExternalMiner::logLine, this, &MiningPage::onMinerLog);
+    }
+    if (m_miner_log) m_miner_log->clear();
+    // scrypt over the localhost bridge; the miner's worker/password are ignored
+    // (the bridge pays to the wallet-resolved script, not the stratum user).
+    const QStringList args = {
+        QStringLiteral("-a"), QStringLiteral("scrypt"),
+        QStringLiteral("-o"), QStringLiteral("stratum+tcp://127.0.0.1:%1").arg(port),
+        QStringLiteral("-u"), QStringLiteral("brto"),
+        QStringLiteral("-p"), QStringLiteral("x"),
+    };
+    m_external->start(program, args);
+    QSettings().setValue(QStringLiteral("mining/external_path"), program);
+
+    m_external_active = true;
+    applyMiningUi(true);
+}
+
+void MiningPage::stopExternal()
+{
+    if (m_external) m_external->stop();
+    if (m_bridge) m_bridge->stop();
+    m_external_active = false;
+    applyMiningUi(false);
+}
+
+void MiningPage::onExternalStopped(int exit_code)
+{
+    Q_UNUSED(exit_code);
+    if (!m_external_active) return; // already torn down by stopExternal()/onMiningError()
+    if (m_bridge) m_bridge->stop();
+    m_external_active = false;
+    applyMiningUi(false);
 }
