@@ -37,8 +37,15 @@ namespace {
 //! submission is gated on the real NETWORK target regardless of this value, so
 //! it only affects the readout, never correctness. (Per-miner vardiff is a
 //! future refinement.)
-constexpr double SHARE_DIFFICULTY = 1.0 / 16384.0;
-constexpr double HASHES_PER_DIFF1 = 4294967296.0; // 2^32
+//!
+//! For scrypt, cpuminer scales the stratum share difficulty by 2^16 before
+//! deriving the share target (`diff_to_target(diff / 65536)`), so one share at
+//! difficulty D is ~ D * 65536 hashes — NOT D * 2^32 as for a SHA-256d chain.
+//! At D=2 that is ~131072 hashes/share, i.e. a ~400 kH/s CPU submits ~3
+//! shares/s: frequent enough for a smooth readout, sparse enough not to flood
+//! the socket. (The old 1/16384 value meant ~4 hashes/share — a share storm.)
+constexpr double SHARE_DIFFICULTY = 2.0;
+constexpr double HASHES_PER_SHARE_DIFF1 = 65536.0; // scrypt share basis, 2^16
 
 constexpr int JOB_REFRESH_MS = 30000; // ntime-roll / template refresh
 constexpr int TIP_POLL_MS = 1500;     // new-tip detection
@@ -116,10 +123,19 @@ void StratumBridge::stop()
     for (QTimer** t : {&m_job_timer, &m_tip_timer, &m_rate_timer}) {
         if (*t) { (*t)->stop(); (*t)->deleteLater(); *t = nullptr; }
     }
-    for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it) {
-        if (it.key()) it.key()->disconnectFromHost();
-    }
+    // Snapshot the sockets and clear the map FIRST: disconnectFromHost() on an
+    // unconnected socket emits disconnected() synchronously, which re-enters
+    // onClientDisconnected() and erases from m_sessions — iterating the live map
+    // here would invalidate our iterator (use-after-free). Detaching our slot and
+    // draining a detached copy makes the teardown re-entrancy-safe.
+    const QList<QTcpSocket*> sockets = m_sessions.keys();
     m_sessions.clear();
+    for (QTcpSocket* sock : sockets) {
+        if (sock) {
+            sock->disconnect(this);
+            sock->disconnectFromHost();
+        }
+    }
     if (m_server) { m_server->close(); m_server.reset(); }
     m_jobs.clear();
     m_share_times_ms.clear();
@@ -284,7 +300,10 @@ void StratumBridge::notifyJob(Session& s, bool clean_jobs)
     p.push_back(stratum::EncodeBE32(static_cast<uint32_t>(job.version)));
     p.push_back(stratum::EncodeBE32(job.nbits));
     p.push_back(stratum::EncodeBE32(job.ntime));
-    p.push_back(clean_jobs);
+    // UniValue has no push_back(bool) overload, so a bare bool promotes to int
+    // and serializes as 1/0. Wrap it so mining.notify's clean_jobs flag goes out
+    // as a real JSON boolean (true/false), per the Stratum spec.
+    p.push_back(UniValue(clean_jobs));
     sendNotification(s, "mining.notify", p);
 }
 
@@ -387,6 +406,7 @@ void StratumBridge::estimateHashrate()
     }
     const double secs = HASHRATE_WINDOW_MS / 1000.0;
     const double shares_per_sec = secs > 0.0 ? m_share_times_ms.size() / secs : 0.0;
-    // Each share is ~ (share_difficulty * 2^32) hashes, so H/s ≈ shares/s * that.
-    Q_EMIT hashrateChanged(shares_per_sec * m_share_difficulty * HASHES_PER_DIFF1);
+    // For scrypt each share is ~ (share_difficulty * 2^16) hashes, so
+    // H/s ≈ shares/s * that. (2^16, not 2^32 — see SHARE_DIFFICULTY above.)
+    Q_EMIT hashrateChanged(shares_per_sec * m_share_difficulty * HASHES_PER_SHARE_DIFF1);
 }

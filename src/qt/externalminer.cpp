@@ -37,6 +37,7 @@ void ExternalMiner::start(const QString& program, const QStringList& args)
     m_stopping = false;
     m_buf.clear();
     m_log.clear();
+    ++m_generation; // invalidate any pending hard-kill from a previous stop()
 
     if (!m_proc) {
         m_proc = new QProcess(this);
@@ -59,11 +60,15 @@ void ExternalMiner::stop()
     m_stopping = true;
     m_proc->terminate();
     // Non-blocking hard-kill fallback. `this` as context cancels the callback if
-    // we're destroyed first; capturing the raw QProcess* is safe because it is
-    // parented to this and outlives the timer.
-    QProcess* p = m_proc;
-    QTimer::singleShot(STOP_GRACE_MS, this, [p]() {
-        if (p && p->state() != QProcess::NotRunning) p->kill();
+    // we're destroyed first. m_proc is a single reused QProcess, so a bare
+    // capture could kill a miner that stop()+start() restarted within the grace
+    // window; gate on the generation so this only kills the SAME run we asked to
+    // stop.
+    const unsigned gen = m_generation;
+    QTimer::singleShot(STOP_GRACE_MS, this, [this, gen]() {
+        if (gen == m_generation && m_proc && m_proc->state() != QProcess::NotRunning) {
+            m_proc->kill();
+        }
     });
 }
 

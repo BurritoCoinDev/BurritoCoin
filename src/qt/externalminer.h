@@ -68,6 +68,10 @@ private:
     QByteArray m_buf;      //!< partial-line accumulator for stdout
     QStringList m_log;     //!< bounded ring of recent lines
     bool m_stopping = false;
+    //! Incremented on every start(); a stop()'s delayed hard-kill only fires if
+    //! this hasn't advanced since, so it can't kill a miner that was restarted
+    //! within the grace window (m_proc is a single reused QProcess).
+    unsigned m_generation = 0;
 };
 
 #endif // BURRITOCOIN_QT_EXTERNALMINER_H

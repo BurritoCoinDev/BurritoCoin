@@ -565,7 +565,9 @@ void MiningPage::startExternal()
     }
     const quint16 port = m_bridge->start(payout, 0);
     if (port == 0) {
-        onMiningError(tr("Could not start the local mining bridge."));
+        // start() already emitted error() synchronously with the specific reason
+        // (e.g. the OS listen error), which onMiningError surfaced. Don't clobber
+        // that with a generic message — just abort; the UI is still idle here.
         return;
     }
 
