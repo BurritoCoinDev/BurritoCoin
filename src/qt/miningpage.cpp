@@ -19,7 +19,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
-#include <QSizePolicy>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -148,10 +147,11 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
     hero_top->addWidget(m_start_stop, 0, Qt::AlignVCenter);
     hero_layout->addLayout(hero_top);
 
+    // Qt::AutoText (the default) renders plain hashrate strings verbatim and
+    // still detects the tag-prefixed error span from onMiningError().
     m_hashrate_value = new QLabel(QString::fromUtf8("\xe2\x80\x94"), hero);
     m_hashrate_value->setStyleSheet(QStringLiteral("font-size:34px; font-weight:bold; color:%1;")
         .arg(QLatin1String(brand::GoldLight)));
-    m_hashrate_value->setTextFormat(Qt::RichText); // errors surface here as small red text
     hero_layout->addWidget(m_hashrate_value);
 
     hero_layout->addWidget(MakeCaption(tr("CURRENT SPEED"), hero));

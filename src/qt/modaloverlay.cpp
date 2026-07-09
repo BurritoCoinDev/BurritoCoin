@@ -7,6 +7,7 @@
 #include <qt/forms/ui_modaloverlay.h>
 
 #include <chainparams.h>
+#include <qt/brand.h>
 #include <qt/guiutil.h>
 
 #include <QEasingCurve>
@@ -22,6 +23,14 @@ layerIsVisible(false),
 userClosed(false)
 {
     ui->setupUi(this);
+
+    // Brand-gold sync chunk with Fusion's two-tone label handling (see the
+    // matching palette on the status-bar progress bar in burritocoingui.cpp).
+    QPalette bar_palette = ui->progressBar->palette();
+    bar_palette.setColor(QPalette::Highlight, QColor(brand::Gold));
+    bar_palette.setColor(QPalette::HighlightedText, QColor(brand::Brown));
+    ui->progressBar->setPalette(bar_palette);
+
     connect(ui->closeButton, &QPushButton::clicked, this, &ModalOverlay::closeClicked);
     if (parent) {
         parent->installEventFilter(this);
@@ -48,7 +57,13 @@ ModalOverlay::~ModalOverlay()
 
 void ModalOverlay::setWarningIcon(const QIcon& icon)
 {
-    ui->warningIcon->setIcon(icon);
+    // The button is permanently disabled (it only holds the image), and Qt
+    // auto-generates a washed-out Disabled pixmap unless one is registered
+    // explicitly — register the tinted glyph for the Disabled state too.
+    QIcon fixed = icon;
+    const QSize icon_size = ui->warningIcon->iconSize();
+    fixed.addPixmap(icon.pixmap(icon_size, QIcon::Normal), QIcon::Disabled);
+    ui->warningIcon->setIcon(fixed);
 }
 
 bool ModalOverlay::eventFilter(QObject * obj, QEvent * ev) {

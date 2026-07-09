@@ -24,8 +24,6 @@ QPalette AppPalette()
     const QColor text(Text);
     const QColor base(CodeBg);
     const QColor button(CardBg);
-    const QColor gold(Gold);
-    const QColor brown(Brown);
     const QColor disabled(Disabled);
 
     pal.setColor(QPalette::Window, window);
@@ -36,8 +34,11 @@ QPalette AppPalette()
     pal.setColor(QPalette::Button, button);
     pal.setColor(QPalette::ButtonText, text);
     pal.setColor(QPalette::BrightText, QColor(255, 255, 255));
-    pal.setColor(QPalette::Highlight, gold);
-    pal.setColor(QPalette::HighlightedText, brown);
+    // Selection is a muted warm brown with cream text — NOT brand gold: the
+    // icon glyphs are tinted gold (platformstyle.cpp), and a gold selection
+    // would swallow them on selected rows (coin-control lock, tx status).
+    pal.setColor(QPalette::Highlight, QColor(Border));
+    pal.setColor(QPalette::HighlightedText, text);
     pal.setColor(QPalette::ToolTipBase, QColor(CardBg));
     pal.setColor(QPalette::ToolTipText, text);
     pal.setColor(QPalette::Link, QColor(GoldLight));
@@ -54,7 +55,7 @@ QPalette AppPalette()
     pal.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     pal.setColor(QPalette::Disabled, QPalette::Text, disabled);
     pal.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
-    pal.setColor(QPalette::Disabled, QPalette::Highlight, QColor(Border));
+    pal.setColor(QPalette::Disabled, QPalette::Highlight, QColor(Surface));
     pal.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(MutedGrey));
 
     return pal;
@@ -73,7 +74,7 @@ QString AppStyleSheet()
         "QMenuBar::item:disabled { color: @DISABLED@; }"
         "QMenu { background-color: @CARD@; color: @TEXT@; border: 1px solid @BORDER@; }"
         "QMenu::item { background: transparent; padding: 5px 26px 5px 14px; }"
-        "QMenu::item:selected { background-color: @GOLD@; color: @BROWN@; }"
+        "QMenu::item:selected { background-color: @BORDER@; color: @TEXT@; }"
         "QMenu::item:disabled { color: @DISABLED@; }"
         "QMenu::separator { height: 1px; background-color: @BORDER@; margin: 4px 10px; }"
 
@@ -102,11 +103,11 @@ QString AppStyleSheet()
         "QPushButton:flat { background: transparent; border: none; }"
         "QPushButton:flat:disabled { background: transparent; border: none; }"
 
-        // Sync/progress bars: dark track, brand-gold chunk
-        "QProgressBar { background-color: @CODEBG@; color: @TEXT@; border: 1px solid @BORDER@;"
-        "  border-radius: 7px; text-align: center; }"
-        "QProgressBar::chunk { background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,"
-        "  stop: 0 @GOLD@, stop: 1 @GOLDLIGHT@); border-radius: 6px; }"
+        // Progress bars are deliberately NOT styled here: a stylesheet paints
+        // the centered label in one color, which is unreadable over either the
+        // dark trough or the gold chunk. Fusion flips the label between Text
+        // and HighlightedText as the chunk passes it — the gold-chunk bars get
+        // a widget-local palette (burritocoingui.cpp, modaloverlay.cpp).
 
         // Group boxes (options, sign/verify): gold caption on a hairline card
         "QGroupBox { border: 1px solid @BORDER@; border-radius: 8px; margin-top: 14px; }"
@@ -136,7 +137,8 @@ QString AppStyleSheet()
         "QDialog#SendCoinsDialog QScrollArea { background: transparent; }"
         "QDialog#SendCoinsDialog QWidget#scrollAreaWidgetContents { background: transparent; }");
 
-    // Note: @GOLDLIGHT@ must be replaced before @GOLD@ (prefix collision).
+    // Placeholders are @-terminated, so replacement order does not matter
+    // ("@GOLD@" is not a substring of "@GOLDLIGHT@").
     qss.replace(QStringLiteral("@TEXT@"), QString::fromLatin1(Text));
     qss.replace(QStringLiteral("@MUTED@"), QString::fromLatin1(Muted));
     qss.replace(QStringLiteral("@DISABLED@"), QString::fromLatin1(Disabled));

@@ -208,7 +208,7 @@ void PSBTOperationsDialog::showStatus(const QString &msg, StatusLevel level) {
     m_ui->statusBar->setText(msg);
     switch (level) {
         case StatusLevel::INFO: {
-            m_ui->statusBar->setStyleSheet("QLabel { background-color: #1e8e3e; color: #ffffff; border-radius: 4px; padding: 4px 8px; }");
+            m_ui->statusBar->setStyleSheet("QLabel { background-color: #167033; color: #ffffff; border-radius: 4px; padding: 4px 8px; }");
             break;
         }
         case StatusLevel::WARN: {

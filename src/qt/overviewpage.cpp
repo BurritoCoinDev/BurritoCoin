@@ -76,7 +76,10 @@ public:
 
         if (index.data(TransactionTableModel::WatchonlyRole).toBool())
         {
-            QIcon iconWatchonly = qvariant_cast<QIcon>(index.data(TransactionTableModel::WatchonlyDecorationRole));
+            // Tint like the main row icon above — the raw eye glyph is
+            // near-black and invisible on the dark card.
+            QIcon iconWatchonly = platformStyle->SingleColorIcon(
+                qvariant_cast<QIcon>(index.data(TransactionTableModel::WatchonlyDecorationRole)));
             QRect watchonlyRect(boundingRect.right() + 5, mainRect.top()+ypad+halfheight, 16, halfheight);
             iconWatchonly.paint(painter, watchonlyRect);
             address_rect_min_width += 5 + watchonlyRect.width();

@@ -5,6 +5,8 @@
 
 #include <qt/platformstyle.h>
 
+#include <qt/brand.h>
+
 #include <QApplication>
 #include <QColor>
 #include <QImage>
@@ -81,18 +83,13 @@ PlatformStyle::PlatformStyle(const QString &_name, bool _imagesOnButtons, bool _
     singleColor(0,0,0),
     textColor(0,0,0)
 {
-    // Determine icon highlighting color
+    // Determine icon highlighting color. Upstream derived this from
+    // QPalette::Highlight, but the brand warm-dark theme (brandstyle.cpp)
+    // sets Highlight to a muted selection brown — and an icon tint equal to
+    // the selection color disappears on selected rows. Tint glyphs brand
+    // gold instead.
     if (colorizeIcons) {
-        const QColor colorHighlightBg(QApplication::palette().color(QPalette::Highlight));
-        const QColor colorHighlightFg(QApplication::palette().color(QPalette::HighlightedText));
-        const QColor colorText(QApplication::palette().color(QPalette::WindowText));
-        const int colorTextLightness = colorText.lightness();
-        QColor colorbase;
-        if (abs(colorHighlightBg.lightness() - colorTextLightness) < abs(colorHighlightFg.lightness() - colorTextLightness))
-            colorbase = colorHighlightBg;
-        else
-            colorbase = colorHighlightFg;
-        singleColor = colorbase;
+        singleColor = QColor(brand::Gold);
     }
     // Determine text color
     textColor = QColor(QApplication::palette().color(QPalette::WindowText));

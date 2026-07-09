@@ -5,6 +5,8 @@
 
 #include <qt/burritocoingui.h>
 
+#include <qt/brand.h>
+
 #include <qt/burritocoinunits.h>
 #include <qt/clientmodel.h>
 #include <qt/createwalletdialog.h>
@@ -300,9 +302,15 @@ BurritoCoinGUI::BurritoCoinGUI(interfaces::Node& node, const PlatformStyle *_pla
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
 
-    // The brand theme's app-wide stylesheet (brandstyle.cpp) styles
-    // QProgressBar with the dark track + gold chunk, so no per-style
-    // override is needed here anymore.
+    // Fusion renders the bar from the palette and flips the centered label
+    // between Text (over the trough) and HighlightedText (over the chunk) —
+    // something a stylesheet can't do. Give the sync bar its brand-gold chunk
+    // via a widget-local palette (the app palette keeps the muted selection
+    // brown for Highlight).
+    QPalette sync_bar_palette = progressBar->palette();
+    sync_bar_palette.setColor(QPalette::Highlight, QColor(brand::Gold));
+    sync_bar_palette.setColor(QPalette::HighlightedText, QColor(brand::Brown));
+    progressBar->setPalette(sync_bar_palette);
 
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
@@ -1073,16 +1081,16 @@ void BurritoCoinGUI::showVerifyBackupKey()
         }
         switch (wallet_model->checkPrivKeyOwnership(wif)) {
         case WalletModel::KeyInWallet:
-            result->setText(tr("<span style='color:#1e8e3e;'>\xe2\x9c\x94 This key belongs to your wallet. "
+            result->setText(tr("<span style='color:#2eb85c;'>\xe2\x9c\x94 This key belongs to your wallet. "
                                "Your backup is good.</span>"));
             break;
         case WalletModel::KeyNotInWallet:
-            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 This is a valid private key, but it "
+            result->setText(tr("<span style='color:#e0604d;'>\xe2\x9c\x98 This is a valid private key, but it "
                                "is <b>not</b> in the wallet you have open. Make sure you backed up the right "
                                "wallet, or open the matching wallet and try again.</span>"));
             break;
         case WalletModel::KeyInvalid:
-            result->setText(tr("<span style='color:#c0392b;'>\xe2\x9c\x98 That doesn't look like a valid "
+            result->setText(tr("<span style='color:#e0604d;'>\xe2\x9c\x98 That doesn't look like a valid "
                                "BurritoCoin private key (WIF) for this network. Check for typos, or a key from a "
                                "different network.</span>"));
             break;
@@ -1303,12 +1311,12 @@ void BurritoCoinGUI::restoreFromRecovery()
         const QString name = name_edit->text().trimmed();
         if (name.isEmpty()) { feedback->clear(); return; }
         if (IsReservedWalletName(name)) {
-            feedback->setText(tr("<span style='color:#c0392b;'>That name is reserved. Pick another.</span>"));
+            feedback->setText(tr("<span style='color:#e0604d;'>That name is reserved. Pick another.</span>"));
             return;
         }
         if (m_wallet_controller->listWalletDir().count(name.toStdString()) ||
             QDir(RestoreWalletDir(m_node)).exists(name)) {
-            feedback->setText(tr("<span style='color:#c0392b;'>A wallet named <b>%1</b> already exists. Pick a different name.</span>").arg(name.toHtmlEscaped()));
+            feedback->setText(tr("<span style='color:#e0604d;'>A wallet named <b>%1</b> already exists. Pick a different name.</span>").arg(name.toHtmlEscaped()));
             return;
         }
         if (key_radio->isChecked()) {
@@ -1318,11 +1326,11 @@ void BurritoCoinGUI::restoreFromRecovery()
             if (f.isEmpty()) { feedback->clear(); return; }
             const QFileInfo fi(f);
             if (!fi.exists() || !fi.isFile() || !fi.isReadable()) {
-                feedback->setText(tr("<span style='color:#c0392b;'>That recovery file does not exist or is not readable.</span>"));
+                feedback->setText(tr("<span style='color:#e0604d;'>That recovery file does not exist or is not readable.</span>"));
                 return;
             }
         }
-        feedback->setText(tr("<span style='color:#1e8e3e;'>Ready: a new wallet <b>%1</b> will be created and the blockchain rescanned.</span>").arg(name.toHtmlEscaped()));
+        feedback->setText(tr("<span style='color:#2eb85c;'>Ready: a new wallet <b>%1</b> will be created and the blockchain rescanned.</span>").arg(name.toHtmlEscaped()));
         restore_btn->setEnabled(true);
     };
 
@@ -1477,22 +1485,22 @@ void BurritoCoinGUI::restoreWalletFromBackup()
         // Belt-and-braces against reserved names that slipped past the validator
         // (e.g. paste). Covers wallet.dat, dot-names and Windows DOS device names.
         if (IsReservedWalletName(name)) {
-            feedback->setText(tr("<span style='color:#c0392b;'>That name is reserved. Pick another.</span>"));
+            feedback->setText(tr("<span style='color:#e0604d;'>That name is reserved. Pick another.</span>"));
             return;
         }
         QFileInfo sinfo(src);
         if (!sinfo.exists() || !sinfo.isFile()) {
-            feedback->setText(tr("<span style='color:#c0392b;'>That backup file does not exist.</span>"));
+            feedback->setText(tr("<span style='color:#e0604d;'>That backup file does not exist.</span>"));
             return;
         }
         if (!sinfo.isReadable()) {
-            feedback->setText(tr("<span style='color:#c0392b;'>The backup file is not readable. Check its permissions.</span>"));
+            feedback->setText(tr("<span style='color:#e0604d;'>The backup file is not readable. Check its permissions.</span>"));
             return;
         }
         // Collision: currently-LOADED wallets.
         for (WalletModel* wm : m_wallet_controller->getOpenWallets()) {
             if (wm && wm->getWalletName() == name) {
-                feedback->setText(tr("<span style='color:#c0392b;'>A wallet named <b>%1</b> is already open. Choose a different name.</span>").arg(name.toHtmlEscaped()));
+                feedback->setText(tr("<span style='color:#e0604d;'>A wallet named <b>%1</b> is already open. Choose a different name.</span>").arg(name.toHtmlEscaped()));
                 return;
             }
         }
@@ -1504,7 +1512,7 @@ void BurritoCoinGUI::restoreWalletFromBackup()
         const QString wallet_dir = RestoreWalletDir(m_node);
         if (m_wallet_controller->listWalletDir().count(name.toStdString()) ||
             QDir(wallet_dir).exists(name)) {
-            feedback->setText(tr("<span style='color:#c0392b;'>A folder named <b>%1</b> already exists in your wallets directory. Pick a different name (the existing wallet will not be overwritten).</span>").arg(name.toHtmlEscaped()));
+            feedback->setText(tr("<span style='color:#e0604d;'>A folder named <b>%1</b> already exists in your wallets directory. Pick a different name (the existing wallet will not be overwritten).</span>").arg(name.toHtmlEscaped()));
             return;
         }
         // Signature sniff.
@@ -1514,7 +1522,7 @@ void BurritoCoinGUI::restoreWalletFromBackup()
                               .arg(why_not.toHtmlEscaped(), tr("Restore is disabled.").toHtmlEscaped()));
             return;
         }
-        feedback->setText(tr("<span style='color:#1e8e3e;'>Ready: a copy of this file will be placed at the new wallet location and loaded.</span>"));
+        feedback->setText(tr("<span style='color:#2eb85c;'>Ready: a copy of this file will be placed at the new wallet location and loaded.</span>"));
         restore_btn->setEnabled(true);
     };
     connect(file_edit, &QLineEdit::textChanged, dlg_ptr, revalidate);
@@ -2510,12 +2518,12 @@ void BurritoCoinGUI::setBackupStatus(WalletModel* wallet_model)
 
     if (backed_up) {
         m_backup_status_label->setText(tr("\xe2\x9c\x94 Backed up"));
-        m_backup_status_label->setStyleSheet("color:#1e8e3e; padding:0 6px;");
+        m_backup_status_label->setStyleSheet("color:#2eb85c; padding:0 6px;");
         m_backup_status_label->setToolTip(tr("This wallet has been backed up. Keep your backup somewhere safe."));
         m_backup_status_label->setCursor(Qt::ArrowCursor);
     } else {
         m_backup_status_label->setText(tr("\xe2\x9a\xa0 Back up wallet"));
-        m_backup_status_label->setStyleSheet("color:#c0392b; font-weight:bold; padding:0 6px;");
+        m_backup_status_label->setStyleSheet("color:#e0604d; font-weight:bold; padding:0 6px;");
         m_backup_status_label->setToolTip(tr("Your wallet is not backed up yet. Click here to save a backup of wallet.dat."));
         m_backup_status_label->setCursor(Qt::PointingHandCursor);
     }
