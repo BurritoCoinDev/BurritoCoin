@@ -63,6 +63,7 @@ QT_MOC_CPP = \
   qt/moc_miningmodel.cpp \
   qt/moc_miningpage.cpp \
   qt/moc_stratumbridge.cpp \
+  qt/moc_externalminer.cpp \
   qt/moc_peertablemodel.cpp \
   qt/moc_paymentserver.cpp \
   qt/moc_psbtoperationsdialog.cpp \
@@ -142,6 +143,7 @@ BURRITOCOIN_QT_H = \
   qt/miningpower.h \
   qt/miningutil.h \
   qt/stratumbridge.h \
+  qt/externalminer.h \
   qt/paymentserver.h \
   qt/peertablemodel.h \
   qt/platformstyle.h \
@@ -265,6 +267,7 @@ BURRITOCOIN_QT_WALLET_CPP = \
   qt/miningpower.cpp \
   qt/miningutil.cpp \
   qt/stratumbridge.cpp \
+  qt/externalminer.cpp \
   qt/paymentserver.cpp \
   qt/psbtoperationsdialog.cpp \
   qt/qrimagewidget.cpp \
