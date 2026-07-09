@@ -376,17 +376,22 @@ void MiningPage::onHashrate(double hashes_per_sec)
 {
     m_hashrate_value->setText(FormatHashrate(hashes_per_sec));
 
-    // Refresh the (cs_main-locking) network hashrate only every ~10 ticks, then
-    // show the expected solo time to a block: netHashPS * blockSpacing / yourHashPS.
-    if (m_client_model && (m_net_hps_tick++ % 10 == 0)) {
-        m_cached_net_hps = m_client_model->getNetworkHashPS();
+    // Expected solo time to a block = (expected hashes per block) / your hashrate,
+    // where expected hashes per block = difficulty * 2^32 (difficulty is reported
+    // relative to the 0x1d00ffff diff-1 target). This is the correct estimate even
+    // when the chain runs far below its target block spacing — do NOT derive it
+    // from networkHashPS * nPowTargetSpacing, which assumes blocks arrive every
+    // 150 s and so badly underestimates the ETA on an under-powered chain.
+    // Difficulty only changes at retargets, so refresh it on a slow cadence.
+    if (m_client_model && (m_eta_refresh_tick++ % 10 == 0)) {
+        m_cached_difficulty = m_client_model->getDifficulty();
     }
-    if (hashes_per_sec <= 0.0 || m_cached_net_hps <= 0.0) {
+    if (hashes_per_sec <= 0.0 || m_cached_difficulty <= 0.0) {
         m_eta_value->setText(QString::fromUtf8("\xe2\x80\x94"));
         return;
     }
-    const double spacing = static_cast<double>(Params().GetConsensus().nPowTargetSpacing);
-    m_eta_value->setText(FormatDuration(m_cached_net_hps * spacing / hashes_per_sec));
+    const double hashes_per_block = m_cached_difficulty * 4294967296.0; // difficulty * 2^32
+    m_eta_value->setText(FormatDuration(hashes_per_block / hashes_per_sec));
 }
 
 void MiningPage::onBlockFound(const QString& block_hash, int height)

@@ -131,6 +131,17 @@ double ClientModel::getNetworkHashPS() const
     return 0.0;
 }
 
+double ClientModel::getDifficulty() const
+{
+    try {
+        const UniValue res = m_node.executeRpc("getdifficulty", UniValue(UniValue::VARR), "");
+        if (res.isNum()) return res.get_real();
+    } catch (...) {
+        // RPC may be transiently unavailable (e.g. during shutdown) — treat as unknown.
+    }
+    return 0.0;
+}
+
 uint256 ClientModel::getBestBlockHash()
 {
     uint256 tip{WITH_LOCK(m_cached_tip_mutex, return m_cached_tip_blocks)};

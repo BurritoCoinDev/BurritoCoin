@@ -62,6 +62,9 @@ public:
     int getNumBlocks() const;
     //! Network hash rate (H/s) via the getnetworkhashps RPC; 0 if unavailable.
     double getNetworkHashPS() const;
+    //! Current difficulty (relative to the 0x1d00ffff diff-1 target) via the
+    //! getdifficulty RPC; 0 if unavailable. Expected hashes/block = difficulty * 2^32.
+    double getDifficulty() const;
     uint256 getBestBlockHash();
     int getHeaderTipHeight() const;
     int64_t getHeaderTipTime() const;
