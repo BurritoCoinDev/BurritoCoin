@@ -58,6 +58,7 @@ private:
     void stopExternal();
     void applyMiningUi(bool mining); //!< engine-agnostic hero pill/button update
     bool isBusy() const;             //!< built-in mining OR external running
+    void openMinerSetupGuide();      //!< separate window: how to install/point a miner
 
     const PlatformStyle* m_platform_style;
     ClientModel* m_client_model = nullptr;

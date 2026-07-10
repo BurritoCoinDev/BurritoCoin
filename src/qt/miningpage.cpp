@@ -16,6 +16,9 @@
 #include <script/script.h>
 
 #include <QCheckBox>
+#include <QColor>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFrame>
@@ -24,8 +27,10 @@
 #include <QLineEdit>
 #include <QLocale>
 #include <QMessageBox>
+#include <QPalette>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSettings>
 #include <QSlider>
 #include <QVBoxLayout>
@@ -297,10 +302,22 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
         tr("Use an external miner program (advanced \xe2\x80\x94 much faster / GPU)"), settings_card);
     settings_layout->addWidget(m_use_external);
 
+    // Link into a standalone setup guide so the how-to (downloads, antivirus
+    // exclusion, where to save, how to point) lives in its own window instead of
+    // cluttering the tab.
+    QLabel* guide_link = new QLabel(
+        tr("<a href=\"#\">New to this? Read the miner setup guide (CPU &amp; GPU) \xe2\x86\x92</a>"),
+        settings_card);
+    guide_link->setTextFormat(Qt::RichText);
+    guide_link->setStyleSheet(QStringLiteral("QLabel { color:%1; font-size:12px; } a { color:%1; }")
+        .arg(QLatin1String(brand::Gold)));
+    connect(guide_link, &QLabel::linkActivated, this, [this] { openMinerSetupGuide(); });
+    settings_layout->addWidget(guide_link);
+
     QHBoxLayout* miner_row = new QHBoxLayout;
     QLabel* miner_caption = new QLabel(tr("Miner program:"), settings_card);
     m_miner_path = new QLineEdit(settings_card);
-    m_miner_path->setPlaceholderText(tr("path to cpuminer / ccminer / sgminer"));
+    m_miner_path->setPlaceholderText(tr("path to cpuminer (CPU) or ccminer (NVIDIA)"));
     m_miner_path->setText(QSettings().value(QStringLiteral("mining/external_path")).toString());
     m_browse_button = new QPushButton(tr("Browse\xe2\x80\xa6"), settings_card);
     miner_row->addWidget(miner_caption);
@@ -443,7 +460,7 @@ void MiningPage::onStartStopClicked()
         QMessageBox::information(this, tr("About mining"), tr(
             "Mining runs your processor hard \xe2\x80\x94 it uses electricity and produces heat. "
             "A few things to know:\n\n"
-            "\xe2\x80\xa2 Your antivirus may flag the wallet or the miner as a \xe2\x80\x9ccoin "
+            "\xe2\x80\xa2 Your antivirus may flag the wallet or the miner as a \xe2\x80\x9c" "coin "
             "miner\xe2\x80\x9d. That is expected for mining software; if it quarantines it, restore "
             "it from your antivirus's quarantine list.\n\n"
             "\xe2\x80\xa2 Newly mined coins are \xe2\x80\x9cimmature\xe2\x80\x9d for 100 confirmations "
@@ -585,6 +602,110 @@ void MiningPage::onBrowseMiner()
 #endif
     );
     if (!file.isEmpty() && m_miner_path) m_miner_path->setText(file);
+}
+
+void MiningPage::openMinerSetupGuide()
+{
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Set up an external miner"));
+    dlg.setMinimumSize(680, 580);
+    dlg.setStyleSheet(QStringLiteral("QDialog { background:#1a0f05; }"));
+
+    QVBoxLayout* dlg_layout = new QVBoxLayout(&dlg);
+    dlg_layout->setContentsMargins(0, 0, 12, 8);
+
+    QScrollArea* scroll = new QScrollArea(&dlg);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setStyleSheet(QStringLiteral("QScrollArea { background:#1a0f05; border:none; }"));
+
+    QLabel* content = new QLabel(scroll);
+    content->setTextFormat(Qt::RichText);
+    content->setWordWrap(true);
+    content->setOpenExternalLinks(true);
+    content->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    content->setAlignment(Qt::AlignTop);
+    content->setContentsMargins(22, 18, 22, 18);
+    content->setStyleSheet(QStringLiteral("QLabel { color:#d6c4a3; font-size:13px; }"));
+    // Make the GitHub links legible on the warm-dark background.
+    QPalette pal = content->palette();
+    pal.setColor(QPalette::Link, QColor(0xff, 0xc0, 0x4d));
+    content->setPalette(pal);
+    content->setText(tr(
+        "<div style='font-size:20px; font-weight:bold; color:#f5a623; line-height:1.3;'>"
+        "Set up an external miner</div>"
+        "<p style='color:#c47d0e; margin-top:2px;'>Mine much faster with a tuned CPU miner "
+        "or your graphics card. The wallet runs a private mining connection on "
+        "<b>this computer only</b> \xe2\x80\x94 nothing is exposed to the internet.</p>"
+
+        "<div style='color:#f5a623; font-size:15px; font-weight:bold; margin-top:16px;'>"
+        "1 &nbsp; Download a miner</div>"
+        "<p>Pick the one for your hardware and download it <b>only</b> from its official page "
+        "below \xe2\x80\x94 never from a random mining forum (miner downloads are a common way "
+        "malware spreads). Get the pre-built Windows release (a .zip), not the source code.</p>"
+        "<ul>"
+        "<li><b>CPU</b> (any processor) \xe2\x80\x94 <b>cpuminer-opt</b><br>"
+        "<a href=\"https://github.com/JayDDee/cpuminer-opt/releases\">"
+        "github.com/JayDDee/cpuminer-opt</a> &nbsp; "
+        "<span style='color:#2eb85c;'>&#10003; tested, confirmed working</span></li>"
+        "<li><b>NVIDIA GPU</b> \xe2\x80\x94 <b>ccminer</b><br>"
+        "<a href=\"https://github.com/tpruvot/ccminer/releases\">"
+        "github.com/tpruvot/ccminer</a></li>"
+        "</ul>"
+        "<p style='color:#e0a030;'>(AMD graphics cards are not listed on purpose \xe2\x80\x94 see "
+        "the AMD note at the bottom.)</p>"
+
+        "<div style='color:#f5a623; font-size:15px; font-weight:bold; margin-top:16px;'>"
+        "2 &nbsp; Save it in one folder</div>"
+        "<p>Unzip it into a dedicated folder, for example "
+        "<code>C:\\Users\\&lt;you&gt;\\Develop\\Miners</code>. Keep the miner's <code>.exe</code> "
+        "together with any <code>.dll</code> files from the zip \xe2\x80\x94 they must stay in the "
+        "same folder.</p>"
+
+        "<div style='color:#f5a623; font-size:15px; font-weight:bold; margin-top:16px;'>"
+        "3 &nbsp; Allow it in your antivirus</div>"
+        "<p>Mining programs are almost always flagged as a &#8220;coin miner&#8221; and "
+        "quarantined. For a miner you downloaded yourself from the official page, that is a false "
+        "alarm. Add a folder exclusion so Windows leaves it alone:</p>"
+        "<p style='color:#f0e0c0;'><b>Windows Security &#8250; Virus &amp; threat protection "
+        "&#8250; Manage settings &#8250; Exclusions &#8250; Add or remove exclusions &#8250; Add "
+        "an exclusion &#8250; Folder</b> \xe2\x80\x94 then choose your Miners folder.</p>"
+        "<p style='color:#e0a030;'>&#9888; Only exclude a folder that holds miners from the "
+        "trusted links above. An exclusion stops your antivirus from scanning everything in that "
+        "folder.</p>"
+
+        "<div style='color:#f5a623; font-size:15px; font-weight:bold; margin-top:16px;'>"
+        "4 &nbsp; Point the wallet at it</div>"
+        "<p>Back on the <b>Mine</b> tab: tick <b>Use an external miner program</b>, click "
+        "<b>Browse\xe2\x80\xa6</b>, and select the miner's <code>.exe</code>. Press "
+        "<b>Start Mining</b>. The log shows the exact command it launched, then the miner's own "
+        "output \xe2\x80\x94 you should see it connect and report &#8220;accepted&#8221; "
+        "shares.</p>"
+
+        "<div style='color:#f5a623; font-size:15px; font-weight:bold; margin-top:16px;'>"
+        "Good to know</div>"
+        "<ul>"
+        "<li>The wallet picks the right settings automatically from the miner's file name "
+        "(cpuminer / ccminer / sgminer).</li>"
+        "<li>The <b>Processor cores</b> slider only affects the CPU miner; GPU miners manage "
+        "their own devices.</li>"
+        "<li>Newly mined coins are <b>immature</b> for 100 confirmations (about 4 hours) before "
+        "you can spend them.</li>"
+        "<li><b>AMD note:</b> the scrypt GPU tools (sgminer / cgminer) date from the older GCN "
+        "era and do not run on modern Radeon RX 6000 / 7000 (RDNA) cards, so GPU mining on those "
+        "cards isn\xe2\x80\x99t supported here. On an AMD system, use a tuned CPU miner \xe2\x80\x94 "
+        "for the memory-hard scrypt algorithm a fast multi-core CPU is competitive anyway. (An "
+        "older GCN Radeon can still try sgminer if you have one.)</li>"
+        "</ul>"));
+    scroll->setWidget(content);
+    dlg_layout->addWidget(scroll, 1);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    dlg_layout->addWidget(buttons);
+
+    dlg.exec();
 }
 
 void MiningPage::startExternal()
