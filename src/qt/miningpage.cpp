@@ -58,6 +58,55 @@ QString FormatDuration(double seconds)
     return QObject::tr("about %n day(s)", "", qRound(days));
 }
 
+//! Which external-miner CLI family a binary belongs to, inferred from its file
+//! name. The three scrypt miners we drive differ in how they select the
+//! algorithm and whether they take a CPU thread count.
+enum class MinerKind { CpuMiner, CCMiner, SgMiner };
+
+MinerKind DetectMinerKind(const QString& program)
+{
+    const QString name = QFileInfo(program).fileName().toLower();
+    if (name.contains(QLatin1String("sgminer")) || name.contains(QLatin1String("cgminer")))
+        return MinerKind::SgMiner; // AMD / OpenCL
+    if (name.contains(QLatin1String("ccminer")))
+        return MinerKind::CCMiner; // NVIDIA / CUDA
+    return MinerKind::CpuMiner;     // cpuminer / minerd / unknown -> CPU-style
+}
+
+//! Command line for `program` mining scrypt against the localhost bridge on
+//! `port`. `threads` applies only to the CPU family; the GPU miners auto-detect
+//! their devices, so passing a CPU thread count would misconfigure them.
+QStringList BuildMinerArgs(const QString& program, quint16 port, int threads)
+{
+    const QString url = QStringLiteral("stratum+tcp://127.0.0.1:%1").arg(port);
+    // The bridge ignores the stratum user/pass (it pays the wallet-resolved
+    // payout script), so a placeholder user/pass works for every miner.
+    switch (DetectMinerKind(program)) {
+    case MinerKind::SgMiner:
+        // AMD/OpenCL: the algorithm is chosen with -k, and there is no -t. Any
+        // intensity / thread-concurrency tuning is left to the miner's defaults.
+        return {QStringLiteral("-k"), QStringLiteral("scrypt"),
+                QStringLiteral("-o"), url,
+                QStringLiteral("-u"), QStringLiteral("brto"),
+                QStringLiteral("-p"), QStringLiteral("x")};
+    case MinerKind::CCMiner:
+        // NVIDIA/CUDA: cpuminer-style -a, but GPUs are auto-detected, so we omit
+        // -t (which would spawn CPU worker threads rather than select GPUs).
+        return {QStringLiteral("-a"), QStringLiteral("scrypt"),
+                QStringLiteral("-o"), url,
+                QStringLiteral("-u"), QStringLiteral("brto"),
+                QStringLiteral("-p"), QStringLiteral("x")};
+    case MinerKind::CpuMiner:
+    default:
+        // CPU: honor the core slider via -t (else cpuminer grabs every core).
+        return {QStringLiteral("-a"), QStringLiteral("scrypt"),
+                QStringLiteral("-o"), url,
+                QStringLiteral("-u"), QStringLiteral("brto"),
+                QStringLiteral("-p"), QStringLiteral("x"),
+                QStringLiteral("-t"), QString::number(threads)};
+    }
+}
+
 //! Rounded card frame shared by the hero / stats / settings sections.
 QFrame* MakeCard(QWidget* parent)
 {
@@ -588,19 +637,18 @@ void MiningPage::startExternal()
         connect(m_external, &ExternalMiner::stopped, this, &MiningPage::onExternalStopped);
         connect(m_external, &ExternalMiner::logLine, this, &MiningPage::onMinerLog);
     }
-    if (m_miner_log) m_miner_log->clear();
-    // scrypt over the localhost bridge; the miner's worker/password are ignored
-    // (the bridge pays to the wallet-resolved script, not the stratum user).
-    // -t bounds the miner to the chosen core count; without it cpuminer grabs
-    // every core and ignores the slider. (Takes effect at launch — changing the
-    // core count while running requires Stop/Start.)
-    const QStringList args = {
-        QStringLiteral("-a"), QStringLiteral("scrypt"),
-        QStringLiteral("-o"), QStringLiteral("stratum+tcp://127.0.0.1:%1").arg(port),
-        QStringLiteral("-u"), QStringLiteral("brto"),
-        QStringLiteral("-p"), QStringLiteral("x"),
-        QStringLiteral("-t"), QString::number(selectedThreadCount()),
-    };
+    // Build the command line for whichever miner family this binary is
+    // (cpuminer / ccminer / sgminer), detected from its name. The CPU miner
+    // honors the core slider; the GPU miners auto-detect their devices. Takes
+    // effect at launch — changing cores while running needs Stop/Start.
+    const QStringList args = BuildMinerArgs(program, port, selectedThreadCount());
+    if (m_miner_log) {
+        m_miner_log->clear();
+        // Echo the launched command so the chosen miner family and flags are
+        // visible (helps diagnose a miner that rejects an argument).
+        m_miner_log->appendPlainText(QStringLiteral("$ %1 %2")
+                                         .arg(program, args.join(QLatin1Char(' '))));
+    }
     m_external->start(program, args);
     QSettings().setValue(QStringLiteral("mining/external_path"), program);
 
