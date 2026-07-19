@@ -132,11 +132,12 @@
       <span class="step-number">2</span>
       <h3>Add the bootstrap peer</h3>
       <p>Open the file and add this line:</p>
-      <pre><code>addnode=50.116.17.170:9227</code></pre>
+      <pre><code>addnode=seed.burritoco.in:9227</code></pre>
       <p>
-        That's the IP and P2P port of the current bootstrap node. Once your daemon
-        connects to it, peer-exchange takes over and you'll automatically learn about
-        every other node on the network.
+        That's the DNS name and P2P port of the current bootstrap node (the name
+        always resolves to the live seed host, so this line keeps working even if
+        the server moves). Once your daemon connects to it, peer-exchange takes
+        over and you'll automatically learn about every other node on the network.
       </p>
     </div>
 

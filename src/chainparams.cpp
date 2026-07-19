@@ -161,7 +161,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
         vSeeds.clear();
-        vSeeds.emplace_back("seed.burritoco.in"); // A record → 50.116.17.170; replace with a proper DNS seeder once one is deployed.
+        // The A record points at the current seed host (so the host can move
+        // without a release); replace with a proper DNS seeder once deployed.
+        vSeeds.emplace_back("seed.burritoco.in");
 
         // BurritoCoin Base58 prefixes:
         //   PUBKEY_ADDRESS = 25  → P2PKH addresses start with 'B'
@@ -267,7 +269,11 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0xd347dbef904ecdb3653e4eaf2fdcfa7fdc287db36c9e287102b2c757947d7d83"));
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
-        vSeeds.clear(); // DNS seeds not yet configured — peers connect via fixed seeds.
+        vSeeds.clear();
+        // Same DNS name as mainnet: a DNS seed only yields IPs, and testnet
+        // peers are dialed on the testnet port (19227). Keeping discovery on
+        // DNS means a seed-host move is one A-record update, not a release.
+        vSeeds.emplace_back("seed.burritoco.in");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);

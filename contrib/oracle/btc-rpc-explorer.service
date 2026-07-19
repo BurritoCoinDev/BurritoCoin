@@ -1,0 +1,19 @@
+# BurritoCoin block explorer (btc-rpc-explorer) — systemd unit for the Oracle A1 box.
+# The explorer reads its config from /opt/btc-rpc-explorer/.env (never committed).
+# Install: sudo cp btc-rpc-explorer.service /etc/systemd/system/ && sudo systemctl enable --now btc-rpc-explorer
+[Unit]
+Description=BurritoCoin block explorer (btc-rpc-explorer)
+After=network-online.target burritocoind.service
+Wants=burritocoind.service
+
+[Service]
+User=burrito
+Group=burrito
+WorkingDirectory=/opt/btc-rpc-explorer
+ExecStart=/usr/bin/env node bin/www
+Environment=NODE_ENV=production
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
