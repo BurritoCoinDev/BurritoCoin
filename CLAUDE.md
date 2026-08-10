@@ -65,4 +65,5 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 ## Security / handoff
 
 - Never put private keys, seed phrases, or wallet credentials in `HANDOFF.md`, `CHANGELOG.md`, or any other tracked file.
+- `website/mine-windows.html` embeds the SHA256 of `contrib/release/burritocoin-qt-win64.exe` (Step 2, "Verify the download"). Whenever that exe is rebuilt, update the hash on that page in the same commit.
 - Pushes from this environment go to the local git proxy; the user pushes upstream from their VPS.

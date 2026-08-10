@@ -609,3 +609,8 @@ a.skip-link:focus-visible {
 .spec-table-wrapper {
   width: 100%;
 }
+
+/* Anchor jumps (#specs, #step-1, skip-link, …) must clear the sticky nav */
+html {
+  scroll-padding-top: 5rem;
+}

@@ -73,50 +73,53 @@
 
     <div class="step" id="step-1">
       <span class="step-number">1</span>
-      <h3>Get the Windows binaries</h3>
-      <p>Official pre-built Windows binaries are coming soon and will be published on the
+      <h3>Get BurritoCoin Core</h3>
+      <p><strong>Option A — download the GUI wallet (easiest).</strong> A pre-built
+         Windows wallet ships directly from the repository:</p>
+      <p><a href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download burritocoin-qt-win64.exe</a>
+         — a single self-contained file: full node, wallet, and GUI in one. Save it
+         to a folder you'll remember, e.g. <code>C:\BurritoCoin</code>. No installer,
+         no extra DLLs.</p>
+      <p><strong>Option B — build from source.</strong> This produces the
+         command-line tools (<code>burritocoind.exe</code>,
+         <code>burritocoin-cli.exe</code>) that the steps below use verbatim:</p>
+      <ul style="margin: 0.5rem 0 0 1.25rem;">
+        <li>Use the <a href="/mine-linux.html">Linux guide</a> from a WSL2 (Windows Subsystem for Linux) shell — works identically on Windows 10 / 11.</li>
+        <li>Or build natively with MSYS2; see <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-windows.md" target="_blank" rel="noopener">doc/build-windows.md</a>.</li>
+      </ul>
+      <p style="margin-top: 0.75rem;">Tagged release bundles with all the CLI tools
+         will appear on the
          <a href="https://github.com/BurritoCoinDev/BurritoCoin/releases" target="_blank" rel="noopener">GitHub Releases page</a>
-         once they're ready.</p>
-
+         once release automation is set up.</p>
       <div class="callout">
-        <strong>In the meantime:</strong> if you want to mine on Windows today, you have two options:
-        <ul style="margin: 0.5rem 0 0 1.25rem;">
-          <li>Use the <a href="/mine-linux.html">Linux guide</a> from a WSL2 (Windows Subsystem for Linux) shell — works identically on Windows 10 / 11.</li>
-          <li>Build from source on Windows using MSYS2; see <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-windows.md" target="_blank" rel="noopener">doc/build-windows.md</a> for the full procedure.</li>
-        </ul>
-        <p style="margin-top: 0.75rem;">Once binaries ship, this page will be updated with a one-click download.</p>
+        <strong>Using Option A (GUI wallet)?</strong> The rest of this guide still
+        applies — just substitute: in <em>Step 2 of 5</em> start
+        <code>burritocoin-qt-win64.exe</code> instead of <code>burritocoind.exe</code>
+        (it reads the same config file), and in <em>Step 3 of 5</em> create your
+        mining address from the GUI (<strong>Receive</strong> tab) instead of the
+        <code>burritocoin-cli</code> commands.
       </div>
-
-      <p>The bundle (when published) will contain <code>burritocoind.exe</code>,
-         <code>burritocoin-cli.exe</code>, <code>burritocoin-tx.exe</code>,
-         <code>burritocoin-wallet.exe</code>, and the required runtime <code>.dll</code> files.</p>
     </div>
 
     <div class="step">
       <span class="step-number">2</span>
       <h3>(Optional) Verify the download</h3>
-      <p>Open PowerShell, <code>cd</code> to the folder where you downloaded the zip,
+      <p>Open PowerShell, <code>cd</code> to the folder where you saved the file,
          and run:</p>
-      <pre><code>Get-FileHash .\burritocoin-0.21.4-win64.zip -Algorithm SHA256</code></pre>
-      <p>The SHA256 should match:</p>
-      <pre><code>D3AA77AF67F97E5B768771213089D76910D17EDC277E42F178C5819396B02071</code></pre>
-      <p>If it doesn't match, the download is corrupted or tampered with — delete it
-         and try again.</p>
-    </div>
-
-    <div class="step">
-      <span class="step-number">3</span>
-      <h3>Extract the zip</h3>
-      <p>Right-click the zip → <strong>Extract All…</strong> → choose a folder you'll
-         remember, e.g. <code>C:\BurritoCoin</code>. All eight files (4 .exe + 4 .dll)
-         must stay together in the same folder.</p>
+      <pre><code>Get-FileHash .\burritocoin-qt-win64.exe -Algorithm SHA256</code></pre>
+      <p>The SHA256 of the current build should match:</p>
+      <!-- NOTE: update this hash whenever contrib/release/burritocoin-qt-win64.exe is rebuilt -->
+      <pre><code>FE52D026B9333B3D54E966C53932165ED0D20610866C36F1336A7B645ECAA739</code></pre>
+      <p>If it doesn't match, the download is corrupted, tampered with, or this page
+         is out of date relative to the repository — delete the file and re-download
+         before running it.</p>
     </div>
 
     <div class="callout">
       <strong>Windows SmartScreen warning?</strong> The binaries aren't code-signed
       yet, so on first launch Windows may show "Windows protected your PC". Click
       <strong>More info</strong> → <strong>Run anyway</strong>. The official SHA256
-      from Step 2 lets you verify the zip is untampered before you reach this point.
+      from Step 2 lets you verify the file is untampered before you reach this point.
     </div>
   </section>
 
