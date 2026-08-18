@@ -2,12 +2,20 @@
 
 Goal: stop paying for the Linode. End state:
 
-| What                       | Where it ends up                          | Cost |
-|----------------------------|-------------------------------------------|------|
-| Marketing site             | Cloudflare Pages                          | $0   |
-| Block explorer             | Oracle A1 VM, behind Cloudflare proxy     | $0   |
-| Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   |
-| Linode                     | cancelled after a ~30-day parallel run    | $0   |
+| What                       | Where it ends up                          | Cost | Status |
+|----------------------------|-------------------------------------------|------|--------|
+| Marketing site             | Cloudflare Pages                          | $0   | **DONE 2026-08-18** |
+| DNS                        | Cloudflare (from WordPress.com)           | $0   | **DONE 2026-08-18** |
+| Block explorer             | Oracle A1 VM, behind Cloudflare proxy     | $0   | pending |
+| ElectrumX                  | Oracle A1 VM                              | $0   | pending |
+| Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   | pending |
+| Second (loopback) daemon   | Oracle A1 VM                              | $0   | pending |
+| Mining                     | **owner's Windows PC — never a cloud box**| $0   | **BLOCKER, see Phase 0** |
+| Linode                     | cancelled after a ~30-day parallel run    | $0   | pending |
+
+The Linode runs **four** services, not two: `burritocoind` (main),
+`burritocoind` (loopback peer, `-datadir=/root/.burritocoin-peer`),
+ElectrumX, and the Node explorer. All four move.
 
 Hard rules for the Oracle box:
 
@@ -21,22 +29,86 @@ Hard rules for the Oracle box:
 
 ---
 
+## Phase 0 — Retire the VPS miner (BLOCKS the Oracle cutover)
+
+Discovered 2026-08-18: the Linode has been CPU-mining since Jul 31 via
+`/usr/local/bin/brto-miner.sh`, which loops
+
+    burritocoin-cli -rpcclienttimeout=0 -rpcwallet=vps-mining \
+        generatetoaddress 1 <addr> 1000000
+
+That is the box's ~92% CPU load. `generatetoaddress` runs inside an RPC
+http-worker thread; the client times out at 60 s and disconnects (hence
+`socket send error Broken pipe` once a minute in debug.log) while the server
+keeps mining, so all four http workers stay saturated.
+
+Two consequences:
+
+1. **This must not follow the migration.** Running it on OCI violates CSA
+   §1.3(d) outright — not merely the heuristic risk that a busy node might be
+   mistaken for a miner.
+2. **It is currently the network's only miner.** The owner's Windows PC is
+   not mining. At ~1.6 kH/s against difficulty 0.0039 a block takes ~2.8 h
+   (vs. the 150 s target), which matches the "Potential stale tip detected"
+   entries. Kill the script with nothing to replace it and the chain stops
+   advancing.
+
+Order of operations, therefore:
+
+1. Start mining on the Windows PC (see `website/mine-windows.html`).
+2. Confirm blocks are landing — `burritocoin-cli getblockcount` climbing, and
+   `getmininginfo` showing a healthier `networkhashps`.
+3. Only then: `pkill -f brto-miner.sh`, and delete
+   `/usr/local/bin/brto-miner.sh` so it cannot be resurrected by a reboot.
+4. The `vps-mining` wallet holds real mined BRTO. It goes on the
+   copy-off-before-decommission list next to the premine wallet.
+
+---
+
 ## Phase 1 — Cloudflare (do first; independent of Oracle)
 
-1. Add `burritoco.in` to a free Cloudflare account and switch the domain's
-   nameservers to Cloudflare's (registrar dashboard). Import/recreate the
-   existing DNS records before switching so nothing drops.
-2. **Pages (static site):** Workers & Pages → Create → Pages → connect the
-   GitHub repo. Build command: *(none)*. Build output directory: `website`.
-   Add custom domains `burritoco.in` and `www.burritoco.in` when prompted.
-   Every push to the branch redeploys the site.
-3. **Explorer proxy:** leave `explorer.burritoco.in` pointing at the Linode
-   for now, but set it to **Proxied** (orange cloud). SSL/TLS mode "Full" if
-   the Linode has a cert, otherwise "Flexible" until Phase 5.
-4. **Seed record:** `seed.burritoco.in` must be **DNS only** (grey cloud),
-   now and forever — P2P on 9227 is not HTTP and cannot go through
-   Cloudflare's proxy. This record intentionally exposes the node IP; that
-   is how P2P works.
+**Completed 2026-08-18.** What was actually done, and the gotchas hit:
+
+1. **Pages first, DNS second.** The project was created and verified on
+   `burritocoin.pages.dev` *before* any DNS moved, so the nameserver switch
+   was a flip to something already proven. Settings: framework preset
+   *None*, build command *empty*, build output directory `website`,
+   production branch `master`. Every push to `master` redeploys in <1 min.
+2. **The dashboard buries Pages under the Workers wizard.** "Create an
+   application" lands in the Worker flow (tell-tale: a `npx wrangler deploy`
+   deploy command). The Pages flow is the "Looking to deploy Pages?
+   Get started" link, or `/workers-and-pages/create/pages` directly.
+3. **DNS was hosted at WordPress.com**, not the Linode. Nameservers were
+   swapped there (Domains → the domain → Name servers → turn off "Use
+   WordPress.com name servers"). There are **no MX records** — the domain
+   receives no mail — so there was no mail-outage risk.
+4. **Cloudflare's zone scan missed the subdomains.** It imported only 5 of
+   the 9 records: `explorer`, `seed`, and both `wpcloud*._domainkey` CNAMEs
+   had to be added by hand. Always diff the scan against the old provider's
+   list before switching nameservers. The `google-site-verification` TXT is
+   load-bearing (Search Console) — verify it survives.
+5. **Everything stayed grey-cloud during the switch** so behaviour was
+   identical before and after; Pages flipped the apex and `www` to proxied
+   when the custom domains were attached.
+6. **`explorer.burritoco.in` is DNS only (grey cloud)**, pointing at the
+   Linode. That preserves the existing Let's Encrypt cert path and keeps the
+   zone-wide SSL mode (**Full (strict)**, required by Pages — never
+   *Flexible*, which loops with Pages) from affecting it.
+7. **`seed.burritoco.in` must be DNS only (grey cloud), now and forever** —
+   P2P on 9227 is not HTTP and cannot traverse Cloudflare's proxy. This
+   record intentionally exposes the node IP; that is how P2P works.
+8. **www → apex redirect is a zone-level Redirect Rule, not `_redirects`.**
+   Cloudflare Pages matches `_redirects` against paths only, so a rule whose
+   source contains a hostname silently never fires. Use Rules → Redirect
+   Rules → template "Redirect from WWW to root" (wildcard `https://www.*` →
+   `https://${1}`, 301, *Preserve query string* checked). Cloudflare warns
+   "this rule may not apply — www may not be proxied"; that is a false
+   positive for Pages-managed CNAMEs. Ignore it; do **not** let it create a
+   second DNS record.
+
+Verified after cutover: all pages 200, branded 404 served, `www` 301s to the
+apex preserving path and query, apex does not redirect, and `explorer` and
+`seed` still resolve to the Linode.
 
 ## Phase 2 — Oracle account
 
@@ -120,7 +192,17 @@ Install the systemd unit and start:
 `txindex=1` is required by the explorer. The chain re-syncs from the Linode
 node in minutes-to-hours at current chain size.
 
-## Phase 5 — Explorer on the Oracle box
+## Phase 5 — Explorer, ElectrumX, and the loopback peer
+
+> The Linode runs four services. Alongside the main node (Phase 4) and the
+> explorer below, port `contrib/vps/setup-second-peer.sh` (loopback sibling
+> daemon, keeps peer count off zero so `getblocktemplate` keeps working) and
+> `contrib/vps/setup-electrumx.sh` (ElectrumX with a BurritoCoin Coin class,
+> wired into btc-rpc-explorer). Both scripts are in the repo and are the
+> source of truth for those two services. Neither carries a miner — keep it
+> that way.
+
+### Explorer
 
 Follow `contrib/explorer/README.md` ("Re-applying on a fresh box") — clone
 upstream `26e282a`, apply `burritocoin-explorer.patch`, run
