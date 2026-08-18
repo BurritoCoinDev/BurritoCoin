@@ -20,6 +20,11 @@ ELECTRUMX_DIR="${ELECTRUMX_DIR:-/opt/electrumx}"
 ELECTRUMX_DB="${ELECTRUMX_DB:-/var/lib/electrumx/db}"
 ELECTRUMX_USER="${ELECTRUMX_USER:-electrumx}"
 ELECTRUMX_REPO="${ELECTRUMX_REPO:-https://github.com/spesmilo/electrumx.git}"
+# Pinned deliberately. The clone used to track HEAD, so two machines set up
+# months apart got different ElectrumX versions: 2.0.0 renamed Coin.header_hash
+# to header_hash_rev, which breaks the BurritoCoin genesis_block override below
+# at startup. This commit is the revision running on the live explorer.
+ELECTRUMX_REF="${ELECTRUMX_REF:-24865dc3a8ac8d360e467df704777c1bbef72706}"
 EXPLORER_ENV="${EXPLORER_ENV:-/etc/btc-rpc-explorer/.env}" # leave blank if explorer .env lives elsewhere
 
 green()  { printf '\033[0;32m%s\033[0m\n' "$*"; }
@@ -60,7 +65,8 @@ install -d -o "$ELECTRUMX_USER" -g "$ELECTRUMX_USER" -m 0750 "$ELECTRUMX_DB"
 # -------- 3. Clone + install ElectrumX ------------------------------------
 green "[3/6] Installing ElectrumX..."
 if [[ ! -d "$ELECTRUMX_DIR/.git" ]]; then
-    git clone --depth=1 "$ELECTRUMX_REPO" "$ELECTRUMX_DIR"
+    git clone --quiet "$ELECTRUMX_REPO" "$ELECTRUMX_DIR"
+    git -C "$ELECTRUMX_DIR" checkout --quiet "$ELECTRUMX_REF"
 fi
 
 if [[ ! -d "$ELECTRUMX_DIR/.venv" ]]; then
@@ -116,7 +122,11 @@ class BurritoCoin(Coin):
         # "UTXO not found in h table". Override to preserve the UTXO.
         from electrumx.lib.hash import hash_to_hex_str
         header = cls.block_header(block, 0)
-        header_hex_hash = hash_to_hex_str(cls.header_hash(header))
+        # ElectrumX 2.0.0 renamed header_hash -> header_hash_rev (same
+        # double_sha256 implementation). Accept whichever this build provides
+        # so the class is not tied to one revision.
+        _header_hash = getattr(cls, "header_hash", None) or cls.header_hash_rev
+        header_hex_hash = hash_to_hex_str(_header_hash(header))
         if header_hex_hash != cls.GENESIS_HASH:
             raise CoinError(f"genesis hash {header_hex_hash} expected {cls.GENESIS_HASH}")
         return block
