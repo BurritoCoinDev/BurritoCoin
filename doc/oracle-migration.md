@@ -135,17 +135,30 @@ apex preserving path and query, apex does not redirect, and `explorer` and
    your SSH public key. If creation fails "out of host capacity", retry
    other availability domains / times (rare on PAYG).
 2. **Firewall layer 1 — VCN security list** (Networking → your VCN →
-   security list): add stateful ingress rules, source `0.0.0.0/0`, TCP
-   ports `9227` (P2P), `80`, `443` (explorer). Optionally `19227`
-   (testnet). Leave 22 as-is.
+   security list): add stateful ingress rules, source `0.0.0.0/0`, TCP:
+
+   | Port    | Service                                  | Public? |
+   |---------|------------------------------------------|---------|
+   | `9227`  | mainnet P2P                              | yes     |
+   | `50001` | ElectrumX (Electrum wallet clients)       | yes     |
+   | `80`    | explorer / ACME http-01                  | yes     |
+   | `443`   | explorer (TLS)                           | yes     |
+   | `9226`  | mainnet RPC                              | **NO — localhost only** |
+   | `29226` | loopback peer RPC                        | **NO — localhost only** |
+   | `8000`  | ElectrumX admin RPC                      | **NO — localhost only** |
+
+   Leave 22 as-is. Do not expose the RPC ports: `burritocoin.conf` binds
+   them to 127.0.0.1, and the security list should not contradict that.
 3. **Firewall layer 2 — the OS.** Oracle's Ubuntu images ship iptables
    REJECT rules that block everything but SSH, and rules must be inserted
-   *before* the final REJECT (the classic OCI trap):
+   *before* the final REJECT (the classic OCI trap — opening the security
+   list alone is not enough, and this is the #1 reason a port "doesn't
+   work" on OCI):
 
        sudo iptables -L INPUT --line-numbers   # find the REJECT line, usually 6
-       sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 9227 -j ACCEPT
-       sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80  -j ACCEPT
-       sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+       for p in 9227 50001 80 443; do
+         sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport $p -j ACCEPT
+       done
        sudo apt install -y iptables-persistent && sudo netfilter-persistent save
 
 ## Phase 4 — Build and run the node (aarch64, no wallet)
