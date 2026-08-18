@@ -68,7 +68,11 @@ if [[ ! -d "$ELECTRUMX_DIR/.venv" ]]; then
 fi
 "$ELECTRUMX_DIR/.venv/bin/pip" install --upgrade --quiet pip wheel
 "$ELECTRUMX_DIR/.venv/bin/pip" install --quiet -e "$ELECTRUMX_DIR"
-"$ELECTRUMX_DIR/.venv/bin/pip" install --quiet plyvel aiohttp pylru
+# uvloop is required, not optional: step 5 writes EVENT_LOOP_POLICY=uvloop
+# into /etc/electrumx.conf, and ElectrumX imports it during Env() before
+# it does anything else — a missing uvloop aborts startup immediately with
+# ModuleNotFoundError, not a fallback to the default asyncio loop.
+"$ELECTRUMX_DIR/.venv/bin/pip" install --quiet plyvel aiohttp pylru uvloop
 
 # -------- 4. Inject BurritoCoin Coin class --------------------------------
 green "[4/6] Patching coins.py with BurritoCoin class..."
