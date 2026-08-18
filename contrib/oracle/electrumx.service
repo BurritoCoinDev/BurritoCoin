@@ -1,0 +1,24 @@
+# ElectrumX for BurritoCoin — Oracle A1.
+# Serves Electrum wallet clients on TCP 50001 (public) and an admin RPC on
+# 127.0.0.1:8000 (never exposed).
+#
+# Set up with contrib/vps/setup-electrumx.sh, then install this unit.
+# Config lives in /etc/electrumx.conf (contains the node RPC password —
+# chmod 600, never commit it).
+[Unit]
+Description=ElectrumX server (BurritoCoin)
+After=network-online.target burritocoind.service
+Wants=burritocoind.service
+
+[Service]
+User=electrumx
+Group=electrumx
+EnvironmentFile=/etc/electrumx.conf
+ExecStart=/opt/electrumx/.venv/bin/electrumx_server
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=300
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

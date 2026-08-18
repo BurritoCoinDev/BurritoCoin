@@ -9,13 +9,18 @@ Goal: stop paying for the Linode. End state:
 | Block explorer             | Oracle A1 VM, behind Cloudflare proxy     | $0   | pending |
 | ElectrumX                  | Oracle A1 VM                              | $0   | pending |
 | Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   | pending |
-| Second (loopback) daemon   | Oracle A1 VM                              | $0   | pending |
-| Mining                     | **owner's Windows PC — never a cloud box**| $0   | **BLOCKER, see Phase 0** |
-| Linode                     | cancelled after a ~30-day parallel run    | $0   | pending |
+| Second (loopback) daemon   | **dropped — not needed on Oracle**        | —    | n/a |
+| Mining                     | **owner's Windows PC — never a cloud box**| $0   | deferred |
+| Linode                     | cancelled once mining moves               | $0   | pending |
 
-The Linode runs **four** services, not two: `burritocoind` (main),
-`burritocoind` (loopback peer, `-datadir=/root/.burritocoin-peer`),
-ElectrumX, and the Node explorer. All four move.
+The Linode runs four services; **three** of them move. `burritocoind`
+(main), ElectrumX, and the Node explorer all migrate. The loopback peer
+daemon (`-datadir=/root/.burritocoin-peer`, P2P 29227 / RPC 29226) does
+**not**: per its own script header, it exists only so `getblocktemplate`
+sees a non-zero peer count, because the daemon refuses to hand out mining
+templates when it thinks it is disconnected. The Oracle box never mines, so
+it has nothing to gain from a sibling — dropping it saves a process, a
+datadir, and two ports.
 
 Hard rules for the Oracle box:
 
@@ -23,9 +28,16 @@ Hard rules for the Oracle box:
   crypto *mining* on every account type, and enforcement is automated and
   disable-first. A validating/relaying node and an explorer are outside the
   ban's text — mining is not. Mining stays on your own hardware.
-- **No wallets on it.** The node is built `--disable-wallet`. A box that an
-  abuse bot can summarily disable must hold nothing irreplaceable — chain
-  data re-syncs, wallets don't.
+- **No wallets on it** — enforced at runtime, not build time. `--disable-wallet`
+  **does not compile on this fork**: `libmw/src/wallet/Keychain.cpp` pulls in
+  `wallet/walletdb.h` -> `wallet/bdb.h` -> `<db_cxx.h>` unconditionally, so the
+  build fails on a missing Berkeley DB header no matter what the flag says.
+  (That is a real bug — libmw's wallet sources are not gated behind
+  `ENABLE_WALLET` — worth fixing upstream.) Build **with** the wallet
+  (`libdb++-dev` + `libsqlite3-dev` installed) and set `disablewallet=1` in
+  `burritocoin.conf`. Runtime enforcement is the stronger guarantee anyway: no
+  wallet is loaded and none can be created. A box an abuse bot can summarily
+  disable must hold nothing irreplaceable — chain data re-syncs, wallets don't.
 
 ---
 

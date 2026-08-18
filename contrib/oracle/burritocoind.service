@@ -1,22 +1,24 @@
-# BurritoCoin seed node — systemd unit for the Oracle A1 box.
-# Install: sudo cp burritocoind.service /etc/systemd/system/ && sudo systemctl enable --now burritocoind
+# BurritoCoin node — Oracle A1. Validate/relay + RPC backend for the
+# explorer and ElectrumX. No wallet (disablewallet=1), no mining, ever.
+#
+# sudo cp burritocoind.service /etc/systemd/system/
+# sudo systemctl daemon-reload && sudo systemctl enable --now burritocoind
 [Unit]
-Description=BurritoCoin seed node (validate/relay, no wallet)
+Description=BurritoCoin node (validate/relay, no wallet)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=burrito
-Group=burrito
+User=ubuntu
+Group=ubuntu
 Type=exec
-ExecStart=/usr/local/bin/burritocoind -datadir=/home/burrito/.burritocoin -printtoconsole
-ExecStop=/usr/local/bin/burritocoin-cli -datadir=/home/burrito/.burritocoin stop
+ExecStart=/usr/local/bin/burritocoind -datadir=/home/ubuntu/.burritocoin -printtoconsole
+ExecStop=/usr/local/bin/burritocoin-cli -datadir=/home/ubuntu/.burritocoin stop
 Restart=on-failure
 RestartSec=30
 # A busy flush on shutdown can take a while; don't SIGKILL a clean stop.
 TimeoutStopSec=600
 PrivateTmp=true
-ProtectSystem=full
 NoNewPrivileges=true
 
 [Install]

@@ -1,0 +1,32 @@
+# BurritoCoin mainnet node — Oracle A1 (seed / explorer backend).
+#
+# Install to /home/ubuntu/.burritocoin/burritocoin.conf (chmod 600).
+# Generate the rpcauth line first:
+#   python3 ~/BurritoCoin/share/rpcauth/rpcauth.py brtorpc
+# It prints an rpcauth=... line and the plaintext password. Put the rpcauth
+# line here; keep the password for ElectrumX and the explorer .env.
+
+server=1
+listen=1
+txindex=1
+
+# No keys on this box. The build cannot use --disable-wallet (libmw's wallet
+# sources are not gated behind ENABLE_WALLET, so the flag fails to compile),
+# so the wallet is compiled in but switched off at runtime instead. This is
+# the stronger guarantee anyway: no wallet is loaded and none can be created.
+disablewallet=1
+
+# RPC — loopback only. ElectrumX and btc-rpc-explorer are the only clients.
+# Never expose 9226; the VCN security list must not open it either.
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+rpcport=9226
+# rpcauth=brtorpc:<salt>$<hash>
+
+# P2P
+port=9227
+maxconnections=40
+
+# Parallel-run only: mesh with the Linode seed so this node syncs and both
+# stay on the same tip. DELETE THIS LINE at cutover, when the Linode goes.
+addnode=50.116.17.170:9227
