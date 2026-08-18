@@ -30,12 +30,18 @@ die()    { red "ERROR: $*"; exit 1; }
 [[ $EUID -eq 0 ]] || die "Run as root."
 [[ -f "$PRIMARY_CONF" ]] || die "Primary burritocoin.conf not found at $PRIMARY_CONF."
 
-RPC_USER=$(awk -F= '/^rpcuser=/{print $2; exit}' "$PRIMARY_CONF")
-RPC_PASS=$(awk -F= '/^rpcpassword=/{print $2; exit}' "$PRIMARY_CONF")
+# Credentials: prefer the environment, fall back to plaintext rpcuser/
+# rpcpassword in the node config. A config that uses the safer rpcauth= form
+# stores only a salted hash, so the plaintext cannot be recovered from it —
+# in that case pass the password in, e.g.
+#   sudo RPC_USER=brtorpc RPC_PASS="$(cat ~/.burritocoin/rpcpass.txt)" \
+#        PRIMARY_CONF=~/.burritocoin/burritocoin.conf ./setup-electrumx.sh
+RPC_USER="${RPC_USER:-$(awk -F= '/^rpcuser=/{print $2; exit}' "$PRIMARY_CONF")}"
+RPC_PASS="${RPC_PASS:-$(awk -F= '/^rpcpassword=/{print $2; exit}' "$PRIMARY_CONF")}"
 RPC_PORT=$(awk -F= '/^rpcport=/{print $2; exit}' "$PRIMARY_CONF")
 RPC_PORT="${RPC_PORT:-9226}"
 
-[[ -n "$RPC_USER" && -n "$RPC_PASS" ]] || die "Couldn't read rpcuser/rpcpassword from $PRIMARY_CONF."
+[[ -n "$RPC_USER" && -n "$RPC_PASS" ]] || die "No RPC credentials. Set RPC_USER and RPC_PASS in the environment, or put rpcuser=/rpcpassword= in $PRIMARY_CONF."
 
 # -------- 1. System packages ----------------------------------------------
 green "[1/6] Installing system packages..."
