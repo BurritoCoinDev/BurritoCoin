@@ -160,6 +160,15 @@ proof that this box works as a seed, since that is what wallets rely on.
   rewriting the RPC credentials; the Linode's had ElectrumX commented out, so
   `BTCEXP_ADDRESS_API` and the server list must be appended.
 - Bind the explorer to `127.0.0.1`, not `0.0.0.0`; nginx fronts it.
+- Set `BTCEXP_SECURE_SITE=true` whenever the explorer runs behind a reverse
+  proxy. It switches on Express's `trust proxy`, without which the app sees
+  every request as coming from nginx at `127.0.0.1` — so btc-rpc-explorer's
+  rate limiter (200 requests / 15 min, meant to be per client) buckets the
+  entire internet together and starts returning 429 to everyone once any
+  handful of visitors adds up to 200. The symptom looks like the explorer
+  "going down" while the service is healthy and `curl` against
+  `127.0.0.1:3002` still answers 200. It also makes session cookies Secure,
+  which is correct once TLS terminates at nginx.
 - Certbot needs DNS pointing at the box first (HTTP-01 validation), so the
   order is nginx on :80 -> flip DNS -> certbot. HTTPS is briefly unavailable
   in between; flipping the record back restores the old host immediately.
