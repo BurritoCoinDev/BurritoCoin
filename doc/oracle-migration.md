@@ -6,9 +6,9 @@ Goal: stop paying for the Linode. End state:
 |----------------------------|-------------------------------------------|------|--------|
 | Marketing site             | Cloudflare Pages                          | $0   | **DONE 2026-08-18** |
 | DNS                        | Cloudflare (from WordPress.com)           | $0   | **DONE 2026-08-18** |
-| Block explorer             | Oracle A1 VM, behind Cloudflare proxy     | $0   | pending |
-| ElectrumX                  | Oracle A1 VM                              | $0   | pending |
-| Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   | pending |
+| Block explorer             | Oracle A1 VM + nginx + Let's Encrypt      | $0   | **DONE 2026-08-18** |
+| ElectrumX                  | Oracle A1 VM                              | $0   | **DONE 2026-08-18** |
+| Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   | **DONE 2026-08-18** |
 | Second (loopback) daemon   | **dropped — not needed on Oracle**        | —    | n/a |
 | Mining                     | **owner's Windows PC — never a cloud box**| $0   | deferred |
 | Linode                     | cancelled once mining moves               | $0   | pending |
@@ -121,6 +121,50 @@ Order of operations, therefore:
 Verified after cutover: all pages 200, branded 404 served, `www` 301s to the
 apex preserving path and query, apex does not redirect, and `explorer` and
 `seed` still resolve to the Linode.
+
+## Phases 3-6 as actually built (2026-08-18)
+
+The box: `129.146.160.229`, us-phoenix-1 / AD-1, `VM.Standard.A1.Flex`
+2 OCPU / 12 GB, Ubuntu 24.04 aarch64, 70 GB boot volume, account upgraded to
+Pay As You Go (which removes the idle-reclamation risk) with a $1 budget
+alert at a 1% threshold, so any charge at all sends mail.
+
+Running: `burritocoind` (synced, peered with the Linode in both directions),
+ElectrumX 1.19.0, btc-rpc-explorer behind nginx with a Let's Encrypt
+certificate (expires 2026-11-17, auto-renewing via certbot.timer).
+
+Verified from a third-party host, not from the box itself: `:80` and `:443`
+serve the explorer, `9227` and `50001` are open, and **`9226` is closed** —
+the node RPC must never be reachable from the internet. `getpeerinfo` shows
+one outbound and one inbound connection to the Linode; the inbound one is the
+proof that this box works as a seed, since that is what wallets rely on.
+
+### Four bugs this surfaced, all latent on the Linode too
+
+1. `--disable-wallet` does not compile (see the wallet note above).
+2. `setup-electrumx.sh` demanded plaintext `rpcuser`/`rpcpassword` and could
+   not work against an `rpcauth=` config; it now takes credentials from the
+   environment.
+3. It set `EVENT_LOOP_POLICY=uvloop` without installing uvloop, so ElectrumX
+   exited during `Env()` construction with a clean exit code — which reads as
+   "started then stopped", not as a dependency error.
+4. It cloned ElectrumX at HEAD with no pin. Upstream 2.0.0 renamed
+   `Coin.header_hash` to `header_hash_rev`, breaking the BurritoCoin
+   `genesis_block` override; pinned to the revision the live explorer runs.
+
+### Notes for a rebuild
+
+- Build from system libraries, not `depends/` — much faster, and Ubuntu 24.04
+  has current-enough versions. `make -j2` takes roughly an hour on 2 OCPU.
+- The `.env` for the explorer is easiest to seed by copying the live one and
+  rewriting the RPC credentials; the Linode's had ElectrumX commented out, so
+  `BTCEXP_ADDRESS_API` and the server list must be appended.
+- Bind the explorer to `127.0.0.1`, not `0.0.0.0`; nginx fronts it.
+- Certbot needs DNS pointing at the box first (HTTP-01 validation), so the
+  order is nginx on :80 -> flip DNS -> certbot. HTTPS is briefly unavailable
+  in between; flipping the record back restores the old host immediately.
+
+---
 
 ## Phase 2 — Oracle account
 
