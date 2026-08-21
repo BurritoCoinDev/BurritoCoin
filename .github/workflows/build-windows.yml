@@ -1,0 +1,88 @@
+# Cross-build the Windows GUI wallet from depends/.
+#
+# Why this exists: the binary in contrib/release/ has repeatedly gone stale
+# because rebuilding it depended on someone having a working mingw toolchain
+# and unrestricted network access at the same moment. Several environments
+# cannot fetch the pinned dependency tarballs at all — GitHub /archive/ URLs
+# in particular are blocked by some egress proxies — and the tempting fix
+# there is to repoint the hashes at whatever *can* be downloaded. Those
+# hashes pin the supply chain of a wallet, so that is not an acceptable fix.
+# A GitHub runner has the network to fetch exactly what depends/ pins,
+# verify it, and build unattended.
+#
+# Triggers: any tag matching v*, or manually from the Actions tab.
+name: Build Windows wallet
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  win64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            g++-mingw-w64-x86-64-posix mingw-w64-tools \
+            build-essential libtool autotools-dev automake pkg-config \
+            bsdmainutils python3 bison curl bzip2 xz-utils
+          # Bitcoin-family builds require the posix threading model; the
+          # win32 variant lacks std::thread and fails deep into the compile.
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+
+      # depends/ is the expensive half (Qt dominates). Key the cache on the
+      # package definitions so it is reused until a dependency actually moves.
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: depends/x86_64-w64-mingw32
+          key: depends-win64-${{ hashFiles('depends/packages/*.mk', 'depends/funcs.mk', 'depends/Makefile') }}
+
+      - name: Build depends
+        run: make -C depends HOST=x86_64-w64-mingw32 -j$(nproc)
+
+      - name: Configure
+        run: |
+          ./autogen.sh
+          CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site \
+            ./configure --prefix=/ --disable-tests --disable-bench
+
+      - name: Build
+        run: make -j$(nproc)
+
+      - name: Strip and report hash
+        id: hash
+        run: |
+          mkdir -p out
+          x86_64-w64-mingw32-strip -s src/qt/burritocoin-qt.exe -o out/burritocoin-qt-win64.exe
+          SHA=$(sha256sum out/burritocoin-qt-win64.exe | cut -d' ' -f1)
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+          {
+            echo "### burritocoin-qt-win64.exe"
+            echo ""
+            echo '```'
+            echo "SHA256: $SHA"
+            echo '```'
+            echo ""
+            echo "Update this hash in \`website/mine-windows.html\` (Step 2) in the"
+            echo "same commit that ships the binary — the page publishes it for"
+            echo "download verification, so a mismatch tells users the file is"
+            echo "tampered with when it is merely stale."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: burritocoin-qt-win64
+          path: out/burritocoin-qt-win64.exe
+          if-no-files-found: error
