@@ -7,14 +7,15 @@
  * Each line contains a BIP155 serialized (networkID, addr, port) tuple.
  */
 static const uint8_t chainparams_seed_main[] = {
-    // 50.116.17.170:9227  (BurritoCoin mainnet seed node)
+    // 129.146.160.229:9227  (BurritoCoin mainnet seed node)
     // BIP155: 0x01=IPv4, 0x04=4-byte addr, then addr bytes, then port big-endian
-    0x01, 0x04, 0x32, 0x74, 0x11, 0xAA, 0x24, 0x0B,
+    0x01, 0x04, 0x81, 0x92, 0xA0, 0xE5, 0x24, 0x0B,
 };
 
 static const uint8_t chainparams_seed_test[] = {
-    // 50.116.17.170:19227  (BurritoCoin testnet seed node)
+    // 129.146.160.229:19227  (no testnet is currently run; see
+    // contrib/seeds/nodes_test.txt)
     // BIP155: 0x01=IPv4, 0x04=4-byte addr, then addr bytes, then port big-endian
-    0x01, 0x04, 0x32, 0x74, 0x11, 0xAA, 0x4B, 0x1B,
+    0x01, 0x04, 0x81, 0x92, 0xA0, 0xE5, 0x4B, 0x1B,
 };
 #endif // BURRITOCOIN_CHAINPARAMSSEEDS_H

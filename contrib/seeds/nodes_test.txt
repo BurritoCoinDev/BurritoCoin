@@ -1,6 +1,10 @@
 # BurritoCoin testnet fixed seed nodes.
 #
 # Currently a placeholder — no public BurritoCoin testnet is being run.
+# The address below is the mainnet seed host; nothing listens on the
+# testnet port there today. It is listed so the array is non-empty and
+# points somewhere we control, rather than at a retired host whose IP
+# will be reassigned to a stranger.
 # When a testnet is launched, list its persistent peers here and regenerate
 # src/chainparamsseeds.h via contrib/seeds/generate-seeds.py.
-50.116.17.170:19227
+129.146.160.229:19227

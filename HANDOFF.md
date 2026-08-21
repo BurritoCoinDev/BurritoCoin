@@ -32,25 +32,29 @@ a single block and no consensus incidents.
 
 The public-facing surface is:
 
-- **Project website** — <https://burritoco.in/>. Static site served from
-  `/var/www/burritoco.in/` on the production VPS via nginx with TLS from
-  Let's Encrypt. Includes the spec page (`/spec`), the integrator reference,
-  download links, and the project FAQ.
+- **Project website** — <https://burritoco.in/>. Static site on **Cloudflare
+  Pages**, rebuilt from `website/` on every push to `master`. There is no
+  server behind it and nothing to deploy or restart. Includes the spec page
+  (`/spec`), the integrator reference, download links, and the project FAQ.
 - **Block explorer** — <https://explorer.burritoco.in/>. `btc-rpc-explorer`
   pointed at the production `burritocoind` over RPC, fronted by nginx.
 - **ElectrumX server** — public Electrum-protocol server on the canonical
   Electrum ports, indexing the BurritoCoin chain from the local node so
   light wallets can connect without running a full node.
-- **DNS seed** — `seed.burritoco.in` resolves to `50.116.17.170` (the VPS).
-  This is the bootstrap seed compiled into `chainparams.cpp`, so a fresh
-  node with no known peers will reach out to it on startup. There is only
-  one seed host today; adding redundant seeds is a deferred improvement
-  (see the pending-tasks section).
+- **DNS seed** — `seed.burritoco.in` resolves to `129.146.160.229`. This is
+  the bootstrap seed compiled into `chainparams.cpp`, so a fresh node with no
+  known peers will reach out to it on startup. Because discovery goes through
+  a DNS name rather than a hard-coded address, the seed host can be replaced
+  without shipping a new wallet — which is what made the 2026-08 migration
+  survivable for already-distributed binaries. There is still only one seed
+  host; adding redundant seeds remains a deferred improvement.
 
-There is currently one production full node and one peer node (both on the
-same VPS — see "Infrastructure"), one mining process throttled to roughly
-30% of one CPU core, and an unknown but small number of community nodes. No
-exchanges list BRTO yet; the listing path is described in the
+There is currently one production full node (see "Infrastructure") and an
+unknown but small number of community nodes. **No mining is running.** The
+miner previously ran on the retired Linode; it has not been re-established
+elsewhere, so the chain is not advancing until someone starts one. Difficulty
+freezes while mining is stopped, so resuming does not face an inflated
+target. No exchanges list BRTO yet; the listing path is described in the
 "Distribution path" section below.
 
 ---
@@ -102,71 +106,114 @@ priority pending decisions (see section 7).
 
 ## 3. Infrastructure
 
-All production services run on a single Linode VPS at **`50.116.17.170`**,
-running Ubuntu 24.04 LTS. This is a single point of failure today; the
-mitigation plan (off-VPS premine custody, off-site wallet backup, and
-eventually a redundant DNS seed and a second relay node) is tracked in
-section 7.
+Production is split across two providers as of 2026-08-18, neither of which
+bills anything:
 
-The following systemd units are expected to be `active`. You can verify
-each with `systemctl is-active <name>`:
+- **Static site** (`burritoco.in`, `www.burritoco.in`) — **Cloudflare Pages**,
+  built from `website/` on every push to `master`. No server, nothing to
+  deploy or restart. The `www` -> apex 301 is a zone-level Cloudflare
+  Redirect Rule, not a file in the repo (Pages matches `_redirects` against
+  paths only, so a hostname-sourced rule there silently never fires).
+- **Node, ElectrumX, explorer** — one **Oracle Cloud A1** instance at
+  **`129.146.160.229`** (us-phoenix-1 / AD-1, `VM.Standard.A1.Flex`,
+  2 OCPU / 12 GB, Ubuntu 24.04 aarch64, 70 GB boot volume). Access is
+  `ssh -i <key> ubuntu@129.146.160.229`; the key is in the project lead's
+  password manager. The account is Pay As You Go, which exempts it from
+  Oracle's 7-day idle-reclamation rule, with a $1 budget alert at a 1%
+  threshold so any charge at all sends mail.
+- **DNS** — Cloudflare. `seed` and `explorer` are DNS-only (grey cloud);
+  `seed` must stay that way permanently, because P2P on 9227 is not HTTP and
+  cannot traverse Cloudflare's proxy. The apex and `www` are proxied to Pages.
 
-- **`burritocoind.service`** — the production full node. Data directory
-  `/root/.burritocoin/`. Listens on the mainnet P2P/RPC ports above.
-  Source of truth for the explorer, ElectrumX, and the miner.
-- **`burritocoind-peer.service`** — a second `burritocoind` instance
-  running out of `/root/.burritocoin-peer/`, peered to the main node so
-  the network has at least two full nodes even from a single host. Useful
-  for testing relay/propagation locally.
-- **`btc-rpc-explorer.service`** — the block explorer at
-  `explorer.burritoco.in`. Talks to `burritocoind.service` over RPC.
-- **`electrumx.service`** — the public ElectrumX server. Indexes the
-  chain from the local node and serves the Electrum protocol to light
-  wallets.
-- **`burritocoin-miner.service`** — the throttled CPU miner. Uses
-  `cpulimit` (or equivalent) to cap usage at roughly 30% of a single
-  core so that the node, explorer, and ElectrumX stay responsive on the
-  same VPS. Mines to the `vps-mining` wallet (see section 4).
-- **`nginx`** — fronts `burritoco.in` and `explorer.burritoco.in` and
-  terminates TLS.
+**Mining must never run on this infrastructure.** Oracle's Cloud Services
+Agreement §1.3(d) prohibits crypto mining on every account type, and
+enforcement is automated and disable-first — instances are disabled and
+argued about afterwards. A validating/relaying node and a block explorer are
+outside the ban's text; mining is not. Mining belongs on hardware the project
+owns. See `doc/oracle-migration.md`.
 
-**Key paths on the VPS:**
+The Linode at `50.116.17.170` is being retired; every service moved off it on
+2026-08-18. Once the instance is cancelled that IP is reassigned to an
+unrelated customer, so any surviving reference to it should be deleted rather
+than trusted.
 
-- `/root/BurritoCoin/` — the source repository (this checkout).
-- `/root/.burritocoin/` — main node data directory, including
-  `wallet.dat` for the **mainwallet** and `burritocoin.conf` (mode 600,
-  contains the RPC user/password — not in this file).
-- `/root/.burritocoin-peer/` — peer node data directory.
-- `/var/www/burritoco.in/` — static site root served by nginx. Updated
-  by `git pull` from a content branch and an nginx reload.
-- `/usr/local/bin/brto-miner.sh` — wrapper script invoked by
-  `burritocoin-miner.service`; sets the throttle and the mining address.
+The following systemd units are expected to be `active` on the Oracle box.
+Verify each with `systemctl is-active <name>`:
+
+- **`burritocoind.service`** — the full node, running as `ubuntu` out of
+  `/home/ubuntu/.burritocoin/`. Source of truth for the explorer and
+  ElectrumX. Runs with `disablewallet=1`, so no wallet is loaded and none can
+  be created: **this box holds no keys.** (The build cannot use
+  `--disable-wallet` — `libmw/src/wallet/Keychain.cpp` pulls in Berkeley DB
+  headers unconditionally — so the wallet is compiled in and switched off at
+  runtime, which is the stronger guarantee anyway.)
+- **`electrumx.service`** — ElectrumX 1.19.0, pinned to upstream `24865dc3`.
+  Serves TCP 50001 publicly, admin RPC on 127.0.0.1:8000. Config at
+  `/etc/electrumx.conf`, mode 600 — it contains the node RPC password.
+- **`btc-rpc-explorer.service`** — the explorer, bound to **127.0.0.1:3002**
+  with nginx in front. Config at `/opt/btc-rpc-explorer/.env`, mode 600.
+  `BTCEXP_SECURE_SITE=true` is required behind the proxy; without it Express
+  never sets `trust proxy`, every request appears to come from nginx, and the
+  200-request/15-minute rate limiter applies to all visitors collectively.
+- **`nginx`** — terminates TLS for `explorer.burritoco.in` and proxies to
+  3002. Let's Encrypt certificate, renewed automatically by `certbot.timer`.
+
+There is deliberately **no second/loopback daemon**. It existed on the Linode
+only so `getblocktemplate` would see a non-zero peer count, since the daemon
+refuses to serve mining templates when it believes it is disconnected. With
+no mining here it has no purpose.
+
+**Key paths on the Oracle box:**
+
+- `/home/ubuntu/BurritoCoin/` — the checkout the binaries were built from.
+- `/home/ubuntu/.burritocoin/` — node data directory and `burritocoin.conf`
+  (mode 600). RPC auth uses `rpcauth=`, which stores only a salted hash, so
+  the plaintext password cannot be recovered from the config; it is stashed
+  at `/home/ubuntu/.burritocoin/rpcpass.txt` for ElectrumX and the explorer.
+- `/opt/electrumx/` — ElectrumX checkout (pinned) and its venv.
+- `/opt/btc-rpc-explorer/` — explorer checkout, pinned to `26e282a` with
+  `contrib/explorer/burritocoin-explorer.patch` applied.
+- `/usr/local/bin/burritocoind`, `/usr/local/bin/burritocoin-cli`.
+
+Ports: **9227** (P2P) and **50001** (ElectrumX) are open to the internet;
+**80/443** serve the explorer; **9226** (node RPC), **8000** (ElectrumX admin)
+and **3002** (explorer) are loopback-only and must stay closed. Both the VCN
+security list *and* the in-image iptables rules have to allow a port — opening
+only the security list is the most common reason a port appears dead on OCI.
 
 ---
 
 ## 4. Wallets
 
-There are two production wallets. The on-VPS files are at
-`/root/.burritocoin/wallet.dat` and the corresponding peer-node directory.
+**Neither wallet lives on production infrastructure any more.** The Oracle
+node runs with `disablewallet=1`, so it loads no wallet and cannot create
+one. What follows describes the wallets themselves and where they now live.
 
 - **`mainwallet`** — holds the **148,000,000 BRTO** genesis premine. The
   premine output is a P2PK locked to a key that was generated at chain
   bringup; it became spendable 100 blocks after genesis. The wallet is
-  AES-256 encrypted (the standard `walletpassphrase` flow). The
-  `wallet.dat` file is currently backed up to OneDrive cloud storage.
-  Keeping this much value on a public-facing VPS is the single biggest
-  operational risk in the project today and is the top item on the
-  pending-tasks list — see section 7.
-- **`vps-mining`** — receives the coinbase outputs from
-  `burritocoin-miner.service`. Mining pays out to
-  `brto1q675hvplaa9udwt8uplvfv4cndt8z9x87sk324w` (a native SegWit / bech32
-  address with the BurritoCoin `brto1` HRP). This wallet is also
-  AES-256 encrypted.
+  AES-256 encrypted (the standard `walletpassphrase` flow). Since the
+  Linode was retired the **only** copy is the `wallet.dat` backed up to
+  OneDrive. That removes the old risk — 148M BRTO sitting on a
+  public-facing server — and replaces it with a different one: a single
+  backup location. The encryption means a OneDrive compromise alone does
+  not spend the coins, but a OneDrive *loss* is unrecoverable. A second
+  offline copy is the outstanding action; see section 7.
+- **`vps-mining`** — held the coinbase outputs mined on the Linode
+  (roughly 1,500 BRTO), paid to
+  `brto1q675hvplaa9udwt8uplvfv4cndt8z9x87sk324w`. **This wallet was
+  deliberately abandoned** with the Linode rather than migrated: the balance
+  was judged not worth the handling, and the coins are unrecoverable. The
+  address remains valid and its history is still visible on the explorer;
+  nothing can spend from it.
 
 The **passphrases** for both wallets live in the project lead's password
-manager. The **RPC user and password** for the running node live only in
-`/root/.burritocoin/burritocoin.conf` (mode 600, root-readable only).
-The **VPS SSH credentials** also live only in the password manager. None
+manager. The node's **RPC credentials** are stored as an `rpcauth=` salted
+hash in `/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) — the
+plaintext is not recoverable from that file and is kept alongside it in
+`rpcpass.txt`, which ElectrumX and the explorer were configured from.
+The **Oracle SSH private key** lives only in the project lead's password
+manager; there is no password login on that box. None
 of these secrets appears in this file, in the repo, or in `CHANGELOG.md`.
 If you are a future contributor and you need access to any of them, you
 need to be the project lead or be vouched for by the project lead — there
@@ -308,15 +355,15 @@ and no liquidity, so any major exchange would (correctly) decline.
 In rough priority order. The single critical item is the premine custody
 issue; everything else can wait on it.
 
-1. **CRITICAL — move the 148M premine off the VPS.** The premine
-   currently lives in the `mainwallet` `wallet.dat` on a public-facing
-   single-host server. The fix is to install a fresh Qt wallet on a
-   personal machine (ideally air-gapped or at least not Internet-
-   exposed), generate a receive address there, and send the entire
-   premine to it from the VPS in a single sweep transaction. Then
-   re-encrypt and back up the new wallet (USB cold backup, see item 6).
-   This is the highest-value single operational fix the project can
-   make.
+1. **RESOLVED, with a successor risk — premine custody.** The premine is
+   no longer on a public-facing server: every service moved to hosts that
+   hold no wallet, and the Linode that held `mainwallet` was retired
+   (2026-08-18). What remains is a **single-copy backup problem** — the
+   encrypted `wallet.dat` exists only in OneDrive. The remaining work is a
+   second copy on offline media kept somewhere physically separate, and a
+   restore test (open the backup in a fresh Qt wallet and confirm the
+   balance) so the backup is known-good rather than assumed-good. An
+   untested backup is not a backup.
 2. **HIGH — build official release binaries via `depends/`.** The
    reproducible-build system under `depends/` is the standard mechanism
    for producing Linux, macOS, and Windows binaries. Until binaries
@@ -329,11 +376,12 @@ issue; everything else can wait on it.
    extension hasn't been built yet, so those tests are currently
    skipped. Build it, wire it into the test runner, and turn the skips
    into real assertions.
-4. **MEDIUM — add nginx security headers.** The site and explorer are
-   served without `Strict-Transport-Security`, `X-Frame-Options`,
-   `X-Content-Type-Options`, `Referrer-Policy`, or a basic
-   `Content-Security-Policy`. Add them in the nginx server blocks for
-   `burritoco.in` and `explorer.burritoco.in`.
+4. **MEDIUM — add security headers.** Neither surface sets
+   `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`,
+   `Referrer-Policy`, or a basic `Content-Security-Policy`. These now live in
+   two different places: for `explorer.burritoco.in`, the nginx server block
+   on the Oracle box; for `burritoco.in`, a `website/_headers` file, since
+   Cloudflare Pages has no nginx to configure.
 5. **MEDIUM — decide on MWEB pre-activation enforcement in
    `src/rpc/mining.cpp`.** The MWEB code path uses BIP8 signaling, and
    there is an open question about how strictly the mining RPCs should
@@ -357,18 +405,18 @@ issue; everything else can wait on it.
 
 ## 8. Quick reference command list
 
-Common invocations a maintainer needs day-to-day. Run these on the VPS
-unless otherwise noted.
+Common invocations a maintainer needs day-to-day. Run these on the Oracle
+box (`ssh -i <key> ubuntu@129.146.160.229`) unless otherwise noted.
 
-**Node interaction (`bcli` is the local alias for `burritocoin-cli` with
-the right `-conf` and `-datadir`):**
+**Node interaction** — `~/.burritocoin` is the default datadir for the
+`ubuntu` user, so no `-conf`/`-datadir` flags are needed:
 
 ```
-src/burritocoin-cli -conf=/root/.burritocoin/burritocoin.conf -datadir=/root/.burritocoin getblockcount
-src/burritocoin-cli -conf=/root/.burritocoin/burritocoin.conf -datadir=/root/.burritocoin getblockchaininfo
-src/burritocoin-cli -conf=/root/.burritocoin/burritocoin.conf -datadir=/root/.burritocoin getpeerinfo
-src/burritocoin-cli -conf=/root/.burritocoin/burritocoin.conf -datadir=/root/.burritocoin getmininginfo
-src/burritocoin-cli -conf=/root/.burritocoin/burritocoin.conf -datadir=/root/.burritocoin getbalance
+burritocoin-cli getblockcount
+burritocoin-cli getblockchaininfo
+burritocoin-cli getpeerinfo
+burritocoin-cli getmininginfo
+# no getbalance: the node runs disablewallet=1 and holds no wallet
 ```
 
 **Service control:**
@@ -378,7 +426,6 @@ systemctl status burritocoind.service
 systemctl restart burritocoind.service
 systemctl status btc-rpc-explorer.service
 systemctl status electrumx.service
-systemctl status burritocoin-miner.service
 systemctl reload nginx
 journalctl -u burritocoind.service -n 200 --no-pager
 ```
@@ -391,10 +438,12 @@ git pull --ff-only origin master
 ./contrib/devtools/update-changelog.sh # regenerate CHANGELOG.md from git log
 ```
 
-**Website deploy** (the website tree under `/var/www/burritoco.in/`):
+**Website deploy** — there is no deploy step. Cloudflare Pages rebuilds
+`burritoco.in` from `website/` on every push to `master`, normally within a
+minute:
 
 ```
-cd /var/www/burritoco.in && git pull --ff-only && systemctl reload nginx
+git push origin master        # that is the whole deploy
 ```
 
 ---
