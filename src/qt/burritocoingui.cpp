@@ -1802,12 +1802,14 @@ void BurritoCoinGUI::createFaqPanel()
     // Only meaningful when a wallet can be loaded.
     if (!enableWallet) return;
 
-    m_faq_dock = new QDockWidget(tr("Help & FAQ"), this);
+    // Escape the ampersand here too: the dock title bar runs the string
+    // through the same mnemonic handling as a menu, so a bare '&' is
+    // swallowed and the title bar reads "Help FAQ".
+    m_faq_dock = new QDockWidget(tr("Help && FAQ"), this);
     m_faq_dock->setObjectName("FAQDock");
     m_faq_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    // The dock's window title is reused verbatim for toggleViewAction()'s text,
-    // and the menu renderer strips '&' as a mnemonic prefix — escape it as '&&'
-    // so the Window menu entry shows "Help & FAQ" instead of "Help  FAQ".
+    // toggleViewAction() would otherwise inherit the raw window title, so set
+    // its text explicitly with the same escaping.
     m_faq_dock->toggleViewAction()->setText(tr("Help && FAQ"));
 
     // NOTE: this depends-Qt is built without the 'textbrowser' feature, so we use
@@ -1919,14 +1921,17 @@ QString BurritoCoinGUI::faqHtml() const
             "any old unencrypted copies.")},
     };
 
-    // The header is a plain block (not <h2>) with an explicit line-height: Qt's
-    // rich-text engine gives headings a tight intrinsic line spacing, so when the
-    // title wraps in the narrow dock it draws the second line on top of the first.
+    // Header and subtitle are separate <p> blocks with explicit non-zero
+    // margins on both sides. Qt's rich-text engine does not collapse adjacent
+    // margins the way a browser does, so a zero top margin on the subtitle let
+    // it paint over the header whenever the header wrapped in the narrow dock.
+    // The em dash is gone from the title for the same reason: it made the line
+    // long enough to wrap at the dock's default width.
     QString body =
         "<div style='font-size:15px; line-height:1.4;'>"
-        "<div style='color:#f5a623; font-size:18px; font-weight:bold; line-height:1.3; "
-        "margin:0 0 2px 0;'>\xf0\x9f\x8c\xaf BurritoCoin \xe2\x80\x94 Help &amp; FAQ</div>"
-        "<p style='color:#c47d0e; margin-top:0;'>Keeping your coins safe.</p>";
+        "<p style='color:#f5a623; font-size:18px; font-weight:bold; "
+        "margin:0 0 6px 0;'>\xf0\x9f\x8c\xaf BurritoCoin Help &amp; FAQ</p>"
+        "<p style='color:#c47d0e; margin:0 0 10px 0;'>Keeping your coins safe.</p>";
     for (const QA& item : items) {
         body += "<p style='color:#f5a623; font-weight:bold; font-size:16px; margin-bottom:2px;'>"
               + tr(item.q) + "</p>";
