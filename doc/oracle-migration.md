@@ -10,8 +10,17 @@ Goal: stop paying for the Linode. End state:
 | ElectrumX                  | Oracle A1 VM                              | $0   | **DONE 2026-08-18** |
 | Seed node (`burritocoind`) | Oracle A1 VM (validate/relay only)        | $0   | **DONE 2026-08-18** |
 | Second (loopback) daemon   | **dropped — not needed on Oracle**        | —    | n/a |
-| Mining                     | **owner's Windows PC — never a cloud box**| $0   | deferred |
-| Linode                     | cancelled once mining moves               | $0   | pending |
+| Mining                     | **owner's Windows PC — never a cloud box**| $0   | not running |
+| Linode                     | **deleted 2026-08-19**                    | $0   | **DONE** |
+
+**The migration is complete: the project bills $0/month.** The Linode was
+deleted on 2026-08-19 without waiting for mining to move, a deliberate call
+once it was established that stopping mining is safe and reversible —
+difficulty freezes rather than drifting up, so resuming later does not face
+an inflated target. The `vps-mining` wallet was abandoned with the box; its
+balance (~1,500 BRTO) was judged not worth the handling. **No mining is
+running, so the chain is not advancing.** The premine was verified first by
+opening the OneDrive backup in a fresh Qt wallet and confirming the balance.
 
 The Linode runs four services; **three** of them move. `burritocoind`
 (main), ElectrumX, and the Node explorer all migrate. The loopback peer
