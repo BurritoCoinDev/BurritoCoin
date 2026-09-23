@@ -43,6 +43,14 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 - Seed node / explorer / ElectrumX host: **`129.146.160.229`** (Oracle Cloud A1,
   us-phoenix-1, Ubuntu 24.04 aarch64). `seed.burritoco.in` and
   `explorer.burritoco.in` both point here.
+- Oracle access: key-only SSH as `ubuntu`. The working key is an ed25519 pair
+  commented `burritocoin-oracle` (2026-09-22), held by the project lead. With
+  no working key, recover through the Oracle console: bastion
+  `burritocoinbastion` → Managed SSH session with a fresh public key, then
+  append that key to `~/.ssh/authorized_keys` (the session's copy expires
+  with the session). Full procedure: `HANDOFF.md` §3. **Don't use Run
+  Command** — this instance's Oracle Cloud Agent has no Run Command plugin,
+  so the console accepts commands and never runs them.
 - Static site: **Cloudflare Pages**, built from `website/` on every push to
   `master`. Not on any VPS.
 - The Linode at `50.116.17.170` is **gone** — every service moved off it
@@ -77,5 +85,6 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 ## Security / handoff
 
 - Never put private keys, seed phrases, or wallet credentials in `HANDOFF.md`, `CHANGELOG.md`, or any other tracked file.
-- `website/mine-windows.html` embeds the SHA256 of `contrib/release/burritocoin-qt-win64.exe` (Step 2, "Verify the download"). Whenever that exe is rebuilt, update the hash on that page in the same commit.
-- Pushes from this environment go to the local git proxy; the user pushes upstream from their VPS.
+- `website/mine-windows.html` embeds the SHA256 of `contrib/release/burritocoin-qt-win64.exe` (Step 2, `#verify`). Whenever that exe is rebuilt, update the hash on that page in the same commit. It is the **only** copy on the site, on purpose: the homepage `#download` section links to `/mine-windows#verify` rather than repeating it, so there is exactly one hash to keep in sync. Don't add a second.
+- There is no VPS. Sessions push to their `claude/*` branch and reach `master` through a PR; merging to `master` publishes anything under `website/`, because Cloudflare Pages builds on every push.
+- `master`'s history was rewritten on 2026-08-28 to drop 44 superseded copies of the Windows exe (master went from ~139 MiB to ~24 MiB packed). Never push from a clone made before then — re-clone. `contrib/release/` is gitignored but its files are tracked, so `git add` prints an "ignored" warning and still stages them. Every committed rebuild of the exe adds ~35 MB to history permanently.

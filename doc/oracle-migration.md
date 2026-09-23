@@ -12,6 +12,7 @@ Goal: stop paying for the Linode. End state:
 | Second (loopback) daemon   | **dropped — not needed on Oracle**        | —    | n/a |
 | Mining                     | **owner's Windows PC — never a cloud box**| $0   | not running |
 | Linode                     | **deleted 2026-08-19**                    | $0   | **DONE** |
+| Cutover loose ends         | stale `seed` A record, Oracle `addnode`   | —    | **DONE 2026-09-22** |
 
 **The migration is complete: the project bills $0/month.** The Linode was
 deleted on 2026-08-19 without waiting for mining to move, a deliberate call
@@ -242,7 +243,7 @@ proof that this box works as a seed, since that is what wallets rely on.
         pkg-config bzip2 curl git python3 bison
     sudo useradd -m -s /bin/bash burrito
     sudo -iu burrito git clone https://github.com/BurritoCoinDev/BurritoCoin.git
-    cd /home/burrito/BurritoCoin
+    cd /home/ubuntu/BurritoCoin
 
     # Pinned deps built natively for ARM. ~30-60 min on 2 OCPU; NO_QT/NO_WALLET
     # skip everything the headless node doesn't need.
@@ -256,7 +257,7 @@ proof that this box works as a seed, since that is what wallets rely on.
 
 (`ls depends/` if the triplet directory name differs.)
 
-`/home/burrito/.burritocoin/burritocoin.conf` — generate the `rpcauth` line
+`/home/ubuntu/.burritocoin/burritocoin.conf` — generate the `rpcauth` line
 with `share/rpcauth/rpcauth.py <user>`:
 
     server=1
@@ -266,8 +267,11 @@ with `share/rpcauth/rpcauth.py <user>`:
     rpcbind=127.0.0.1
     rpcallowip=127.0.0.1
     rpcauth=<paste from rpcauth.py>
-    # Parallel-run only — mesh with the Linode node; remove after cutover:
-    addnode=50.116.17.170:9227
+
+The parallel run also carried an `addnode=` pointing at the Linode. It was
+removed after cutover; **don't re-add it** — that IP now belongs to an
+unrelated customer. No `addnode=` is needed at all: the compiled-in fixed
+seed and `seed.burritoco.in` both point at this box.
 
 Install the systemd unit and start:
 
@@ -331,6 +335,14 @@ Weekly checklist:
 
 ## Phase 7 — Cutover and cancel
 
+**Status: complete.** Steps 3 and 4 were done 2026-08-18/19, and step 2 on
+2026-08-28 (the rebuilt wallet was published with the Oracle IP as its fixed
+seed). Step 1 was missed at cutover and only done on 2026-09-22. For that
+month `seed.burritoco.in` kept returning the dead Linode address alongside
+the Oracle one, so new nodes wasted connection attempts on a host that by
+then belonged to an unrelated customer. Lesson for next time: a cutover isn't
+finished until `seed` resolves to exactly one address.
+
 1. Remove the Linode A record from `seed.burritoco.in` (Oracle record
    stays). Remove the `addnode=50.116.17.170` line from the Oracle node's
    conf.
@@ -355,3 +367,8 @@ Weekly checklist:
   it is rebuildable from this repo + the chain; treat the VM as disposable.
 - Keep at least one off-site copy of this repo current — it *is* the
   disaster-recovery plan.
+- Access and break-glass recovery (the SSH key, the bastion) are documented
+  in `HANDOFF.md` §3. Two traps found on 2026-09-22: the console's **Run
+  Command** never executes on this instance (its agent has no Run Command
+  plugin), and editing a systemd unit without `sudo systemctl daemon-reload`
+  leaves the old definition running.

@@ -1,7 +1,7 @@
 # BurritoCoin Project — Handoff Document
 
-**Last updated:** 2026-05-08
-**Master tip when written:** `4142687a5`
+**Last updated:** 2026-09-23
+**Master tip when written:** `b5bb0e0`
 
 This file documents only **public** information about the BurritoCoin project:
 network parameters, repository state, pending work, and operational notes that
@@ -9,8 +9,8 @@ would already be visible to anyone who reads the source, runs a node, or visits
 the website. It contains no secrets — no wallet passphrases, no RPC
 credentials, no private keys, no SSH keys, and no paths to backup files. The
 locations of those secrets are noted, but the secrets themselves live only in
-the project lead's password manager and on a mode-`600` config file on the
-production VPS.
+the project lead's password manager and in mode-`600` files on the
+production server (§3).
 
 The intent is that any contributor (or any future Claude Code session)
 landing fresh on this repository can read `HANDOFF.md` plus `CHANGELOG.md` and
@@ -117,8 +117,8 @@ bills anything:
 - **Node, ElectrumX, explorer** — one **Oracle Cloud A1** instance at
   **`129.146.160.229`** (us-phoenix-1 / AD-1, `VM.Standard.A1.Flex`,
   2 OCPU / 12 GB, Ubuntu 24.04 aarch64, 70 GB boot volume). Access is
-  `ssh -i <key> ubuntu@129.146.160.229`; the key is in the project lead's
-  password manager. The account is Pay As You Go, which exempts it from
+  key-only SSH, `ssh -i <key> ubuntu@129.146.160.229` — see **Access and
+  recovery** below. The account is Pay As You Go, which exempts it from
   Oracle's 7-day idle-reclamation rule, with a $1 budget alert at a 1%
   threshold so any charge at all sends mail.
 - **DNS** — Cloudflare. `seed` and `explorer` are DNS-only (grey cloud);
@@ -162,6 +162,51 @@ There is deliberately **no second/loopback daemon**. It existed on the Linode
 only so `getblocktemplate` would see a non-zero peer count, since the daemon
 refuses to serve mining templates when it believes it is disconnected. With
 no mining here it has no purpose.
+
+After editing any unit file, run `sudo systemctl daemon-reload` before
+restarting it. On 2026-09-22 `burritocoind.service` turned out to have been
+edited on disk without a reload, so systemd was still running an older
+definition — the next `restart` prints a "changed on disk" warning; heed it.
+After reloading, its `User`, `ExecStart`, `ExecStop`, `Restart`,
+`RestartSec` and `TimeoutStopSec` were checked against
+`contrib/oracle/burritocoind.service` and match. `TimeoutStopSec=600` is the
+one that matters: it keeps systemd from killing the daemon in the middle of
+a slow shutdown flush.
+
+**Access and recovery.** SSH is key-only; there is no password login. The
+working key is an ed25519 pair with the comment `burritocoin-oracle`,
+created 2026-09-22 when the original key wasn't on hand; both public keys
+are in `~/.ssh/authorized_keys`. The private key is held by the project lead
+and belongs in the password manager too — a key that exists on one machine
+only is one lost laptop away from locking everyone out.
+
+With no working key at all, get in through the Oracle Cloud console:
+
+1. Instance → **Management** → Oracle Cloud Agent: the **Bastion** plugin
+   must be Enabled and Running (it is, as of 2026-09-22).
+2. Identity & Security → **Bastion** → `burritocoinbastion` (target subnet
+   `public subnet-burritocoin-vcn`) → **Sessions** → **Create session**:
+   type *Managed SSH session*, username `ubuntu`, instance `burritocoin`,
+   target IP `10.0.0.238` (the instance's private address), and paste a
+   fresh public key.
+3. When the session is Active, its menu offers **Copy SSH command**, which
+   tunnels through the bastion with a `ProxyCommand`. On Windows, keep the
+   private key at a path without spaces so the nested quoting survives
+   PowerShell.
+4. Append the new public key to `~/.ssh/authorized_keys`. The session's own
+   copy disappears when the session expires (3 hours at most), so skipping
+   this step means repeating all of the above next time.
+
+The bastion costs nothing to keep and is the break-glass path, so leave it
+in place. The corollary deserves stating plainly: **anyone who controls the
+Oracle Cloud account can get a shell on this box**, so that login is part of
+the box's security.
+
+**Don't use Run Command.** The instance's Management tab has a Run command
+panel, but the Oracle Cloud Agent on this instance offers no Run Command
+plugin (it is absent from the plugin list). The console accepts a command
+and shows delivery *Visible*, execution *Accepted* — and nothing ever runs.
+Established the slow way on 2026-09-22; go straight to the bastion.
 
 **Key paths on the Oracle box:**
 
@@ -212,12 +257,14 @@ manager. The node's **RPC credentials** are stored as an `rpcauth=` salted
 hash in `/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) — the
 plaintext is not recoverable from that file and is kept alongside it in
 `rpcpass.txt`, which ElectrumX and the explorer were configured from.
-The **Oracle SSH private key** lives only in the project lead's password
-manager; there is no password login on that box. None
+The **Oracle SSH private key** (`burritocoin-oracle`, see §3) is held by the
+project lead; there is no password login on that box. None
 of these secrets appears in this file, in the repo, or in `CHANGELOG.md`.
 If you are a future contributor and you need access to any of them, you
-need to be the project lead or be vouched for by the project lead — there
-is no alternative recovery path on purpose.
+need to be the project lead or be vouched for by the project lead. No
+recovery path bypasses the project lead, on purpose: a lost SSH key is
+recoverable only through the project lead's Oracle Cloud account (§3), and a
+lost wallet passphrase is not recoverable at all.
 
 ---
 
@@ -225,9 +272,18 @@ is no alternative recovery path on purpose.
 
 For the full commit-by-commit history with verbatim commit-message bodies,
 read **`CHANGELOG.md`** in this directory. It is auto-generated from
-`git log` by `contrib/devtools/update-changelog.sh` and is regenerated by
-the post-commit hook installed via `contrib/devtools/install-hooks.sh`, so
-it is always in sync with the live tip.
+`git log` by `contrib/devtools/update-changelog.sh`. The post-commit hook
+from `contrib/devtools/install-hooks.sh` regenerates it automatically — but
+only in clones where someone ran that script, and Claude Code sessions
+don't, so it can lag the tip (it once went two months stale). Run the script
+before relying on it. Its **Archived history (pre-rewrite)** section holds
+150 entries for commits no longer reachable from `master`, 64 of which exist
+nowhere else; the generator carries that section through untouched.
+
+Work since 2026-08 — the move off Linode, the rebuilt Windows wallet and its
+download buttons, and the history rewrite — is covered in §3, §7 and
+`doc/oracle-migration.md` rather than summarised here. The summary below
+predates it.
 
 What follows is a human-readable summary of the last ~15 commits at the
 time of writing (newest first); reach for `CHANGELOG.md` if you need the
@@ -355,21 +411,27 @@ and no liquidity, so any major exchange would (correctly) decline.
 In rough priority order. The single critical item is the premine custody
 issue; everything else can wait on it.
 
-1. **RESOLVED, with a successor risk — premine custody.** The premine is
-   no longer on a public-facing server: every service moved to hosts that
+1. **HIGH — premine: a second, offline copy of `wallet.dat`.** The premine
+   is no longer on a public-facing server: every service moved to hosts that
    hold no wallet, and the Linode that held `mainwallet` was retired
-   (2026-08-18). What remains is a **single-copy backup problem** — the
-   encrypted `wallet.dat` exists only in OneDrive. The remaining work is a
-   second copy on offline media kept somewhere physically separate, and a
-   restore test (open the backup in a fresh Qt wallet and confirm the
-   balance) so the backup is known-good rather than assumed-good. An
-   untested backup is not a backup.
-2. **HIGH — build official release binaries via `depends/`.** The
-   reproducible-build system under `depends/` is the standard mechanism
-   for producing Linux, macOS, and Windows binaries. Until binaries
-   exist there is nothing to publish on the website's downloads page
-   beyond source, and there is nothing for Tier 1 exchanges to
-   integrate against. This is gating the listing path.
+   (2026-08-18). The OneDrive backup was restore-tested before the Linode was
+   deleted (opened in a fresh Qt wallet, balance confirmed). What remains is
+   a **single-copy problem**: the encrypted `wallet.dat` exists only in
+   OneDrive, and OneDrive syncs deletions — deleting the local copy by
+   mistake deletes the cloud copy too, recoverable only from OneDrive's
+   recycle bin and only for a limited time (30 days on personal accounts).
+   Put a second copy on offline media kept somewhere physically separate,
+   and restore-test that copy as well. An untested backup is not a backup.
+2. **HIGH — official release binaries: Windows done, Linux and macOS
+   not.** `.github/workflows/build-windows.yml` cross-builds the Qt wallet
+   from `depends/` on a GitHub runner (manual dispatch, or any `v*` tag).
+   Actions run `32530319035` produced the build published on 2026-08-28,
+   which the site offers as a download (homepage `#download` and
+   `/mine-windows`). Still to do: Linux and macOS builds — without them
+   there is nothing for Tier 1 exchanges to integrate against, which gates
+   the listing path — plus code signing (SmartScreen warns on every first
+   launch) and publishing binaries as GitHub Release assets instead of
+   committing them (each committed rebuild adds ~35 MB to history).
 3. **HIGH — build the missing `burritocoin_scrypt` Python C-extension.**
    A subset of the functional test suite under `test/functional/` needs
    the Scrypt PoW callable from Python via a small C-extension. The
@@ -387,19 +449,20 @@ issue; everything else can wait on it.
    there is an open question about how strictly the mining RPCs should
    refuse to produce MWEB-flavored templates before activation is
    final. Resolve and document the decision.
-6. **LOW — USB cold backup of `wallet.dat`.** Independent of item 1,
-   take an offline backup of the production `wallet.dat` to a USB
-   drive kept in physical storage. OneDrive is fine as a hot backup
-   but is a single-vendor dependency.
-7. **LOW — three inflected `satoshi` stragglers in Finnish/Slovenian
+6. **LOW — three inflected `satoshi` stragglers in Finnish/Slovenian
    `.ts` files.** Inflected forms (`satoshia`, `satoshin`,
    `satoshijev`, `satošijev`) didn't match the `\b`-bounded regex used
    in commit `4142687` and need a native speaker to retranslate
    properly to the corresponding inflected forms of `burrioshi`.
-8. **LOW — six `BRTO-TODO` markers in `src/chainparams.cpp`.** These
+7. **LOW — six `BRTO-TODO` markers in `src/chainparams.cpp`.** These
    are minor parameter-comment cleanups left behind by the rebrand.
    Walk through them and decide for each whether to clarify or
    delete.
+8. **LOW — reboot the Oracle box for its staged kernel.** Logins have
+   shown `*** System restart required ***` since at least 2026-09-22.
+   `sudo reboot` takes the seed, explorer and ElectrumX down for about a
+   minute. Check that every unit comes back on boot first:
+   `systemctl is-enabled burritocoind electrumx btc-rpc-explorer nginx`.
 
 ---
 
@@ -454,7 +517,7 @@ The following files are the supporting documents a contributor will need;
 read them alongside this handoff.
 
 - `CHANGELOG.md` — full commit-by-commit history, auto-generated from
-  `git log`, regenerated by the post-commit hook.
+  `git log` by `contrib/devtools/update-changelog.sh` (it can lag; see §5).
 - `README.md` — top-level repository overview.
 - `CONTRIBUTING.md` — contributor guidelines.
 - `SECURITY.md` — vulnerability-reporting policy and signing fingerprint.
@@ -467,7 +530,13 @@ read them alongside this handoff.
 - `doc/bips.md` — list of BIPs supported and their activation status.
 - `website/spec.html` — the public integrator-facing spec page (also
   served at `burritoco.in/spec`).
-- `contrib/vps/` — VPS provisioning and ElectrumX setup scripts.
+- `doc/oracle-migration.md` — the Linode → Oracle/Cloudflare migration
+  runbook, as built, including the cutover record.
+- `contrib/oracle/` — systemd units, nginx config, and an example
+  `burritocoin.conf` for the Oracle box.
+- `contrib/vps/` — the retired Linode's provisioning scripts;
+  `setup-electrumx.sh` is still how ElectrumX gets installed.
+- `.github/workflows/build-windows.yml` — cross-builds the Windows wallet.
 - `contrib/init/` — systemd, OpenRC, launchd, and Upstart unit files.
 - `contrib/devtools/update-changelog.sh` — regenerates `CHANGELOG.md`.
 - `contrib/devtools/install-hooks.sh` — installs the post-commit hook
