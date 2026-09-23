@@ -196,6 +196,45 @@ nav {
   border-color: var(--gold-dark);
 }
 
+/* ── DOWNLOAD ──
+   A real button for the wallet download. It used to be a gold text link in
+   the middle of a sentence on /mine-windows, and people looking for it
+   specifically still missed it. The tinted background keeps the card
+   distinct both on the page background and nested inside a .step card. */
+.download-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1.2rem;
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  margin: 1rem 0 1.1rem;
+}
+
+.btn-download {
+  font-size: 1.05rem;
+  padding: 0.85rem 1.8rem;
+  text-align: center;
+}
+
+/* Inside a .step on a phone the card sits under three layers of padding, and
+   the label wrapped onto two ragged lines. Full-width + tighter padding keeps
+   it one line down to 360px and gives a proper tap target. */
+@media (max-width: 600px) {
+  .download-card { padding: 0.7rem; }
+  .btn-download { width: 100%; padding: 0.8rem 0.6rem; font-size: 1rem; }
+}
+
+/* A <span>, not a <p>: `.step p` would otherwise override size and colour. */
+.download-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.download-meta code { font-size: 0.8rem; }
+
 /* ── SECTIONS ── */
 section {
   max-width: 900px;
@@ -511,6 +550,13 @@ code {
   font-size: 0.88em;
   border: 1px solid var(--border);
 }
+
+/* Long unbreakable tokens — a 64-hex hash, a %APPDATA% path, a bare GitHub
+   URL as link text — pushed whole pages sideways on phones (/spec by 242px at
+   390px wide). Let them break only when they would otherwise overflow; normal
+   words are unaffected. Block code in <pre> keeps scrolling instead. */
+:not(pre) > code,
+section a { overflow-wrap: anywhere; }
 
 pre {
   background: var(--code-bg);

@@ -61,7 +61,7 @@
     <div class="breadcrumb"><a href="/mine">← Mine</a></div>
     <h1>🪟 Mining on Windows</h1>
     <p>About 20 minutes. Works on Windows 10 and Windows 11 (64-bit). No
-       compilers, no WSL — just download two zips, edit one text file, and run
+       compilers, no WSL — just download the wallet and a miner, edit one text file, and run
        a few commands.</p>
   </div>
 
@@ -74,12 +74,15 @@
     <div class="step" id="step-1">
       <span class="step-number">1</span>
       <h3>Get BurritoCoin Core</h3>
-      <p><strong>Option A — download the GUI wallet (easiest).</strong> A pre-built
-         Windows wallet ships directly from the repository:</p>
-      <p><a href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download burritocoin-qt-win64.exe</a>
-         — a single self-contained file: full node, wallet, and GUI in one. Save it
-         to a folder you'll remember, e.g. <code>C:\BurritoCoin</code>. No installer,
-         no extra DLLs.</p>
+      <p><strong>Option A — download the GUI wallet (easiest).</strong> A single
+         self-contained file: full node, wallet, and GUI in one. No installer, no
+         extra DLLs.</p>
+      <div class="download-card">
+        <a class="btn btn-primary btn-download" href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download for Windows</a>
+        <span class="download-meta"><code>burritocoin-qt-win64.exe</code> · v0.21.4 · 33 MB</span>
+      </div>
+      <p>Save it to a folder you'll remember, e.g. <code>C:\BurritoCoin</code>, and
+         check its SHA256 in the next step before running it.</p>
       <p><strong>Option B — build from source.</strong> This produces the
          command-line tools (<code>burritocoind.exe</code>,
          <code>burritocoin-cli.exe</code>) that the steps below use verbatim:</p>
@@ -101,9 +104,9 @@
       </div>
     </div>
 
-    <div class="step">
+    <div class="step" id="verify">
       <span class="step-number">2</span>
-      <h3>(Optional) Verify the download</h3>
+      <h3>Verify the download (recommended)</h3>
       <p>Open PowerShell, <code>cd</code> to the folder where you saved the file,
          and run:</p>
       <pre><code>Get-FileHash .\burritocoin-qt-win64.exe -Algorithm SHA256</code></pre>

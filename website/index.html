@@ -46,7 +46,8 @@
       mine your first coins in about twenty minutes — no exchange, no sign-up.
     </p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href="/wallets">Get Started</a>
+      <a class="btn btn-primary" href="#download">Download for Windows</a>
+      <a class="btn btn-secondary" href="/wallets">Get Started</a>
       <a class="btn btn-secondary" href="/mine">Start Mining</a>
     </div>
     <p style="margin-top:1.2rem; font-size:0.85rem; color:var(--muted);">
@@ -57,8 +58,46 @@
 
   <hr class="divider" />
 
-  <!-- ABOUT -->
   <div id="main"></div>
+
+  <!-- DOWNLOAD -->
+  <section id="download">
+    <div class="section-label">Download</div>
+    <h2>Get the Wallet</h2>
+    <p>
+      BurritoCoin Core for Windows is a single file: full node, wallet, and GUI
+      in one. No installer, no extra DLLs — save it anywhere and double-click.
+    </p>
+    <div class="download-card">
+      <a class="btn btn-primary btn-download" href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download for Windows</a>
+      <span class="download-meta"><code>burritocoin-qt-win64.exe</code> · v0.21.4 · 33 MB · Windows 10 &amp; 11, 64-bit</span>
+    </div>
+    <!-- The SHA256 deliberately lives in ONE place: mine-windows.html#verify.
+         Link to it; don't copy the hash here, or the two will drift. -->
+    <div class="callout">
+      <strong>Check it before you run it.</strong> Confirm the file's SHA256
+      matches the one published in the <a href="/mine-windows#verify">Windows
+      guide</a> — it's the only proof the download hasn't been tampered with.
+      The wallet isn't code-signed yet, so on first launch Windows SmartScreen
+      will say "Windows protected your PC": click <strong>More info</strong> →
+      <strong>Run anyway</strong>.
+    </div>
+    <p>
+      On first launch it finds the network and syncs the chain, which is still
+      small enough that this is quick. Then <a href="/mine-windows">start
+      mining</a> to earn your first coins, or read up on
+      <a href="/wallets">how wallets work</a> first.
+    </p>
+    <p style="font-size:0.9rem; color:var(--muted);">
+      On macOS or Linux? There's no pre-built download yet — build from source
+      with the <a href="/mine-mac#step-1">macOS</a> or
+      <a href="/mine-linux#step-1">Linux</a> guide.
+    </p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ABOUT -->
   <section id="about">
     <div class="section-label">What is this, exactly</div>
     <h2>The Currency of Champions (of Eating Burritos)</h2>
