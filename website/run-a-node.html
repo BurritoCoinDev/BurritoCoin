@@ -76,33 +76,35 @@
     <div class="section-label">Step 1 of 3</div>
     <h2>Install the Daemon</h2>
     <p>
-      Building from source is the same on every platform — clone the repo, run
-      <code>./configure &amp;&amp; make</code>, install. The mining guides walk through
-      this in detail with the right dependencies for each OS:
+      On Windows, the downloadable wallet <em>is</em> a full node. On macOS and Linux
+      you build it from source. The mining guides walk through both, with the right
+      dependencies for each OS:
     </p>
 
     <div class="os-picker">
       <a href="/mine-windows#step-1" class="os-card">
         <span class="os-icon">🪟</span>
         <h3>Windows</h3>
-        <p>WSL2 + Ubuntu build</p>
+        <p>Download the wallet</p>
       </a>
       <a href="/mine-mac#step-1" class="os-card">
         <span class="os-icon">🍎</span>
         <h3>macOS</h3>
-        <p>Homebrew + clang</p>
+        <p>Build with Homebrew</p>
       </a>
       <a href="/mine-linux#step-1" class="os-card">
         <span class="os-icon">🐧</span>
         <h3>Linux</h3>
-        <p>Most distros</p>
+        <p>Build from source</p>
       </a>
     </div>
 
     <p>
-      Follow Step 1 on whichever guide matches your OS. Stop after you have
-      <code>burritocoind</code> and <code>burritocoin-cli</code> installed and the
-      node starts cleanly. You don't need the mining bits — just the daemon.
+      Follow Step 1 on whichever guide matches your OS; on macOS and Linux, Step 2
+      too, which starts the node. You don't need the mining steps. On Windows, the
+      commands below go in the wallet's own console: <strong>Help → Node
+      window</strong>, <strong>Console</strong> tab. Type them without the
+      <code>burritocoin-cli</code> in front.
     </p>
   </section>
 
@@ -112,8 +114,9 @@
     <div class="section-label">Step 2 of 3</div>
     <h2>Connect to the Network</h2>
     <p>
-      A fresh node has no idea where other nodes are. You bootstrap it by pointing
-      it at one known peer, and from there it discovers the rest automatically.
+      A fresh node finds the network on its own: it asks <code>seed.burritoco.in</code>
+      for peers, and falls back to an address built into the software. Adding the
+      seed explicitly as well is a cheap belt-and-braces step.
     </p>
 
     <div class="step">
@@ -123,7 +126,9 @@
       <ul>
         <li><strong>Linux:</strong> <code>~/.burritocoin/burritocoin.conf</code></li>
         <li><strong>macOS:</strong> <code>~/Library/Application Support/BurritoCoin/burritocoin.conf</code></li>
-        <li><strong>Windows:</strong> <code>%APPDATA%\BurritoCoin\burritocoin.conf</code></li>
+        <li><strong>Windows:</strong> <code>%APPDATA%\BurritoCoin\burritocoin.conf</code>
+          — easiest from the wallet: <strong>Settings → Options…</strong> →
+          <strong>Open Configuration File</strong></li>
       </ul>
       <p>If it doesn't exist yet, create it.</p>
     </div>
@@ -147,8 +152,8 @@
       <pre><code>burritocoin-cli stop
 burritocoind</code></pre>
       <p>
-        On macOS and Linux, you can also restart the GUI version (<code>burritocoin-qt</code>)
-        — same effect.
+        On Windows, close the wallet with <strong>File → Exit</strong> and open it
+        again — same effect.
       </p>
     </div>
   </section>
@@ -175,8 +180,11 @@ burritocoind</code></pre>
       <h3>Check sync progress</h3>
       <pre><code>burritocoin-cli getblockchaininfo</code></pre>
       <p>
-        Watch <code>blocks</code> tick up until it matches <code>headers</code>. The
-        chain is small right now so full sync should take seconds, not hours.
+        Watch <code>blocks</code> climb until it matches the latest block on
+        <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">explorer.burritoco.in</a>.
+        The chain is small, so that takes a minute or two. Don't go by
+        <code>"initialblockdownload"</code>: if nobody has mined for over a day, it
+        stays <code>true</code> even on a fully synced node.
       </p>
     </div>
 

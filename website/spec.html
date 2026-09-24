@@ -243,8 +243,28 @@ burritocoin-cli createrawtransaction '[{"txid":"...","vout":0}]' '{"&lt;addr&gt;
     <pre><code># Correct
 burritocoin-cli getblocktemplate '{"rules":["segwit","mweb"]}'
 
-# Will error -8 "rule not supported"
+# Fails: error -8 "getblocktemplate must be called with the segwit & mweb rule sets"
 burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
+    <p>
+      Asking for the rule isn't enough on its own. MWEB is a BIP8 deployment on
+      version bit 4 (8064-block windows, threshold 6048) and, as of September 2026,
+      is still signalling rather than active on mainnet. Once it activates, every
+      block must carry an MWEB extension block and its integrating transaction: the template returns them as the <code>mweb</code> field and as an
+      entry in <code>transactions</code>, and the submitted block must include both, or
+      it is rejected. Stock miners such as cpuminer-opt (which only requests
+      <code>segwit</code>) and pooler's cpuminer do neither. The node's own
+      <code>generatetoaddress</code> and the desktop wallet's Mine tab build complete
+      blocks; the wallet can also feed an external miner through a Stratum bridge that
+      accepts connections from the same machine only.
+    </p>
+    <p>
+      On mainnet, <code>getblocktemplate</code> also refuses while the node considers
+      itself in initial block download (error -10, "is in initial sync and waiting for
+      blocks..."). By default that includes any time the newest block is more than 24
+      hours old — so on a quiet chain it refuses indefinitely even when fully synced. A
+      pool or template server should run with <code>maxtipage</code> set high.
+      <code>generatetoaddress</code> doesn't have this check.
+    </p>
 
     <h3>RPC differences from Bitcoin Core</h3>
     <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
@@ -285,13 +305,13 @@ burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
     <p>
       Source code is published at
       <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">github.com/BurritoCoinDev/BurritoCoin</a>.
-      Tagged releases (binaries for Linux, macOS, Windows) appear on the
-      <a href="https://github.com/BurritoCoinDev/BurritoCoin/releases" target="_blank" rel="noopener">Releases page</a>.
-      Until release automation is set up, the current pre-built Windows GUI wallet
-      lives in the repository at
+      Tagged releases with binaries will appear on the
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/releases" target="_blank" rel="noopener">Releases page</a>
+      once release automation is set up. Until then, the only pre-built binary is the
+      Windows GUI wallet, in the repository at
       <a href="https://github.com/BurritoCoinDev/BurritoCoin/tree/master/contrib/release" target="_blank" rel="noopener"><code>contrib/release/</code></a>
-      (see the <a href="/mine-windows#step-1">Windows guide</a> for the download
-      link and SHA256).
+      (the <a href="/mine-windows#verify">Windows guide</a> has the download link and
+      SHA256).
     </p>
 
     <h3>Building from source (Linux)</h3>
@@ -300,18 +320,19 @@ git clone https://github.com/BurritoCoinDev/BurritoCoin
 cd BurritoCoin
 sudo apt install -y build-essential libtool autotools-dev automake \
                     pkg-config bsdmainutils python3 libssl-dev libevent-dev \
-                    libboost-system-dev libboost-filesystem-dev \
-                    libboost-thread-dev libboost-test-dev \
-                    libdb-dev libdb++-dev libminiupnpc-dev libfmt-dev
+                    libboost-all-dev libsqlite3-dev libdb-dev libdb++-dev \
+                    libminiupnpc-dev libzmq3-dev libfmt-dev
 ./autogen.sh
-./configure --without-gui --with-incompatible-bdb
+# --with-boost-system=no: Boost 1.89+ (Ubuntu 26.04, Fedora 44) no longer ships
+# a separate Boost.System library; harmless on older Boost
+./configure --without-gui --with-incompatible-bdb --with-boost-system=no
 make -j$(nproc)
 # Output: src/burritocoind, src/burritocoin-cli, src/burritocoin-tx,
 # src/burritocoin-wallet
 
 # Add Qt deps for the GUI wallet (burritocoin-qt)
 sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools libqrencode-dev
-./configure --with-incompatible-bdb     # without --without-gui this time
+./configure --with-incompatible-bdb --with-boost-system=no   # without --without-gui this time
 make -j$(nproc)
 # Output additionally: src/qt/burritocoin-qt</code></pre>
 

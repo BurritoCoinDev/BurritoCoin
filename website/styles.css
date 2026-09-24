@@ -660,3 +660,10 @@ a.skip-link:focus-visible {
 html {
   scroll-padding-top: 5rem;
 }
+
+/* On phones the nav links wrap onto two or three rows (122px tall at 360–390px,
+   159px at 320px), so a 5rem offset left deep links like /mine-windows#verify
+   landing with their heading under the nav. */
+@media (max-width: 600px) {
+  html { scroll-padding-top: 10.5rem; }
+}
