@@ -42,7 +42,8 @@
     <h1>🪟 Mining on Windows</h1>
     <p>About ten minutes on Windows 10 or 11 (64-bit). Download one file, create
        a wallet, and press <strong>Start Mining</strong> — the wallet has a miner
-       built in. No command line, no config files.</p>
+       built in. No command line, and usually no config files (Step 4 covers the
+       one exception).</p>
   </div>
 
   <hr class="divider" />
@@ -170,12 +171,14 @@
          <strong>Current block height</strong> with the latest block on
          <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">explorer.burritoco.in</a>.
          When they match, you're synced — click <strong>Hide this notice</strong>.</p>
-      <p>If nobody has mined for a while, the notice keeps showing even though
-         you're fully synced, and <strong>Estimated time left</strong> never
-         finishes calculating. That's expected: the wallet treats any chain whose
-         newest block is more than a day old as still catching up. The matching
-         block height is the signal that matters — and the moment anyone mines a
-         new block, the notice clears for everyone.</p>
+      <p>If nobody has mined for a while, the wallet can't tell a quiet network
+         from a slow download. Once the newest block is more than about 90
+         minutes old, the notice keeps showing even when you're fully synced:
+         <strong>Number of blocks left</strong> reads <em>"Unknown. Syncing
+         Headers (…%)"</em> and the status bar says <em>"Syncing Headers
+         (…%)"</em>, with a low percentage. That's expected. The matching block
+         height is the signal that matters — and as soon as anyone mines a new
+         block, the notice clears for everyone.</p>
     </div>
 
     <div class="callout">
@@ -225,7 +228,10 @@
       <p>Your first block un-freezes the chain for everyone else. Only do this
          after your height matches the explorer: the setting switches off the
          wallet's "still syncing" check, which is what stops you mining before
-         you've caught up.</p>
+         you've caught up. It stays on every time you open the wallet, so after
+         the wallet has been closed for a while, check your height against the
+         explorer again before pressing Start Mining — or delete the line once
+         other people are mining regularly.</p>
     </div>
 
     <div class="step">
@@ -272,16 +278,24 @@
       </div>
       <div class="faq-item">
         <h3>The "out of sync" notice won't go away</h3>
-        <p>If <strong>Number of blocks left</strong> is 0, you're synced — it's the
-           age of the newest block, not your wallet (see <a href="#sync">Step 3</a>).
-           If it isn't 0, hover over the network icon: with no connections, check
-           that nothing on your network blocks outgoing connections to port 9227.</p>
+        <p>Open <strong>Window → Information</strong> and compare <strong>Current
+           block height</strong> with the explorer. If they match, you're synced —
+           the notice (and "Syncing Headers" in the status bar) is about the age of
+           the newest block, not your wallet; see <a href="#sync">Step 3</a>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>My block height stays at 0</h3>
+        <p>Hover over the network icon. With no connections, check that nothing on
+           your network blocks outgoing connections to port 9227. With a
+           connection and still 0 after 15 minutes, don't mine — open an issue on
+           <a href="https://github.com/BurritoCoinDev/BurritoCoin/issues" target="_blank" rel="noopener">GitHub</a>.</p>
       </div>
       <div class="faq-item">
         <h3>The Mine tab says "BurritoCoin is still syncing."</h3>
         <p>If your block height matches the explorer, nobody has mined for over a
-           day — see <a href="#still-syncing">Step 4</a>. If it doesn't match yet,
-           give it a few minutes and check your connections.</p>
+           day — see <a href="#still-syncing">Step 4</a>. If it doesn't match, you
+           aren't synced yet: give it a few minutes, or see "My block height stays
+           at 0" below.</p>
       </div>
       <div class="faq-item">
         <h3>The Mine tab says "Open a wallet before mining."</h3>

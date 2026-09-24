@@ -44,7 +44,7 @@ Hard rules for the Oracle box:
   build fails on a missing Berkeley DB header no matter what the flag says.
   (That is a real bug — libmw's wallet sources are not gated behind
   `ENABLE_WALLET` — worth fixing upstream.) Build **with** the wallet
-  (`libdb++-dev` + `libsqlite3-dev` installed) and set `disablewallet=1` in
+  (`libdb5.3++-dev` + `libsqlite3-dev` installed) and set `disablewallet=1` in
   `burritocoin.conf`. Runtime enforcement is the stronger guarantee anyway: no
   wallet is loaded and none can be created. A box an abuse bot can summarily
   disable must hold nothing irreplaceable — chain data re-syncs, wallets don't.
@@ -247,23 +247,27 @@ wallet compiled in and switched off at runtime. As the `ubuntu` user:
     sudo apt update
     sudo apt install -y build-essential libtool autotools-dev automake \
         pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev \
-        libsqlite3-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev \
+        libsqlite3-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev \
         libfmt-dev git curl
     git clone https://github.com/BurritoCoinDev/BurritoCoin.git ~/BurritoCoin
     cd ~/BurritoCoin
     ./autogen.sh
-    ./configure --without-gui --disable-tests --disable-bench --with-incompatible-bdb
+    ./configure --without-gui --disable-tests --disable-bench \
+        --with-incompatible-bdb --with-boost-system=no
     make -j"$(nproc)"          # roughly an hour on 2 OCPU
     sudo install -m 755 src/burritocoind src/burritocoin-cli /usr/local/bin/
 
 That package list and configure line are the public Linux guide's, verified
 end to end on a fresh x86_64 Ubuntu 24.04 on 2026-09-23; the package names are
-the same on arm64.
+the same on arm64. (On the live box `~/BurritoCoin` already exists and predates
+the history rewrite — move it aside first.)
 
 `/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) is
 `contrib/oracle/burritocoin.conf.example` — copy it rather than retyping it
 here, since it carries `disablewallet=1`, which is what makes this a box with
-no keys. Generate its `rpcauth` line with `share/rpcauth/rpcauth.py <user>`.
+no keys. Leave its `maxtipage` line out until the node has caught up with the
+network, then add it and restart: on an unsynced node it would switch off the
+check that stops it serving an incomplete chain. Generate its `rpcauth` line with `share/rpcauth/rpcauth.py <user>`.
 
 The parallel run also carried an `addnode=` pointing at the Linode. It was
 removed after cutover; **don't re-add it** — that IP now belongs to an
@@ -277,8 +281,10 @@ Install the systemd unit and start:
     sudo systemctl enable --now burritocoind
     burritocoin-cli getblockcount   # should climb to the live height
 
-`txindex=1` is required by the explorer. The chain re-syncs from the Linode
-node in minutes-to-hours at current chain size.
+`txindex=1` is required by the explorer. A rebuilt node syncs from whatever
+peers it finds — at minimum it needs one node that holds the chain. On a quiet
+chain that peer must itself run with `maxtipage`, or it won't serve headers
+(see `HANDOFF.md` §3).
 
 ## Phase 5 — Explorer, ElectrumX, and the loopback peer
 
@@ -334,10 +340,10 @@ Weekly checklist:
 
 **Status: done, with one item still open.** Step 4 was done 2026-08-19 and
 step 2 on 2026-08-28 (the rebuilt wallet was published with the Oracle IP as
-its fixed seed). Step 3 was done in part: `mainwallet`, the premine, was copied
-to OneDrive and restore-verified, but the `vps-mining` wallet was deliberately
-abandoned with the box and no offline copy was made — that remains open as
-`HANDOFF.md` §7 item 1. Step 1 was missed at cutover and only done on 2026-09-22. For that
+its fixed seed). Step 3 was done in part. The `vps-mining` wallet was deliberately
+abandoned with the box, and that decision is closed. `mainwallet`, the premine,
+was copied to OneDrive and restore-verified, but no offline copy exists yet —
+that remains open as `HANDOFF.md` §7 item 1. Step 1 was missed at cutover and only done on 2026-09-22. For that
 month `seed.burritoco.in` kept returning the dead Linode address alongside
 the Oracle one, so new nodes wasted connection attempts on a host that by
 then belonged to an unrelated customer. Lesson for next time: a cutover isn't

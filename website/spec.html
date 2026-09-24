@@ -246,10 +246,11 @@ burritocoin-cli getblocktemplate '{"rules":["segwit","mweb"]}'
 # Fails: error -8 "getblocktemplate must be called with the segwit & mweb rule sets"
 burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
     <p>
-      Asking for the rule isn't enough on its own. MWEB is a BIP8 deployment on
-      version bit 4 (8064-block windows, threshold 6048) and, as of September 2026,
-      is still signalling rather than active on mainnet. Once it activates, every
-      block must carry an MWEB extension block and its integrating transaction: the template returns them as the <code>mweb</code> field and as an
+      Asking for the rule isn't enough on its own. MWEB is a height-based BIP8
+      deployment on version bit 4 with lock-in on timeout: whatever miners signal,
+      it locks in at block 16,128 and becomes active at block 24,192 (the chain was
+      at 10,578 in September 2026). From then on, every block must carry an MWEB
+      extension block and its integrating transaction: the template returns them as the <code>mweb</code> field and as an
       entry in <code>transactions</code>, and the submitted block must include both, or
       it is rejected. Stock miners such as cpuminer-opt (which only requests
       <code>segwit</code>) and pooler's cpuminer do neither. The node's own
@@ -320,7 +321,7 @@ git clone https://github.com/BurritoCoinDev/BurritoCoin
 cd BurritoCoin
 sudo apt install -y build-essential libtool autotools-dev automake \
                     pkg-config bsdmainutils python3 libssl-dev libevent-dev \
-                    libboost-all-dev libsqlite3-dev libdb-dev libdb++-dev \
+                    libboost-all-dev libsqlite3-dev libdb5.3++-dev \
                     libminiupnpc-dev libzmq3-dev libfmt-dev
 ./autogen.sh
 # --with-boost-system=no: Boost 1.89+ (Ubuntu 26.04, Fedora 44) no longer ships

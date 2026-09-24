@@ -59,7 +59,7 @@
       <pre><code>sudo apt update
 sudo apt install -y build-essential libtool autotools-dev automake \
   pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev \
-  libsqlite3-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev \
+  libsqlite3-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev \
   libfmt-dev git curl</code></pre>
       <p><strong>Fedora:</strong></p>
       <pre><code>sudo dnf install -y gcc-c++ make autoconf automake libtool pkgconf-pkg-config \
@@ -86,11 +86,8 @@ sudo make install</code></pre>
     </div>
 
     <div class="callout">
-      <strong>Want the node as a system service?</strong> After building,
-      <code>sudo ./contrib/vps/setup.sh mainnet</code> installs it as a systemd
-      service running under its own user. You don't need that just to mine. See
-      <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-unix.md" target="_blank" rel="noopener">doc/build-unix.md</a>
-      for more build options.
+      More build options are in
+      <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-unix.md" target="_blank" rel="noopener">doc/build-unix.md</a>.
     </div>
   </section>
 
@@ -207,8 +204,9 @@ while true; do
   burritocoin-cli -rpcclienttimeout=0 generatetoaddress 1 "$ADDR"
 done</code></pre>
       <p>This is the node's built-in miner. Each pass tries a million hashes, then
-         prints what it found: <code>[]</code> means no block that time, which is
-         normal. A long hex hash in brackets means you found a block. Stop with
+         prints what it found: an empty pair of brackets (<code>[</code> and
+         <code>]</code> on two lines) means no block that time, which is normal. A
+         long hex hash between the brackets means you found a block. Stop with
          <code>Ctrl+C</code>.</p>
       <p>One loop keeps one CPU core busy. To use more cores, start more loops —
          each in its own terminal, each with its own <code>ADDR</code> so they don't
@@ -270,10 +268,8 @@ tmux new -s mining
       </div>
       <div class="faq-item">
         <h3>"No wallet is loaded" or "Requested wallet does not exist"</h3>
-        <p>Open it with <code>burritocoin-cli loadwallet mining</code>. If you
-           created it without <code>load_on_startup=true</code>, do this after
-           every restart, or re-run <code>loadwallet</code> with
-           <code>-named ... load_on_startup=true</code>.</p>
+        <p>Open it, and make it open by itself from now on:
+           <code>burritocoin-cli -named loadwallet filename=mining load_on_startup=true</code></p>
       </div>
       <div class="faq-item">
         <h3>"Cannot obtain a lock on data directory"</h3>
@@ -293,10 +289,13 @@ tmux new -s mining
       </div>
       <div class="faq-item">
         <h3>Can I mine on a Raspberry Pi?</h3>
-        <p>On a 64-bit OS, yes: these steps build fine on 64-bit ARM (the network's
-           own seed node is an ARM server). Expect a modest hash rate, but a Pi uses
-           very little power, so it makes a reasonable always-on miner while the
-           network is small.</p>
+        <p>On a 64-bit OS, yes: these steps build on 64-bit ARM (the network's own
+           seed node is an ARM server). Compiling needs about 1.5 GB of memory per
+           job, so on a Pi with less than 8 GB use <code>make -j2</code> (or
+           <code>-j1</code> with 2 GB) instead of <code>make -j$(nproc)</code>, and
+           expect the build to take an hour or more. Mining itself is light: a Pi
+           uses very little power, so it makes a reasonable always-on miner while
+           the network is small.</p>
       </div>
     </div>
   </section>

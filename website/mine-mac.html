@@ -223,8 +223,9 @@ caffeinate -i bash -c "while true; do
 done"</code></pre>
       <p>This is the node's built-in miner. <code>caffeinate -i</code> keeps your
          Mac awake while it runs — a sleeping Mac doesn't mine. Each pass tries a
-         million hashes, then prints what it found: <code>[]</code> means no block
-         that time, which is normal. A long hex hash in brackets means you found a
+         million hashes, then prints what it found: an empty pair of brackets
+         (<code>[</code> and <code>]</code> on two lines) means no block that time,
+         which is normal. A long hex hash between the brackets means you found a
          block. Stop with <code>Ctrl+C</code>.</p>
       <p>One loop keeps one CPU core busy. To use more cores, open more Terminal
          windows and start another loop in each — each with its own
@@ -299,7 +300,8 @@ done"</code></pre>
       </div>
       <div class="faq-item">
         <h3>"No wallet is loaded"</h3>
-        <p>Open it with <code>burritocoin-cli loadwallet mining</code>.</p>
+        <p>Open it, and make it open by itself from now on:
+           <code>burritocoin-cli -named loadwallet filename=mining load_on_startup=true</code></p>
       </div>
       <div class="faq-item">
         <h3>How do I stop mining?</h3>

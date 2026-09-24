@@ -87,7 +87,7 @@ the live mainnet.
 | Maximum supply | 21,000,000,000 BRTO (21 billion) |
 | Genesis premine | 148,000,000 BRTO, P2PK output, spendable after 100 confirmations |
 | BIP34 / BIP65 / BIP66 / CSV / SegWit activation | height 1 (mainnet and testnet); genesis itself is exempt |
-| MWEB | supported; BIP8 deployment on bit 4, **not yet active** on mainnet (`started` at height 10,578) |
+| MWEB | supported; height-based BIP8 on bit 4 with forced lock-in: locks in at block 16,128, **active from block 24,192** (`started` at 10,578) |
 
 The very long halving interval (almost five millennia) combined with the 21B
 supply ceiling is the deliberate design choice that distinguishes BurritoCoin
@@ -166,8 +166,9 @@ only so `getblocktemplate` would see a non-zero peer count, since the daemon
 refuses to serve mining templates when it believes it is disconnected. With
 no mining here it has no purpose.
 
-**The seed runs with `maxtipage=315360000`** (see
-`contrib/oracle/burritocoin.conf.example`). Without it, once nobody has mined
+**The seed must run with `maxtipage=315360000`** (see
+`contrib/oracle/burritocoin.conf.example`) — not yet applied to the live box as
+of 2026-09-24; that's §7 item 3. Without it, once nobody has mined
 for 24 hours the seed considers itself still syncing, and a node in that state
 ignores `getheaders` from peers — so it stops handing the chain to new nodes and
 every fresh wallet sits at block 0. That is exactly what happened after mining
@@ -500,7 +501,9 @@ issue; everything else can wait on it.
    `src/rpc/mining.cpp`.** The MWEB code path uses BIP8 signaling, and
    there is an open question about how strictly the mining RPCs should
    refuse to produce MWEB-flavored templates before activation is
-   final. Resolve and document the decision.
+   final. Resolve and document the decision. There is a deadline: the
+   deployment is height-based with forced lock-in, so MWEB activates at
+   block 24,192 whatever miners signal.
 9. **LOW — three inflected `satoshi` stragglers in Finnish/Slovenian
    `.ts` files.** Inflected forms (`satoshia`, `satoshin`,
    `satoshijev`, `satošijev`) didn't match the `\b`-bounded regex used
@@ -518,17 +521,19 @@ issue; everything else can wait on it.
 
 12. **LOW — make `./configure` work on Boost 1.89+ without a flag.** Boost 1.89
     dropped the compiled Boost.System library, so the build now needs
-    `--with-boost-system=no` (every guide passes it; verified on Boost 1.83 and
-    1.90 on 2026-09-24). Boost.System has been header-only since 1.69, so
+    `--with-boost-system=no` (every website guide and the runbook's Phase 4 pass
+    it; verified with full builds on Boost 1.83 and 1.90 on 2026-09-24). Boost.System has been header-only since 1.69, so
     `configure.ac` could skip `AX_BOOST_SYSTEM` when the headers are new enough.
 13. **LOW — macOS build tooling is stale.** `contrib/install_db4.sh` fails on
     macOS (its savannah URLs now redirect, and BDB 4.8 needs
     `-Wno-error=implicit-function-declaration` on current Xcode), and
     `doc/build-osx.md` still recommends `berkeley-db4` and Qt 6. `/mine-mac` uses
-    Homebrew's `berkeley-db@5` instead and says to trust it over the doc. The
-    macOS instructions are the only ones not executed end to end; they were
-    checked against Homebrew's formula index, Boost 1.92's headers and this
-    repo's configure macros.
+    Homebrew's `berkeley-db@5` instead and says to trust it over the doc. Not
+    executed end to end: the macOS guide (checked against Homebrew's formula
+    index, Boost 1.92's headers and this repo's configure macros), the Fedora
+    commands (package names checked against Fedora's index), and the Windows
+    GUI walkthrough (checked against `src/qt`). Only the Ubuntu 24.04 path was
+    run start to finish.
 
 ---
 
