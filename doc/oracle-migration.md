@@ -236,37 +236,34 @@ proof that this box works as a seed, since that is what wallets rely on.
        done
        sudo apt install -y iptables-persistent && sudo netfilter-persistent save
 
-## Phase 4 — Build and run the node (aarch64, no wallet)
+## Phase 4 — Build and run the node (aarch64, wallet compiled in but disabled)
+
+The original plan here was a `depends/` build with `--disable-wallet`. Neither
+survived contact: `--disable-wallet` does not compile on this fork (see the hard
+rules above), and `depends/` is far slower on 2 OCPU. What the live box runs,
+and what to use for a rebuild, is a build from Ubuntu's own libraries with the
+wallet compiled in and switched off at runtime. As the `ubuntu` user:
 
     sudo apt update
     sudo apt install -y build-essential libtool autotools-dev automake \
-        pkg-config bzip2 curl git python3 bison
-    sudo useradd -m -s /bin/bash burrito
-    sudo -iu burrito git clone https://github.com/BurritoCoinDev/BurritoCoin.git
-    cd /home/ubuntu/BurritoCoin
-
-    # Pinned deps built natively for ARM. ~30-60 min on 2 OCPU; NO_QT/NO_WALLET
-    # skip everything the headless node doesn't need.
-    make -C depends -j"$(nproc)" NO_QT=1 NO_WALLET=1
-
+        pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev \
+        libsqlite3-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev \
+        libfmt-dev git curl
+    git clone https://github.com/BurritoCoinDev/BurritoCoin.git ~/BurritoCoin
+    cd ~/BurritoCoin
     ./autogen.sh
-    CONFIG_SITE=$PWD/depends/aarch64-unknown-linux-gnu/share/config.site \
-        ./configure --disable-wallet --without-gui --disable-tests --disable-bench
-    make -j"$(nproc)"
+    ./configure --without-gui --disable-tests --disable-bench --with-incompatible-bdb
+    make -j"$(nproc)"          # roughly an hour on 2 OCPU
     sudo install -m 755 src/burritocoind src/burritocoin-cli /usr/local/bin/
 
-(`ls depends/` if the triplet directory name differs.)
+That package list and configure line are the public Linux guide's, verified
+end to end on a fresh x86_64 Ubuntu 24.04 on 2026-09-23; the package names are
+the same on arm64.
 
-`/home/ubuntu/.burritocoin/burritocoin.conf` — generate the `rpcauth` line
-with `share/rpcauth/rpcauth.py <user>`:
-
-    server=1
-    txindex=1
-    listen=1
-    dbcache=1024
-    rpcbind=127.0.0.1
-    rpcallowip=127.0.0.1
-    rpcauth=<paste from rpcauth.py>
+`/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) is
+`contrib/oracle/burritocoin.conf.example` — copy it rather than retyping it
+here, since it carries `disablewallet=1`, which is what makes this a box with
+no keys. Generate its `rpcauth` line with `share/rpcauth/rpcauth.py <user>`.
 
 The parallel run also carried an `addnode=` pointing at the Linode. It was
 removed after cutover; **don't re-add it** — that IP now belongs to an
@@ -335,9 +332,12 @@ Weekly checklist:
 
 ## Phase 7 — Cutover and cancel
 
-**Status: complete.** Steps 3 and 4 were done 2026-08-18/19, and step 2 on
-2026-08-28 (the rebuilt wallet was published with the Oracle IP as its fixed
-seed). Step 1 was missed at cutover and only done on 2026-09-22. For that
+**Status: done, with one item still open.** Step 4 was done 2026-08-19 and
+step 2 on 2026-08-28 (the rebuilt wallet was published with the Oracle IP as
+its fixed seed). Step 3 was done in part: `mainwallet`, the premine, was copied
+to OneDrive and restore-verified, but the `vps-mining` wallet was deliberately
+abandoned with the box and no offline copy was made — that remains open as
+`HANDOFF.md` §7 item 1. Step 1 was missed at cutover and only done on 2026-09-22. For that
 month `seed.burritoco.in` kept returning the dead Linode address alongside
 the Oracle one, so new nodes wasted connection attempts on a host that by
 then belonged to an unrelated customer. Lesson for next time: a cutover isn't

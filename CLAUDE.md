@@ -26,7 +26,8 @@ Genesis nTime: mainnet `1773844916` (2026-03-18 14:41:56 UTC, back-dated to the 
 - `nMinerConfirmationWindow` = 8064 (~14 days at 2.5 min/block) — this is the **BIP9 soft-fork signaling window**, NOT the difficulty retarget. They are different on purpose. Do NOT "fix" 8064 to 2016.
 - `nRuleChangeActivationThreshold` = 6048 (mainnet, 75% of 8064).
 - Subsidy = 10 BRTO/block, halving every 1,042,600,000 blocks, `MAX_MONEY` = 21,000,000,000 BRTO, premine = 148M.
-- BIP34/65/66/CSV/SegWit/Taproot/MWEB all active at height = 1 on mainnet + testnet.
+- BIP34/65/66/CSV/SegWit active at height 1; Taproot always active. **MWEB is not active on mainnet** — it is a BIP8 deployment (bit 4, start height 0, 8064-block window, threshold 6048) that `getblockchaininfo` reported as `started` at height 10,578 (2026-09). An earlier version of this line said MWEB was active from height 1; that was wrong and misled at least one audit.
+- `getblocktemplate` demands `"rules": ["segwit","mweb"]` **unconditionally** (`src/rpc/mining.cpp`), MWEB active or not, and on mainnet also refuses during IBD. So stock cpuminer-opt (which sends only `segwit`) can never get work. Working miners: `generatetoaddress` (what the Linode ran) and the Qt Mine tab / its localhost Stratum bridge. Don't document cpuminer-against-RPC as a mining method.
 
 ### Address encodings
 
@@ -71,7 +72,7 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 
 ## Bug-review cycle status
 
-**The standing "find errors, push, find more errors" audit cycle CONCLUDED at commit `85328e5` on master (Round 7 batch 17).** 17 batches were landed across:
+**The standing "find errors, push, find more errors" audit cycle CONCLUDED at commit `3806e64` on master (Round 7 batch 17).** 17 batches were landed across:
 
 - Build/packaging: `build_msvc/burritocoin_config.h`, gitian descriptors, `share/pixmaps/burritocoin.ico`, debian copyright cleanup.
 - Consensus comments + correctness: `src/chainparams.cpp` (genesis date, `nMinerConfirmationWindow` comment, regtest merkle assertion, realistic `m_assumed_blockchain_size`).
