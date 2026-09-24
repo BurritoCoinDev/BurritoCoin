@@ -79,7 +79,7 @@ Build requirements:
 
 Install all required dependencies with a single command:
 
-    sudo apt-get install build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev libfmt-dev libdb++-dev libsqlite3-dev
+    sudo apt-get install build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev libfmt-dev libdb5.3++-dev libsqlite3-dev
 
 Optional (ZMQ, UPnP) — install if needed:
 
@@ -155,7 +155,9 @@ Berkeley DB
 -----------
 BurritoCoin requires Berkeley DB 5.3. On Ubuntu/Debian, install the system package:
 
-    sudo apt-get install libdb++-dev
+    sudo apt-get install libdb5.3++-dev
+
+(`libdb++-dev` no longer exists on Ubuntu 25.10+ or Debian 13; `libdb5.3++-dev` works everywhere.)
 
 This installs BDB 5.3, which is natively supported — no `--with-incompatible-bdb` flag is needed.
 

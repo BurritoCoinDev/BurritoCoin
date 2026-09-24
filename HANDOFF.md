@@ -1,16 +1,17 @@
 # BurritoCoin Project — Handoff Document
 
-**Last updated:** 2026-05-08
-**Master tip when written:** `4142687a5`
+**Last updated:** 2026-09-23
+**Master tip when written:** `b5bb0e0`
 
 This file documents only **public** information about the BurritoCoin project:
 network parameters, repository state, pending work, and operational notes that
 would already be visible to anyone who reads the source, runs a node, or visits
 the website. It contains no secrets — no wallet passphrases, no RPC
 credentials, no private keys, no SSH keys, and no paths to backup files. The
-locations of those secrets are noted, but the secrets themselves live only in
-the project lead's password manager and on a mode-`600` config file on the
-production VPS.
+locations of those secrets are noted, but the secrets themselves live with
+the project lead — their password manager, their own machine, and the
+encrypted OneDrive wallet backup (§3, §4) — and in mode-`600` files on the
+production server.
 
 The intent is that any contributor (or any future Claude Code session)
 landing fresh on this repository can read `HANDOFF.md` plus `CHANGELOG.md` and
@@ -22,13 +23,15 @@ date, fix it — see the "How to use this document" section at the bottom.
 
 ## 1. Project status
 
-BurritoCoin's mainnet has been live since **2026-04-11**. As of the timestamp
-on this file the chain tip is at block height **385** (queried locally with
-`burritocoin-cli getblockcount` against the production node — this number
-moves forward roughly every 2.5 minutes, so by the time you read this it will
-be larger; the value is a sanity-check anchor, not a fixed reference). Block
-production has been continuous since launch with no known reorgs deeper than
-a single block and no consensus incidents.
+BurritoCoin's mainnet has been live since **2026-04-11**. On 2026-09-22 the
+chain tip was at block height **10,578** (`burritocoin-cli getblockcount` on
+the production node), and it is **not moving: nobody is mining.** Mining
+stopped when the Linode was retired, so the chain hasn't advanced since
+mid-August 2026, and difficulty stays frozen until someone mines again. Until
+then every node, the seed included, reports `initialblockdownload: true`,
+because its tip is more than 24 hours old. That is expected, and it clears
+across the network as soon as anyone finds a new block. There have been no
+known reorgs deeper than a single block and no consensus incidents.
 
 The public-facing surface is:
 
@@ -84,7 +87,7 @@ the live mainnet.
 | Maximum supply | 21,000,000,000 BRTO (21 billion) |
 | Genesis premine | 148,000,000 BRTO, P2PK output, spendable after 100 confirmations |
 | BIP34 / BIP65 / BIP66 / CSV / SegWit activation | height 1 (mainnet and testnet); genesis itself is exempt |
-| MWEB | supported, activated via BIP8 |
+| MWEB | supported; height-based BIP8 on bit 4 with forced lock-in: locks in at block 16,128, **active from block 24,192** (`started` at 10,578) |
 
 The very long halving interval (almost five millennia) combined with the 21B
 supply ceiling is the deliberate design choice that distinguishes BurritoCoin
@@ -117,8 +120,8 @@ bills anything:
 - **Node, ElectrumX, explorer** — one **Oracle Cloud A1** instance at
   **`129.146.160.229`** (us-phoenix-1 / AD-1, `VM.Standard.A1.Flex`,
   2 OCPU / 12 GB, Ubuntu 24.04 aarch64, 70 GB boot volume). Access is
-  `ssh -i <key> ubuntu@129.146.160.229`; the key is in the project lead's
-  password manager. The account is Pay As You Go, which exempts it from
+  key-only SSH, `ssh -i <key> ubuntu@129.146.160.229` — see **Access and
+  recovery** below. The account is Pay As You Go, which exempts it from
   Oracle's 7-day idle-reclamation rule, with a $1 budget alert at a 1%
   threshold so any charge at all sends mail.
 - **DNS** — Cloudflare. `seed` and `explorer` are DNS-only (grey cloud);
@@ -162,6 +165,67 @@ There is deliberately **no second/loopback daemon**. It existed on the Linode
 only so `getblocktemplate` would see a non-zero peer count, since the daemon
 refuses to serve mining templates when it believes it is disconnected. With
 no mining here it has no purpose.
+
+**The seed must run with `maxtipage=315360000`** (see
+`contrib/oracle/burritocoin.conf.example`) — not yet applied to the live box as
+of 2026-09-24; that's §7 item 3. Without it, once nobody has mined
+for 24 hours the seed considers itself still syncing, and a node in that state
+ignores `getheaders` from peers — so it stops handing the chain to new nodes and
+every fresh wallet sits at block 0. That is exactly what happened after mining
+stopped in August 2026, and it was reproduced with two regtest nodes on
+2026-09-24. Don't remove the line while the chain can go quiet.
+
+After editing any unit file, run `sudo systemctl daemon-reload` before
+restarting it. On 2026-09-22 `burritocoind.service` turned out to have been
+edited on disk without a reload, so systemd was still running an older
+definition — the next `restart` prints a "changed on disk" warning; heed it.
+After reloading, its `User`, `ExecStart`, `ExecStop`, `Restart`,
+`RestartSec` and `TimeoutStopSec` were checked against
+`contrib/oracle/burritocoind.service` and match. `TimeoutStopSec=600` is the
+one that matters: it keeps systemd from killing the daemon in the middle of
+a slow shutdown flush.
+
+**Access and recovery.** SSH is key-only; there is no password login. The
+working key is an ed25519 pair with the comment `burritocoin-oracle`,
+created 2026-09-22 because the original key's private half couldn't be found
+on the project lead's machine. The original's *public* half was still in
+`~/.ssh/authorized_keys` alongside the new one, which leaves an authorized key
+whose whereabouts nobody can vouch for — resolving that is §7 item 2. The new
+private key is held by the project lead
+and belongs in the password manager too — a key that exists on one machine
+only is one lost laptop away from locking everyone out.
+
+With no working key at all, get in through the Oracle Cloud console:
+
+1. Instance → **Management** → Oracle Cloud Agent: the **Bastion** plugin
+   must be Enabled and Running (it is, as of 2026-09-22).
+2. Identity & Security → **Bastion** → `burritocoinbastion` (target subnet
+   `public subnet-burritocoin-vcn`) → **Sessions** → **Create session**:
+   type *Managed SSH session*, username `ubuntu`, instance `burritocoin`,
+   target IP `10.0.0.238` (the instance's private address), and paste a
+   fresh public key.
+3. When the session is Active, its menu offers **Copy SSH command**, which
+   tunnels through the bastion with a `ProxyCommand`. On Windows, keep the
+   private key at a path without spaces so the nested quoting survives
+   PowerShell.
+4. Append the new public key to `~/.ssh/authorized_keys`. The session's own
+   copy disappears when the session expires (3 hours at most), so skipping
+   this step means repeating all of the above next time.
+5. Remove every key whose private half you can't account for: delete its
+   line from `~/.ssh/authorized_keys` (the trailing comment on each line
+   identifies it). A lost key that still works is a standing risk, and on
+   this box `ubuntu` has passwordless sudo.
+
+The bastion costs nothing to keep and is the break-glass path, so leave it
+in place. The corollary deserves stating plainly: **anyone who controls the
+Oracle Cloud account can get a shell on this box**, so that login is part of
+the box's security.
+
+**Don't use Run Command.** The instance's Management tab has a Run command
+panel, but the Oracle Cloud Agent on this instance offers no Run Command
+plugin (it is absent from the plugin list). The console accepts a command
+and shows delivery *Visible*, execution *Accepted* — and nothing ever runs.
+Established the slow way on 2026-09-22; go straight to the bastion.
 
 **Key paths on the Oracle box:**
 
@@ -212,12 +276,14 @@ manager. The node's **RPC credentials** are stored as an `rpcauth=` salted
 hash in `/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) — the
 plaintext is not recoverable from that file and is kept alongside it in
 `rpcpass.txt`, which ElectrumX and the explorer were configured from.
-The **Oracle SSH private key** lives only in the project lead's password
-manager; there is no password login on that box. None
+The **Oracle SSH private key** (`burritocoin-oracle`, see §3) is held by the
+project lead; there is no password login on that box. None
 of these secrets appears in this file, in the repo, or in `CHANGELOG.md`.
 If you are a future contributor and you need access to any of them, you
-need to be the project lead or be vouched for by the project lead — there
-is no alternative recovery path on purpose.
+need to be the project lead or be vouched for by the project lead. No
+recovery path bypasses the project lead, on purpose: a lost SSH key is
+recoverable only through the project lead's Oracle Cloud account (§3), and a
+lost wallet passphrase is not recoverable at all.
 
 ---
 
@@ -225,9 +291,29 @@ is no alternative recovery path on purpose.
 
 For the full commit-by-commit history with verbatim commit-message bodies,
 read **`CHANGELOG.md`** in this directory. It is auto-generated from
-`git log` by `contrib/devtools/update-changelog.sh` and is regenerated by
-the post-commit hook installed via `contrib/devtools/install-hooks.sh`, so
-it is always in sync with the live tip.
+`git log` by `contrib/devtools/update-changelog.sh`. The post-commit hook
+from `contrib/devtools/install-hooks.sh` regenerates it automatically — but
+only in clones where someone ran that script, and Claude Code sessions
+don't, so it can lag the tip (it once went two months stale). Regenerate it
+before relying on it, but only in a **full** clone. In a shallow one
+(`git rev-parse --is-shallow-repository` prints `true`; Claude Code sessions
+usually are) `git log` stops at the shallow boundary, so the script refuses
+to run rather than silently dropping most entries — `git fetch --unshallow`
+first. Its **Archived history (pre-rewrite)** section holds
+150 entries for commits no longer reachable from `master`, 64 of which exist
+nowhere else; the generator carries that section through untouched.
+
+**History rewrite, 2026-08-28.** `master` was rewritten with `git filter-repo`
+to drop 44 superseded copies of `contrib/release/burritocoin-qt-win64.exe`,
+which renumbered every commit. A clone made before then can neither
+fast-forward nor safely push: re-clone. The commit hashes quoted in this file
+were remapped to their post-rewrite values on 2026-09-23; a pre-rewrite hash
+found anywhere else can be resolved by searching `CHANGELOG.md` for the
+commit's subject.
+
+Work since 2026-08 — the move off Linode and the rebuilt Windows wallet with
+its download buttons — is covered in §3, §7 and `doc/oracle-migration.md`
+rather than summarised here. The summary below predates it.
 
 What follows is a human-readable summary of the last ~15 commits at the
 time of writing (newest first); reach for `CHANGELOG.md` if you need the
@@ -238,7 +324,7 @@ cleanup pass** preparing the repo for first public release. The audit
 caught several classes of issue that needed fixing before binaries shipped
 to anyone outside the project:
 
-- **License attribution restoration** (`c0669a9`). The original rebrand
+- **License attribution restoration** (`ebdd080`). The original rebrand
   replaced "The Bitcoin Core developers" and "The Litecoin Core developers"
   with "The BurritoCoin Core developers" in the per-file copyright headers
   of **1,051 source files**. This both violates the MIT license's
@@ -250,20 +336,20 @@ to anyone outside the project:
   devs for the 33 `src/libmw/` files, and BurritoCoin Core developers only
   for genuinely new BurritoCoin contributions.
 
-- **`SECURITY.md` fix** (`a3bc99e`). The misleading security/release-
+- **`SECURITY.md` fix** (`3957ae9`). The misleading security/release-
   signing identity in `SECURITY.md` was corrected so that vulnerability
   reporters reach the actual maintainers, and the documented release-
   signing fingerprint matches the key that is actually used.
 
-- **URL canonicalization** (`87d5e22`, `3af5f1e`, `ae1c9320b`,
-  `9af07643c`, `a455ae9`). Across more than 100 files in `doc/`, the
+- **URL canonicalization** (`c64347b`, `ce87ed1`, `95cb8c943`,
+  `f227758d6`, `574981f`). Across more than 100 files in `doc/`, the
   repo root, the `.github/` directory, CI configs, `configure.ac`, and
   the rest of `src/`, stale URLs (pointing at `litecoin.org`,
   Bitcoin Core repos, or the wrong domain for BurritoCoin) were
   replaced with the canonical `burritoco.in` URLs and the canonical
   GitHub URL.
 
-- **Bundle ID canonicalization** (`f23eb96`). The macOS/Linux reverse-
+- **Bundle ID canonicalization** (`f2837d3`). The macOS/Linux reverse-
   DNS bundle identifier was changed from `org.burritocoin.*` to
   `in.burritoco.*`. The convention requires you to own the domain whose
   reverse you're using, and the project owns `burritoco.in`, not
@@ -274,36 +360,36 @@ to anyone outside the project:
   the launchd plist (renamed on disk), `contrib/init/README.md`,
   `doc/init.md`, `doc/Doxyfile.in`, and `doc/release-process.md`.
 
-- **Doc restructure** (`a455ae9`). Historical Litecoin/Bitcoin release
+- **Doc restructure** (`574981f`). Historical Litecoin/Bitcoin release
   notes were moved out of the active `doc/release-notes.md` and archived
   under `doc/historical-release-notes/` so they are preserved for license
   reasons but don't confuse contributors looking for current BurritoCoin
   release notes.
 
-- **Website accessibility, SEO, and quality** (`19817d58b`, `62074dc26`,
-  `810a26e2c`, `34cdf22f2`, `3fc6c9f70`). The site got skip-to-content
+- **Website accessibility, SEO, and quality** (`18d948344`, `02854b151`,
+  `1624a91e3`, `115625294`, `d3a94cd74`). The site got skip-to-content
   links, visible focus styles, a `robots.txt`, a `sitemap.xml`, canonical
   URL `<link>` tags, missing-alt-text fixes, mobile-layout repairs, dead
   download-link fixes (the Windows download was broken), TODO
   placeholders cleared, and a `/spec` integrator reference page wired
   into the nav.
 
-- **Test framework rename** (`4844e21`). The `test/functional/` helper
+- **Test framework rename** (`0972384`). The `test/functional/` helper
   modules and importers used `ltc_*` prefixes inherited from the
   Litecoin codebase. Renamed the helper modules and updated every
   importer to `brto_*` so the test framework speaks BurritoCoin
   vocabulary throughout.
 
-- **Image-file mode fix** (`4ec1a69`). Several image assets (`.png`,
+- **Image-file mode fix** (`4e16495`). Several image assets (`.png`,
   `.ico`, `.icns`, `.bmp`) under `share/` and `src/qt/res/` were tracked
   with mode `755` (executable). Dropped to `644` for all of them.
 
-- **Misattributed-identity leaks** (`7f45b27`). A second-round audit
+- **Misattributed-identity leaks** (`64ec2b2`). A second-round audit
   caught remaining places where Bitcoin Core developers were credited
   as BurritoCoin developers — corrected.
 
 - **`COPYRIGHT_YEAR` bump and translation `satoshi → burrioshi` sync**
-  (`4142687`, current tip). `build_msvc/burritocoin_config.h:37` had
+  (`5576f7c`, the tip when this summary was written). `build_msvc/burritocoin_config.h:37` had
   `COPYRIGHT_YEAR=2024` while `configure.ac` was already on 2026, so
   Windows binaries shipped with the wrong year in `--license` output —
   bumped to 2026. Separately, 51 translation `.ts` files contained 168
@@ -313,8 +399,8 @@ to anyone outside the project:
   `burrioshi(s)` while preserving "Satoshi Nakamoto" the proper noun.
 
 A handful of earlier infrastructure commits — the spec page rebuild
-(`3fc6c9f7`), the soft-fork-height regtest revert (`f1956550`), and the
-`release/` `.gitignore` addition (`1a538d08`) — round out the recent
+(`d3a94cd7`), the soft-fork-height regtest revert (`c88f93f1`), and the
+`release/` `.gitignore` addition (`f8880ca1`) — round out the recent
 window.
 
 ---
@@ -322,7 +408,7 @@ window.
 ## 6. Distribution path
 
 Listing strategy is layered by realism. There is no point pursuing a
-high-tier listing today; the chain has 385 blocks, no audited binaries,
+high-tier listing today; the chain has about 10,600 blocks and nobody is mining it, no audited binaries,
 and no liquidity, so any major exchange would (correctly) decline.
 
 - **Tier 1 — first listings.** The realistic first listings are
@@ -355,51 +441,99 @@ and no liquidity, so any major exchange would (correctly) decline.
 In rough priority order. The single critical item is the premine custody
 issue; everything else can wait on it.
 
-1. **RESOLVED, with a successor risk — premine custody.** The premine is
-   no longer on a public-facing server: every service moved to hosts that
+1. **HIGH — premine: a second, offline copy of `wallet.dat`.** The premine
+   is no longer on a public-facing server: every service moved to hosts that
    hold no wallet, and the Linode that held `mainwallet` was retired
-   (2026-08-18). What remains is a **single-copy backup problem** — the
-   encrypted `wallet.dat` exists only in OneDrive. The remaining work is a
-   second copy on offline media kept somewhere physically separate, and a
-   restore test (open the backup in a fresh Qt wallet and confirm the
-   balance) so the backup is known-good rather than assumed-good. An
-   untested backup is not a backup.
-2. **HIGH — build official release binaries via `depends/`.** The
-   reproducible-build system under `depends/` is the standard mechanism
-   for producing Linux, macOS, and Windows binaries. Until binaries
-   exist there is nothing to publish on the website's downloads page
-   beyond source, and there is nothing for Tier 1 exchanges to
-   integrate against. This is gating the listing path.
-3. **HIGH — build the missing `burritocoin_scrypt` Python C-extension.**
+   (2026-08-18). The OneDrive backup was restore-tested before the Linode was
+   deleted (opened in a fresh Qt wallet, balance confirmed). What remains is
+   a **single-copy problem**: the encrypted `wallet.dat` exists only in
+   OneDrive, and OneDrive syncs deletions — deleting the local copy by
+   mistake deletes the cloud copy too, recoverable only from OneDrive's
+   recycle bin and only for a limited time (30 days on personal accounts).
+   Put a second copy on offline media kept somewhere physically separate,
+   and restore-test that copy as well. An untested backup is not a backup.
+2. **HIGH — resolve the original SSH key.** Its private half couldn't be
+   found on 2026-09-22, but its public half is still authorized on the Oracle
+   box, where `ubuntu` has passwordless sudo. Either confirm it is in the
+   project lead's password manager and record that here, or delete its line
+   from `~/.ssh/authorized_keys` (the working `burritocoin-oracle` key is
+   unaffected). A ten-second fix.
+3. **HIGH — add `maxtipage=315360000` to the live seed's `burritocoin.conf` and
+   restart it.** Without it, once nobody has mined for 24 hours the seed
+   considers itself still syncing and ignores `getheaders` from peers, so no
+   new node on any OS can download the chain (reproduced with two regtest nodes
+   on 2026-09-24; see §3). The repo's `contrib/oracle/burritocoin.conf.example`
+   already carries the line. Confirm afterwards that the explorer's node page
+   shows `"initialblockdownload": false`.
+4. **HIGH — the wallet's Mine tab refuses to mine on a quiet chain.**
+   `src/qt/miningutil.cpp` (`CaptureNodeHandles`) blocks both the built-in miner
+   and the external-miner bridge whenever `isInitialBlockDownload()` is true —
+   which, by default, is any time the newest block is over 24 hours old, however
+   well synced the wallet is. So after a quiet day the GUI can't mine the block
+   that would end the quiet. Until it's fixed, `/mine-windows` tells users to add
+   `maxtipage` via Settings → Options → Open Configuration File. The real fix is
+   to gate on "connected, and blocks == best known header" instead, then rebuild
+   the Windows wallet with `.github/workflows/build-windows.yml` and republish it
+   (new SHA256 on `/mine-windows#verify`, same commit).
+5. **HIGH — official release binaries: Windows done, Linux and macOS
+   not.** `.github/workflows/build-windows.yml` cross-builds the Qt wallet
+   from `depends/` on a GitHub runner (manual dispatch, or any `v*` tag).
+   Actions run `32530319035` produced the build published on 2026-08-28,
+   which the site offers as a download (homepage `#download` and
+   `/mine-windows`). Still to do: Linux and macOS builds — without them
+   there is nothing for Tier 1 exchanges to integrate against, which gates
+   the listing path — plus code signing (SmartScreen warns on every first
+   launch) and publishing binaries as GitHub Release assets instead of
+   committing them (each committed rebuild adds ~35 MB to history).
+6. **HIGH — build the missing `burritocoin_scrypt` Python C-extension.**
    A subset of the functional test suite under `test/functional/` needs
    the Scrypt PoW callable from Python via a small C-extension. The
    extension hasn't been built yet, so those tests are currently
    skipped. Build it, wire it into the test runner, and turn the skips
    into real assertions.
-4. **MEDIUM — add security headers.** Neither surface sets
+7. **MEDIUM — add security headers.** Neither surface sets
    `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`,
    `Referrer-Policy`, or a basic `Content-Security-Policy`. These now live in
    two different places: for `explorer.burritoco.in`, the nginx server block
    on the Oracle box; for `burritoco.in`, a `website/_headers` file, since
    Cloudflare Pages has no nginx to configure.
-5. **MEDIUM — decide on MWEB pre-activation enforcement in
+8. **MEDIUM — decide on MWEB pre-activation enforcement in
    `src/rpc/mining.cpp`.** The MWEB code path uses BIP8 signaling, and
    there is an open question about how strictly the mining RPCs should
    refuse to produce MWEB-flavored templates before activation is
-   final. Resolve and document the decision.
-6. **LOW — USB cold backup of `wallet.dat`.** Independent of item 1,
-   take an offline backup of the production `wallet.dat` to a USB
-   drive kept in physical storage. OneDrive is fine as a hot backup
-   but is a single-vendor dependency.
-7. **LOW — three inflected `satoshi` stragglers in Finnish/Slovenian
+   final. Resolve and document the decision. There is a deadline: the
+   deployment is height-based with forced lock-in, so MWEB activates at
+   block 24,192 whatever miners signal.
+9. **LOW — three inflected `satoshi` stragglers in Finnish/Slovenian
    `.ts` files.** Inflected forms (`satoshia`, `satoshin`,
    `satoshijev`, `satošijev`) didn't match the `\b`-bounded regex used
-   in commit `4142687` and need a native speaker to retranslate
+   in commit `5576f7c` and need a native speaker to retranslate
    properly to the corresponding inflected forms of `burrioshi`.
-8. **LOW — six `BRTO-TODO` markers in `src/chainparams.cpp`.** These
+10. **LOW — six `BRTO-TODO` markers in `src/chainparams.cpp`.** These
    are minor parameter-comment cleanups left behind by the rebrand.
    Walk through them and decide for each whether to clarify or
    delete.
+11. **LOW — reboot the Oracle box for its staged kernel.** Logins have
+   shown `*** System restart required ***` since at least 2026-09-22.
+   `sudo reboot` takes the seed, explorer and ElectrumX down for about a
+   minute. Check that every unit comes back on boot first:
+   `systemctl is-enabled burritocoind electrumx btc-rpc-explorer nginx`.
+
+12. **LOW — make `./configure` work on Boost 1.89+ without a flag.** Boost 1.89
+    dropped the compiled Boost.System library, so the build now needs
+    `--with-boost-system=no` (every website guide and the runbook's Phase 4 pass
+    it; verified with full builds on Boost 1.83 and 1.90 on 2026-09-24). Boost.System has been header-only since 1.69, so
+    `configure.ac` could skip `AX_BOOST_SYSTEM` when the headers are new enough.
+13. **LOW — macOS build tooling is stale.** `contrib/install_db4.sh` fails on
+    macOS (its savannah URLs now redirect, and BDB 4.8 needs
+    `-Wno-error=implicit-function-declaration` on current Xcode), and
+    `doc/build-osx.md` still recommends `berkeley-db4` and Qt 6. `/mine-mac` uses
+    Homebrew's `berkeley-db@5` instead and says to trust it over the doc. Not
+    executed end to end: the macOS guide (checked against Homebrew's formula
+    index, Boost 1.92's headers and this repo's configure macros), the Fedora
+    commands (package names checked against Fedora's index), and the Windows
+    GUI walkthrough (checked against `src/qt`). Only the Ubuntu 24.04 path was
+    run start to finish.
 
 ---
 
@@ -433,10 +567,15 @@ journalctl -u burritocoind.service -n 200 --no-pager
 **Repo maintenance:**
 
 ```
-git pull --ff-only origin master
+git pull --ff-only origin master       # fails on any clone made before the
+                                       # 2026-08-28 rewrite (§5): re-clone instead
 ./contrib/devtools/install-hooks.sh    # install the post-commit hook
-./contrib/devtools/update-changelog.sh # regenerate CHANGELOG.md from git log
+./contrib/devtools/update-changelog.sh # regenerate CHANGELOG.md (full clone only)
 ```
+
+The Oracle box's own checkout, `/home/ubuntu/BurritoCoin`, was cloned on
+2026-08-18 — before the rewrite — so re-clone it before building from it
+again.
 
 **Website deploy** — there is no deploy step. Cloudflare Pages rebuilds
 `burritoco.in` from `website/` on every push to `master`, normally within a
@@ -454,7 +593,7 @@ The following files are the supporting documents a contributor will need;
 read them alongside this handoff.
 
 - `CHANGELOG.md` — full commit-by-commit history, auto-generated from
-  `git log`, regenerated by the post-commit hook.
+  `git log` by `contrib/devtools/update-changelog.sh` (it can lag; see §5).
 - `README.md` — top-level repository overview.
 - `CONTRIBUTING.md` — contributor guidelines.
 - `SECURITY.md` — vulnerability-reporting policy and signing fingerprint.
@@ -467,7 +606,13 @@ read them alongside this handoff.
 - `doc/bips.md` — list of BIPs supported and their activation status.
 - `website/spec.html` — the public integrator-facing spec page (also
   served at `burritoco.in/spec`).
-- `contrib/vps/` — VPS provisioning and ElectrumX setup scripts.
+- `doc/oracle-migration.md` — the Linode → Oracle/Cloudflare migration
+  runbook, as built, including the cutover record.
+- `contrib/oracle/` — systemd units, nginx config, and an example
+  `burritocoin.conf` for the Oracle box.
+- `contrib/vps/` — the retired Linode's provisioning scripts;
+  `setup-electrumx.sh` is still how ElectrumX gets installed.
+- `.github/workflows/build-windows.yml` — cross-builds the Windows wallet.
 - `contrib/init/` — systemd, OpenRC, launchd, and Upstart unit files.
 - `contrib/devtools/update-changelog.sh` — regenerates `CHANGELOG.md`.
 - `contrib/devtools/install-hooks.sh` — installs the post-commit hook

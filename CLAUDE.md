@@ -26,7 +26,8 @@ Genesis nTime: mainnet `1773844916` (2026-03-18 14:41:56 UTC, back-dated to the 
 - `nMinerConfirmationWindow` = 8064 (~14 days at 2.5 min/block) — this is the **BIP9 soft-fork signaling window**, NOT the difficulty retarget. They are different on purpose. Do NOT "fix" 8064 to 2016.
 - `nRuleChangeActivationThreshold` = 6048 (mainnet, 75% of 8064).
 - Subsidy = 10 BRTO/block, halving every 1,042,600,000 blocks, `MAX_MONEY` = 21,000,000,000 BRTO, premine = 148M.
-- BIP34/65/66/CSV/SegWit/Taproot/MWEB all active at height = 1 on mainnet + testnet.
+- BIP34/65/66/CSV/SegWit active at height 1; Taproot always active. **MWEB is not active on mainnet yet** — it is a height-based BIP8 deployment (bit 4, start height 0, timeout height 8064, 8064-block window, threshold 6048) with lock-in on timeout (`src/versionbits.cpp`: height-based deployments go LOCKED_IN, not FAILED, at the timeout). So regardless of signalling it locks in at block **16,128** and activates at **24,192**; `getblockchaininfo` reported `started` at 10,578 (2026-09). An earlier version of this line said MWEB was active from height 1; that was wrong and misled at least one audit.
+- `getblocktemplate` demands `"rules": ["segwit","mweb"]` **unconditionally** (`src/rpc/mining.cpp`), MWEB active or not, and on mainnet also refuses during IBD. So stock cpuminer-opt (which sends only `segwit`) can never get work. Working miners: `generatetoaddress` (what the Linode ran) and the Qt Mine tab / its localhost Stratum bridge. Don't document cpuminer-against-RPC as a mining method.
 
 ### Address encodings
 
@@ -43,6 +44,14 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 - Seed node / explorer / ElectrumX host: **`129.146.160.229`** (Oracle Cloud A1,
   us-phoenix-1, Ubuntu 24.04 aarch64). `seed.burritoco.in` and
   `explorer.burritoco.in` both point here.
+- Oracle access: key-only SSH as `ubuntu`. The working key is an ed25519 pair
+  commented `burritocoin-oracle` (2026-09-22), held by the project lead. With
+  no working key, recover through the Oracle console: bastion
+  `burritocoinbastion` → Managed SSH session with a fresh public key, then
+  append that key to `~/.ssh/authorized_keys` (the session's copy expires
+  with the session). Full procedure: `HANDOFF.md` §3. **Don't use Run
+  Command** — this instance's Oracle Cloud Agent has no Run Command plugin,
+  so the console accepts commands and never runs them.
 - Static site: **Cloudflare Pages**, built from `website/` on every push to
   `master`. Not on any VPS.
 - The Linode at `50.116.17.170` is **gone** — every service moved off it
@@ -63,7 +72,7 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 
 ## Bug-review cycle status
 
-**The standing "find errors, push, find more errors" audit cycle CONCLUDED at commit `85328e5` on master (Round 7 batch 17).** 17 batches were landed across:
+**The standing "find errors, push, find more errors" audit cycle CONCLUDED at commit `3806e64` on master (Round 7 batch 17).** 17 batches were landed across:
 
 - Build/packaging: `build_msvc/burritocoin_config.h`, gitian descriptors, `share/pixmaps/burritocoin.ico`, debian copyright cleanup.
 - Consensus comments + correctness: `src/chainparams.cpp` (genesis date, `nMinerConfirmationWindow` comment, regtest merkle assertion, realistic `m_assumed_blockchain_size`).
@@ -77,5 +86,6 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 ## Security / handoff
 
 - Never put private keys, seed phrases, or wallet credentials in `HANDOFF.md`, `CHANGELOG.md`, or any other tracked file.
-- `website/mine-windows.html` embeds the SHA256 of `contrib/release/burritocoin-qt-win64.exe` (Step 2, "Verify the download"). Whenever that exe is rebuilt, update the hash on that page in the same commit.
-- Pushes from this environment go to the local git proxy; the user pushes upstream from their VPS.
+- `website/mine-windows.html` embeds the SHA256 of `contrib/release/burritocoin-qt-win64.exe` (Step 2, `#verify`). Whenever that exe is rebuilt, update the hash on that page in the same commit. It is the **only** copy on the site, on purpose: the homepage `#download` section links to `/mine-windows#verify` rather than repeating it, so there is exactly one hash to keep in sync. Don't add a second.
+- There is no VPS. Sessions push to their `claude/*` branch and reach `master` through a PR; merging to `master` publishes anything under `website/`, because Cloudflare Pages builds on every push.
+- `master`'s history was rewritten on 2026-08-28 to drop 44 superseded copies of the Windows exe (master went from ~139 MiB to ~24 MiB packed). Never push from a clone made before then — re-clone. `contrib/release/` is gitignored but its files are tracked, so `git add` prints an "ignored" warning and still stages them. Every committed rebuild of the exe adds ~35 MB to history permanently.

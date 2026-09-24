@@ -7,7 +7,7 @@ cross-compiled from this source tree (Qt5 static build, mingw-w64).
   **More info -> Run anyway**.
 - It is a full wallet + node; first launch syncs the chain.
 - Verify your download against the SHA256 published on
-  <https://burritoco.in/mine-windows> (Step 1, "Verify the download"). That
+  <https://burritoco.in/mine-windows> (Step 2, `#verify`). That
   page is updated in the same commit as the binary, so the two never drift.
 
 This binary is committed for convenience — the download links on
