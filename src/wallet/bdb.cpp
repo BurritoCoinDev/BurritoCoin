@@ -14,6 +14,8 @@
 
 #ifndef WIN32
 #include <sys/stat.h>
+
+#include <boost/version.hpp>
 #endif
 
 namespace {
@@ -628,7 +630,14 @@ bool BerkeleyDatabase::Backup(const std::string& strDest) const
                         return false;
                     }
 
+                    // copy_option was deprecated in Boost 1.74 in favour of
+                    // copy_options and removed in 1.85. Current Ubuntu (26.04),
+                    // Fedora (44) and Homebrew all ship Boost 1.90 or newer.
+#if BOOST_VERSION >= 107400
+                    fs::copy_file(pathSrc, pathDest, fs::copy_options::overwrite_existing);
+#else
                     fs::copy_file(pathSrc, pathDest, fs::copy_option::overwrite_if_exists);
+#endif
                     LogPrintf("copied %s to %s\n", strFile, pathDest.string());
                     return true;
                 } catch (const fs::filesystem_error& e) {

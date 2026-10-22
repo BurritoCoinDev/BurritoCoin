@@ -19,6 +19,15 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
+# In a shallow clone `git log` stops at the shallow boundary, so regenerating
+# would silently drop most entries (a depth-50 clone kept 64 of 141). Refuse.
+if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+    echo "update-changelog.sh: refusing to run in a shallow clone." >&2
+    echo "  git log stops at the shallow boundary here, so most entries would be" >&2
+    echo "  silently dropped. Run 'git fetch --unshallow' first." >&2
+    exit 1
+fi
+
 python3 <<'PYEOF'
 import subprocess
 import os

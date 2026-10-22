@@ -27,6 +27,15 @@ rpcport=9226
 port=9227
 maxconnections=40
 
+# Keep serving the chain while nobody is mining. By default a node whose newest
+# block is more than 24 hours old treats itself as still syncing, and a node in
+# that state ignores getheaders from peers (net_processing.cpp). On a quiet
+# chain the seed therefore refused to hand the chain to any new node, and every
+# fresh wallet sat at block 0. Ten years here means "a quiet chain is not an
+# unsynced one". Safe on the seed, which already holds the whole chain; mainnet's
+# nMinimumChainWork is 0, so don't copy this onto a node that hasn't synced yet.
+maxtipage=315360000
+
 # No addnode= line is needed: the compiled-in fixed seed and the DNS seed
 # (seed.burritoco.in) both resolve to this host, and peer-exchange takes over
 # from there. The old Linode mesh peer was removed when that host was retired.

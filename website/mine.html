@@ -57,13 +57,16 @@
       and you've also helped confirm transactions for everyone else.
     </p>
     <p>BurritoCoin uses the same mining algorithm as Litecoin, called <strong>Scrypt</strong>.
-      That means any standard Scrypt mining software (like cpuminer-opt) will work. You don't
-      need special hardware — a regular CPU works fine, especially while the network is small.
+      But the node only hands out mining work to miners that support MWEB, BurritoCoin's
+      privacy extension, and ordinary Scrypt miners don't. BurritoCoin Core mines for
+      you instead: the Windows wallet has a <strong>Mine</strong> tab, and on macOS and Linux the
+      node has a built-in miner you run from the command line. You don't need special
+      hardware — a regular CPU works fine while the network is small.
     </p>
 
     <div class="callout">
       <strong>Reality check:</strong> Right now there are essentially no other miners on the
-      network. Difficulty is at the floor. A single laptop has a real chance of finding blocks.
+      network, and difficulty is low. A single laptop has a real chance of finding blocks.
       That also means the chain only moves when someone is mining, so by mining you're
       keeping it alive.
     </div>
@@ -82,29 +85,30 @@
       <a href="/mine-windows" class="os-card">
         <span class="os-icon">🪟</span>
         <h3>Windows</h3>
-        <p>Windows 10 or 11, 64-bit</p>
+        <p>Download, then press Start Mining</p>
       </a>
       <a href="/mine-mac" class="os-card">
         <span class="os-icon">🍎</span>
         <h3>macOS</h3>
-        <p>Intel or Apple Silicon</p>
+        <p>Build from source (Apple Silicon or Intel)</p>
       </a>
       <a href="/mine-linux" class="os-card">
         <span class="os-icon">🐧</span>
         <h3>Linux</h3>
-        <p>Ubuntu, Debian, Fedora, etc.</p>
+        <p>Build from source (Ubuntu, Debian, Fedora…)</p>
       </a>
     </div>
 
     <div class="callout">
-      <strong>Got a GPU or ASIC?</strong> BurritoCoin uses standard Scrypt
-      (N=1024), the same parameters as Litecoin and Dogecoin. Any Litecoin-compatible
-      miner works — point ccminer or sgminer (GPU) or an Antminer L7 / Goldshell
-      Mini-Doge (ASIC) at your node's RPC port the same way <code>cpuminer-opt</code>
-      does in the guides above. We don't ship a dedicated GPU/ASIC walkthrough
-      because the GPU scrypt tooling is largely abandoned (ASICs displaced it years
-      ago) and ASIC setups vary too much per model. If you have either, you probably
-      already know what you're doing. If you're just curious, start with CPU.
+      <strong>Got a GPU or ASIC?</strong> A faster CPU miner (cpuminer-opt) or an
+      NVIDIA card (ccminer) can mine through the Windows wallet: tick <strong>Use an
+      external miner program</strong> on its Mine tab, and the wallet builds the blocks
+      while the miner does the hashing. That connection only accepts miners running on
+      the same computer, so ASICs and separate mining rigs can't use it. They'd need a
+      Stratum pool server that handles MWEB, and there isn't a public one for
+      BurritoCoin yet. Pointing any of them straight at a node's RPC port doesn't work:
+      the node refuses requests for work from miners without MWEB support. If you're
+      just curious, start with your CPU.
     </div>
   </section>
 
@@ -113,36 +117,36 @@
   <section>
     <div class="section-label">The Big Picture</div>
     <h2>What You'll Be Setting Up</h2>
-    <p>Every OS guide walks you through the same five steps:</p>
+    <p>Every guide follows the same path:</p>
 
     <div class="step">
       <span class="step-number">1</span>
-      <h3>Install BurritoCoin Core (the node)</h3>
-      <p>This is the software that connects you to the BurritoCoin network and holds your wallet. Your miner will talk to it locally.</p>
+      <h3>Install BurritoCoin Core</h3>
+      <p>The software that connects you to the BurritoCoin network, holds your wallet, and does the mining. On Windows it's a single download; on macOS and Linux you build it from source.</p>
     </div>
 
     <div class="step">
       <span class="step-number">2</span>
-      <h3>Configure the node for mining</h3>
-      <p>Add a few lines to a config file so your miner can connect to the node and submit found blocks.</p>
+      <h3>Create and back up a wallet</h3>
+      <p>This is where your mining rewards land. Encrypt it with a passphrase and keep a backup somewhere other than your computer.</p>
     </div>
 
     <div class="step">
       <span class="step-number">3</span>
-      <h3>Get a wallet address</h3>
-      <p>This is where your mining rewards will be sent. The node generates one for you.</p>
+      <h3>Let it sync</h3>
+      <p>Your copy of the chain catches up with everyone else's. It's small, so this takes a minute or two.</p>
     </div>
 
     <div class="step">
       <span class="step-number">4</span>
-      <h3>Install a mining program</h3>
-      <p>We recommend <code>cpuminer-opt</code> — it's free, open-source, and runs on every major OS.</p>
+      <h3>Start mining</h3>
+      <p>Press <strong>Start Mining</strong> on the Windows wallet's Mine tab, or start the built-in miner with one command on macOS or Linux. Nothing else to install.</p>
     </div>
 
     <div class="step">
       <span class="step-number">5</span>
-      <h3>Start mining</h3>
-      <p>Run a single command. Your computer starts hashing. When you find a block, 10 BRTO appears in your wallet.</p>
+      <h3>Collect your rewards</h3>
+      <p>Each block you find pays 10 BRTO into your wallet. They're spendable once 100 more blocks have been mined on top.</p>
     </div>
   </section>
 

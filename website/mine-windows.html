@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mine BurritoCoin on Windows — Setup Guide</title>
-  <meta name="description" content="Step-by-step guide to mining BurritoCoin (BRTO) on Windows using the official pre-built binaries and cpuminer-opt." />
+  <meta name="description" content="Mine BurritoCoin (BRTO) on Windows 10 or 11: download the wallet, create a wallet, and press Start Mining. The miner is built in." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Mine BurritoCoin on Windows — Setup Guide" />
-  <meta property="og:description" content="Step-by-step guide to mining BurritoCoin (BRTO) on Windows using the official pre-built binaries and cpuminer-opt." />
+  <meta property="og:description" content="Mine BurritoCoin (BRTO) on Windows 10 or 11: download the wallet, create a wallet, and press Start Mining. The miner is built in." />
   <meta property="og:url" content="https://burritoco.in/mine-windows" />
   <meta property="og:image" content="https://burritoco.in/apple-touch-icon.png" />
   <meta property="og:site_name" content="BurritoCoin" />
@@ -16,26 +16,6 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
   <link rel="apple-touch-icon" sizes="256x256" href="/apple-touch-icon.png" />
-  <style>
-    .cpu-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--gold);
-      padding: 0.35rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-    }
-    .cpu-btn:hover { border-color: var(--gold-dark); background: rgba(245,166,35,0.1); }
-    .cpu-btn.active {
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-      border-color: var(--gold);
-      color: var(--brown);
-    }
-  </style>
 </head>
 <body>
 
@@ -60,50 +40,39 @@
   <div class="hero-sm">
     <div class="breadcrumb"><a href="/mine">← Mine</a></div>
     <h1>🪟 Mining on Windows</h1>
-    <p>About 20 minutes. Works on Windows 10 and Windows 11 (64-bit). No
-       compilers, no WSL — just download two zips, edit one text file, and run
-       a few commands.</p>
+    <p>About ten minutes on Windows 10 or 11 (64-bit). Download one file, create
+       a wallet, and press <strong>Start Mining</strong> — the wallet has a miner
+       built in. No command line, and usually no config files (Step 4 covers the
+       one exception).</p>
   </div>
 
   <hr class="divider" />
 
   <section id="main">
-    <div class="section-label">Step 1 of 5</div>
+    <div class="section-label">Step 1 of 4</div>
     <h2>Install BurritoCoin Core</h2>
 
     <div class="step" id="step-1">
       <span class="step-number">1</span>
-      <h3>Get BurritoCoin Core</h3>
-      <p><strong>Option A — download the GUI wallet (easiest).</strong> A pre-built
-         Windows wallet ships directly from the repository:</p>
-      <p><a href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download burritocoin-qt-win64.exe</a>
-         — a single self-contained file: full node, wallet, and GUI in one. Save it
-         to a folder you'll remember, e.g. <code>C:\BurritoCoin</code>. No installer,
-         no extra DLLs.</p>
-      <p><strong>Option B — build from source.</strong> This produces the
-         command-line tools (<code>burritocoind.exe</code>,
-         <code>burritocoin-cli.exe</code>) that the steps below use verbatim:</p>
-      <ul style="margin: 0.5rem 0 0 1.25rem;">
-        <li>Use the <a href="/mine-linux">Linux guide</a> from a WSL2 (Windows Subsystem for Linux) shell — works identically on Windows 10 / 11.</li>
-        <li>Or build natively with MSYS2; see <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-windows.md" target="_blank" rel="noopener">doc/build-windows.md</a>.</li>
-      </ul>
-      <p style="margin-top: 0.75rem;">Tagged release bundles with all the CLI tools
-         will appear on the
-         <a href="https://github.com/BurritoCoinDev/BurritoCoin/releases" target="_blank" rel="noopener">GitHub Releases page</a>
-         once release automation is set up.</p>
-      <div class="callout">
-        <strong>Using Option A (GUI wallet)?</strong> The rest of this guide still
-        applies — just substitute: in <em>Step 2 of 5</em> start
-        <code>burritocoin-qt-win64.exe</code> instead of <code>burritocoind.exe</code>
-        (it reads the same config file), and in <em>Step 3 of 5</em> create your
-        mining address from the GUI (<strong>Receive</strong> tab) instead of the
-        <code>burritocoin-cli</code> commands.
+      <h3>Download the wallet</h3>
+      <p>One self-contained file: full node, wallet, and miner in one. No
+         installer, no extra DLLs.</p>
+      <div class="download-card">
+        <a class="btn btn-primary btn-download" href="https://github.com/BurritoCoinDev/BurritoCoin/raw/master/contrib/release/burritocoin-qt-win64.exe">Download for Windows</a>
+        <span class="download-meta"><code>burritocoin-qt-win64.exe</code> · v0.21.4 · 33 MB</span>
       </div>
+      <p>Save it somewhere you'll remember, e.g. <code>C:\BurritoCoin</code>.</p>
+      <p>If your browser holds the download with a message like
+         <em>"isn't commonly downloaded"</em> — Edge and Chrome do this for new,
+         unsigned programs — open your downloads list with
+         <strong>Ctrl+J</strong>, click the file's <strong>⋯</strong> menu and
+         choose <strong>Keep</strong>. In Edge, then click
+         <strong>Show more</strong> → <strong>Keep anyway</strong>.</p>
     </div>
 
-    <div class="step">
+    <div class="step" id="verify">
       <span class="step-number">2</span>
-      <h3>(Optional) Verify the download</h3>
+      <h3>Verify the download (recommended)</h3>
       <p>Open PowerShell, <code>cd</code> to the folder where you saved the file,
          and run:</p>
       <pre><code>Get-FileHash .\burritocoin-qt-win64.exe -Algorithm SHA256</code></pre>
@@ -116,310 +85,174 @@
     </div>
 
     <div class="callout">
-      <strong>Windows SmartScreen warning?</strong> The binaries aren't code-signed
+      <strong>Windows SmartScreen warning?</strong> The wallet isn't code-signed
       yet, so on first launch Windows may show "Windows protected your PC". Click
-      <strong>More info</strong> → <strong>Run anyway</strong>. The official SHA256
-      from Step 2 lets you verify the file is untampered before you reach this point.
+      <strong>More info</strong> → <strong>Run anyway</strong>. The SHA256 above is
+      how you know the file is untampered before you get this far.
     </div>
+
+    <p style="margin-top:1.2rem;"><strong>Prefer the command line?</strong> There's
+       no pre-built <code>burritocoind.exe</code> — build the command-line tools
+       from source in WSL2 and follow the <a href="/mine-linux">Linux guide</a>,
+       which mines with the node's built-in miner. To build natively instead, see
+       <a href="https://github.com/BurritoCoinDev/BurritoCoin/blob/master/doc/build-windows.md" target="_blank" rel="noopener">doc/build-windows.md</a>.</p>
   </section>
 
   <hr class="divider" />
 
   <section>
-    <div class="section-label">Step 2 of 5</div>
-    <h2>Configure the Node</h2>
+    <div class="section-label">Step 2 of 4</div>
+    <h2>Create and Protect Your Wallet</h2>
 
     <div class="step">
       <span class="step-number">1</span>
-      <h3>Create the config file</h3>
-      <p>BurritoCoin Core looks for its config in a fixed location. Open File Explorer,
-         paste this into the address bar, and press Enter:</p>
-      <pre><code>%APPDATA%\BurritoCoin</code></pre>
-      <p>If the folder doesn't exist, create it (right-click in
-         <code>%APPDATA%</code>, New → Folder → name it <code>BurritoCoin</code>).</p>
-      <p>Inside that folder, right-click → New → Text Document, and name it
-         <code>burritocoin.conf</code> (make sure Windows isn't hiding the
-         <code>.txt</code> extension — the file must end in <code>.conf</code>, not
-         <code>.conf.txt</code>).</p>
-      <p>Open it in Notepad and paste:</p>
-      <pre><code>server=1
-rpcport=9226
-rpcuser=burritouser
-rpcpassword=CHANGE_THIS_TO_SOMETHING_RANDOM
-rpcallowip=127.0.0.1
-rpcbind=127.0.0.1</code></pre>
-      <p>Replace <code>CHANGE_THIS_TO_SOMETHING_RANDOM</code> with a long random string.
-         Save and close.</p>
+      <h3>Start BurritoCoin Core</h3>
+      <p>Double-click <code>burritocoin-qt-win64.exe</code>. The first time, it asks
+         where to keep its data: choose <strong>Use the default data
+         directory</strong> and click <strong>OK</strong>. That's
+         <code>%APPDATA%\BurritoCoin</code>, and the whole blockchain is only a few
+         megabytes today.</p>
+      <p>If Windows Firewall asks whether to allow BurritoCoin Core, allowing it on
+         private networks is enough — that only lets <em>other</em> nodes connect
+         to you. Your own connections out to the network work either way.</p>
     </div>
 
     <div class="step">
       <span class="step-number">2</span>
-      <h3>Start the node</h3>
-      <p>Open <strong>Command Prompt</strong> (press <code>Win + R</code>, type
-         <code>cmd</code>, Enter), then:</p>
-      <pre><code>cd C:\BurritoCoin
-burritocoind.exe</code></pre>
-      <p>You'll see startup logs. Leave this window open — closing it stops the node.
-         If you'd rather run it minimized to the system tray, append <code>-daemon</code>
-         (note: on Windows, <code>-daemon</code> just detaches; the node runs as a
-         normal background process).</p>
-    </div>
-
-    <div class="callout warn">
-      <strong>Windows Firewall.</strong> The first time <code>burritocoind.exe</code>
-      runs, Windows may ask for network access. Allow it (private network is fine —
-      it only needs incoming peer connections from the internet, but you can leave
-      that blocked and still mine).
-    </div>
-  </section>
-
-  <hr class="divider" />
-
-  <section>
-    <div class="section-label">Step 3 of 5</div>
-    <h2>Get a Wallet Address</h2>
-
-    <div class="step">
-      <span class="step-number">1</span>
-      <h3>Open a second Command Prompt</h3>
-      <p>Leave the node window running. Open a <strong>new</strong> Command Prompt
-         (Win + R → <code>cmd</code> → Enter), then:</p>
-      <pre><code>cd C:\BurritoCoin
-burritocoin-cli.exe createwallet "mining"
-burritocoin-cli.exe getnewaddress</code></pre>
-      <p>The second command prints a BRTO address — something like
-         <code>brto1q…</code> (native SegWit) or <code>B…</code> (legacy).
-         <strong>Copy it</strong> — you'll need it in step 5.</p>
-    </div>
-
-    <div class="step">
-      <span class="step-number">2</span>
-      <h3>Encrypt the wallet (recommended)</h3>
-      <p>Right now your wallet is unencrypted — anyone with access to this PC can
-         spend your BRTO. Lock it with a passphrase:</p>
-      <pre><code>burritocoin-cli.exe encryptwallet "PICK_A_LONG_RANDOM_PASSPHRASE"</code></pre>
-      <p>The node will <strong>shut down automatically</strong> after this command
-         (it needs to re-load the wallet encrypted). Restart it the same way as
-         before:</p>
-      <pre><code>cd C:\BurritoCoin
-burritocoind.exe</code></pre>
-      <p>Mining still works without unlocking — the rewards go to the address you
-         already copied. To <em>spend</em> later, unlock first with:</p>
-      <pre><code>burritocoin-cli.exe walletpassphrase "your_passphrase" 60</code></pre>
-      <p>(60 = seconds before it auto-locks again.)</p>
-    </div>
-
-    <div class="callout">
-      <strong>Wallet passphrase ≠ RPC password.</strong> You now have two different
-      secrets. The <strong>RPC password</strong> (in <code>burritocoin.conf</code>)
-      lets cpuminer talk to the node — that's the one you put in the cpuminer
-      command. The <strong>wallet passphrase</strong> (just set above) only protects
-      spending your coins. Don't mix them up.
-    </div>
-
-    <div class="callout warn">
-      <strong>Write the passphrase down somewhere safe.</strong> If you forget it,
-      every BRTO in this wallet is gone forever. There's no recovery, and the
-      backup file from the next step is encrypted with the same passphrase, so a
-      backup won't save you either.
+      <h3>Create your wallet</h3>
+      <p>A <strong>Welcome to BurritoCoin</strong> box appears: click
+         <strong>Create My Wallet</strong>. (Clicked "I'll do it later"? Use
+         <strong>File → Create Wallet…</strong>.)</p>
+      <p>In the <strong>Create Wallet</strong> dialog, give it a name, tick
+         <strong>Encrypt Wallet</strong>, and choose a long passphrase. Leave
+         <strong>Advanced Options</strong> alone.</p>
+      <div class="callout warn">
+        <strong>Write the passphrase down and keep it safe.</strong> Nobody can
+        reset it. Without it, the coins in this wallet can never be spent.
+      </div>
     </div>
 
     <div class="step">
       <span class="step-number">3</span>
-      <h3>Back up your wallet</h3>
-      <p>Make sure the node is running again from the previous step. Quick check
-         in your second Command Prompt — this should return JSON, not "Connection
-         refused":</p>
-      <pre><code>burritocoin-cli.exe getblockchaininfo</code></pre>
-      <p>If you get "Connection refused", restart the node as in Step 2. Once
-         it's responding:</p>
-      <pre><code>burritocoin-cli.exe backupwallet "%USERPROFILE%\Desktop\wallet-backup.dat"</code></pre>
-      <p>Copy <code>wallet-backup.dat</code> off this machine — USB stick, cloud
-         drive, anywhere. If your drive dies without it, you lose every BRTO in
-         this wallet.</p>
+      <h3>Back it up</h3>
+      <p>Use <strong>File → Backup Wallet…</strong> and save the copy somewhere
+         off this computer — a USB stick, or a cloud folder. For a paper backup as
+         well, <strong>File → Back Up Recovery Key…</strong> shows a key you can
+         write down. The wallet's <strong>⚠ Back up wallet</strong> reminder
+         changes to <strong>✔ Backed up</strong> once it's done.</p>
+      <p>If you encrypt later instead (<strong>Settings → Encrypt
+         Wallet…</strong>), back up again afterwards: encrypting generates a new
+         recovery key, and older backups won't include addresses made after it.</p>
     </div>
   </section>
 
   <hr class="divider" />
 
-  <section>
-    <div class="section-label">Step 4 of 5</div>
-    <h2>Install cpuminer-opt</h2>
-
-    <div class="callout warn">
-      <strong>Heads up — Windows Defender will flag this as a virus.</strong> It's a
-      false positive. Every CPU miner gets flagged because mining software shares
-      behaviour patterns with cryptojacking malware (uses 100% CPU, runs scrypt/SHA
-      hashes in tight loops). cpuminer-opt is open source on GitHub
-      (<a href="https://github.com/JayDDee/cpuminer-opt" target="_blank" rel="noopener">JayDDee/cpuminer-opt</a>),
-      has 1k+ stars, and is widely used. The fix is to whitelist the folder before
-      you download — see step 1 below.
-    </div>
+  <section id="sync">
+    <div class="section-label">Step 3 of 4</div>
+    <h2>Let It Sync</h2>
 
     <div class="step">
       <span class="step-number">1</span>
-      <h3>Whitelist the folder in Windows Defender first</h3>
-      <p>Do this <strong>before</strong> downloading or Defender will quarantine the
-         file and you'll have to keep restoring it.</p>
-      <ol>
-        <li>Create the folder you'll use, e.g. <code>C:\cpuminer</code>.</li>
-        <li>Open <strong>Windows Security</strong> (Win + S → "Windows Security" → Enter).</li>
-        <li>Click <strong>Virus &amp; threat protection</strong>.</li>
-        <li>Under <em>Virus &amp; threat protection settings</em>, click <strong>Manage settings</strong>.</li>
-        <li>Scroll to <em>Exclusions</em> and click <strong>Add or remove exclusions</strong>.</li>
-        <li>Click <strong>Add an exclusion</strong> → <strong>Folder</strong> → select <code>C:\cpuminer</code>.</li>
-      </ol>
-      <p>Now Defender will leave that folder alone.</p>
+      <h3>It connects on its own</h3>
+      <p>There's nothing to configure — the wallet finds the network through
+         <code>seed.burritoco.in</code> automatically. Hover over the network icon
+         at the bottom right: you want <strong>1 active connection</strong> or
+         more.</p>
     </div>
 
     <div class="step">
       <span class="step-number">2</span>
-      <h3>Download the Windows build</h3>
-      <p>Pre-built Windows binaries are on the cpuminer-opt releases page:</p>
-      <pre><code><a href="https://github.com/JayDDee/cpuminer-opt/releases" target="_blank" rel="noopener">https://github.com/JayDDee/cpuminer-opt/releases</a></code></pre>
-      <p>Grab the latest <code>cpuminer-opt-X.Y.Z-windows.zip</code>. The zip contains
-         multiple <code>.exe</code> files, one per CPU instruction set
-         (<code>cpuminer-sse2.exe</code>, <code>cpuminer-avx2.exe</code>,
-         <code>cpuminer-avx2-sha-vaes.exe</code>, <code>cpuminer-avx512-sha-vaes.exe</code>,
-         etc.).</p>
-      <p>If your browser blocks the download, click the warning and choose
-         <strong>Keep</strong> / <strong>Keep anyway</strong>. Save it directly into
-         <code>C:\cpuminer</code> (the folder you whitelisted above).</p>
-    </div>
-
-    <div class="step">
-      <span class="step-number">3</span>
-      <h3>Extract and pick the right binary</h3>
-      <p>Right-click the zip → <strong>Extract All…</strong> → into <code>C:\cpuminer</code>.
-         The zip contains several <code>.exe</code> files named by CPU feature
-         (not codename). Pick the most aggressive one your CPU supports:</p>
-      <ul>
-        <li><strong>AMD Ryzen 7000+ (Zen 4/5):</strong> <code>cpuminer-avx512-sha-vaes.exe</code></li>
-        <li><strong>AMD Ryzen 5000 (Zen 3):</strong> <code>cpuminer-avx2-sha-vaes.exe</code></li>
-        <li><strong>AMD Ryzen 3000 (Zen 2):</strong> <code>cpuminer-avx2-sha.exe</code></li>
-        <li><strong>AMD Ryzen 1000/2000 (Zen/Zen+):</strong> <code>cpuminer-avx2.exe</code></li>
-        <li><strong>Intel 11th gen+ (Rocket/Alder/Raptor Lake) or Xeon Ice Lake+:</strong> <code>cpuminer-avx2-sha-vaes.exe</code> (or <code>cpuminer-avx512-sha-vaes.exe</code> on Xeon)</li>
-        <li><strong>Intel 4th–10th gen:</strong> <code>cpuminer-avx2.exe</code></li>
-        <li><strong>Anything older / unsure:</strong> <code>cpuminer-sse2.exe</code> (slowest, but works on every 64-bit CPU)</li>
-      </ul>
-      <p>If you pick wrong you'll get an "Illegal instruction" error on launch —
-         no harm done, just step down one level
-         (<code>avx512-sha-vaes</code> → <code>avx2-sha-vaes</code> →
-         <code>avx2-sha</code> → <code>avx2</code> → <code>sse2</code>) until one works.</p>
-    </div>
-
-    <div class="step">
-      <span class="step-number">4</span>
-      <h3>Verify Defender didn't eat any binaries</h3>
-      <p>Even with the folder exclusion in place, Defender can race the extract
-         operation and quarantine individual files anyway. Open PowerShell and run:</p>
-      <pre><code>Get-ChildItem C:\cpuminer\*.exe | Select-Object Name, Length</code></pre>
-      <p>Healthy binaries are roughly <strong>800&nbsp;KB&nbsp;–&nbsp;3.5&nbsp;MB</strong>
-         each. If any show <code>Length</code> as <strong>0</strong>, Defender deleted
-         them. Two ways to recover:</p>
-      <ol>
-        <li><strong>Just use a surviving binary</strong> — pick the next one down
-            the list above. The hash-rate difference between adjacent variants is
-            small.</li>
-        <li><strong>Restore from quarantine:</strong> Windows Security → Virus &amp;
-            threat protection → Protection history → click the cpuminer entry →
-            Actions → Allow / Restore.</li>
-      </ol>
+      <h3>Read the "out of sync" notice correctly</h3>
+      <p>While it catches up, the wallet shows a notice starting <em>"Recent
+         transactions may not yet be visible…"</em>. The chain is small, so
+         catching up takes a minute or two. To be sure you're done, open
+         <strong>Window → Information</strong> (Ctrl+I) and compare
+         <strong>Current block height</strong> with the latest block on
+         <a href="https://explorer.burritoco.in" target="_blank" rel="noopener">explorer.burritoco.in</a>.
+         When they match, you're synced — click <strong>Hide this notice</strong>.</p>
+      <p>If nobody has mined for a while, the wallet can't tell a quiet network
+         from a slow download. Once the newest block is more than about 90
+         minutes old, the notice keeps showing even when you're fully synced:
+         <strong>Number of blocks left</strong> reads <em>"Unknown. Syncing
+         Headers (…%)"</em> and the status bar says <em>"Syncing Headers
+         (…%)"</em>, with a low percentage. That's expected. The matching block
+         height is the signal that matters — and as soon as anyone mines a new
+         block, the notice clears for everyone.</p>
     </div>
 
     <div class="callout">
-      <strong>Don't trust an unsigned binary?</strong> That's a fair instinct.
-      Verify the checksum of the zip against the SHA256 published on the GitHub
-      release page before extracting, or build cpuminer-opt from source on a Linux
-      machine (see the <a href="/mine-linux">Linux guide</a>) and copy the
-      resulting binary over.
+      <strong>Connected and synced before you mine.</strong> A wallet with no
+      connections would mine its own private copy of the chain, and the rest of
+      the network would never accept those blocks. Check for at least one active
+      connection first.
     </div>
   </section>
 
   <hr class="divider" />
 
   <section>
-    <div class="section-label">Step 5 of 5</div>
+    <div class="section-label">Step 4 of 4</div>
     <h2>Start Mining</h2>
 
     <div class="step">
       <span class="step-number">1</span>
-      <h3>Verify the node is ready</h3>
-      <p>Before launching cpuminer, sanity-check that your node is up and synced.
-         In a Command Prompt:</p>
-      <pre><code>cd C:\BurritoCoin
-burritocoin-cli.exe getblockchaininfo</code></pre>
-      <p>In the JSON output, look at two fields:</p>
-      <ul>
-        <li><code>"initialblockdownload": false</code> — if it's <code>true</code>,
-            wait for it to flip before mining (cpuminer will get empty responses
-            otherwise).</li>
-        <li><code>"blocks"</code> roughly equal to <code>"headers"</code> — confirms
-            you're caught up to the network.</li>
-      </ul>
-      <p>Also confirm your wallet is loaded:</p>
-      <pre><code>burritocoin-cli.exe listwallets</code></pre>
-      <p>The output is a JSON array — it should contain <code>"mining"</code>. If
-         the array is empty (<code>[]</code>), run
-         <code>burritocoin-cli.exe loadwallet "mining"</code>.</p>
+      <h3>Press Start Mining</h3>
+      <p>Open the <strong>Mine</strong> tab. Choose how many <strong>Processor
+         cores</strong> to use (or tick <strong>Use all cores</strong>), then press
+         <strong>Start Mining</strong>. The tab shows your <strong>current
+         speed</strong>, <strong>blocks found this session</strong>, and an
+         <strong>estimated time to a block</strong>.</p>
+      <p>Mining runs only while the wallet is open. Press <strong>Stop
+         Mining</strong> whenever you like. <strong>Pause while on battery
+         power</strong> and <strong>Pause while I'm using the computer</strong>
+         keep it out of your way.</p>
+    </div>
+
+    <div class="step" id="still-syncing">
+      <span class="step-number">2</span>
+      <h3>If it says "BurritoCoin is still syncing"</h3>
+      <p>The Mine tab won't start while the wallet thinks it's catching up — and
+         when nobody has mined for over a day, it thinks that even once you're
+         fully synced (Step 3). If your block height already matches the
+         explorer, tell the wallet a quiet chain is fine:</p>
+      <ol>
+        <li><strong>Settings → Options…</strong> → <strong>Open Configuration
+            File</strong>. It opens <code>burritocoin.conf</code>; if Windows
+            asks which app to use, pick <strong>Notepad</strong>.</li>
+        <li>Add this line, then save:
+          <pre><code>maxtipage=315360000</code></pre></li>
+        <li>Close the wallet with <strong>File → Exit</strong>, open it again, and
+            press <strong>Start Mining</strong>.</li>
+      </ol>
+      <p>Your first block un-freezes the chain for everyone else. Only do this
+         after your height matches the explorer: the setting switches off the
+         wallet's "still syncing" check, which is what stops you mining before
+         you've caught up. It stays on every time you open the wallet, so after
+         the wallet has been closed for a while, check your height against the
+         explorer again before pressing Start Mining — or delete the line once
+         other people are mining regularly.</p>
     </div>
 
     <div class="step">
-      <span class="step-number">2</span>
-      <h3>Run the miner</h3>
-      <p>Open a <strong>new</strong> Command Prompt and switch into the cpuminer
-         folder. <strong>This step matters</strong> — if you run cpuminer from any
-         other folder, Windows will say "is not recognized as an internal or
-         external command":</p>
-      <pre><code>cd C:\cpuminer</code></pre>
-      <p>Now select your CPU below — the command will update automatically. Then
-         replace <code>YOUR_PASSWORD</code> with your <em>RPC password</em> from
-         <code>burritocoin.conf</code> and <code>YOUR_BRTO_ADDRESS</code> with the
-         address you copied in Step 3, and paste it in:</p>
-      <p style="margin-bottom:0.4rem;font-size:0.88rem;color:var(--muted);font-weight:600;">SELECT YOUR CPU:</p>
-      <div style="display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:1rem;">
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx512-sha-vaes.exe')">AMD Ryzen 7000+ (Zen 4/5)</button>
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx2-sha-vaes.exe')">AMD Ryzen 5000 (Zen 3)</button>
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx2-sha.exe')">AMD Ryzen 3000 (Zen 2)</button>
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx2.exe')">AMD Ryzen 1000/2000</button>
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx2-sha-vaes.exe')">Intel 11th gen+</button>
-        <button type="button" class="cpu-btn" onclick="selectCpu(this,'cpuminer-avx2.exe')">Intel 4th–10th gen</button>
-        <button type="button" class="cpu-btn active" onclick="selectCpu(this,'cpuminer-sse2.exe')">Unsure / Older</button>
-      </div>
-      <pre><code id="miner-cmd">cpuminer-sse2.exe -a scrypt ^
-  -o http://127.0.0.1:9226 ^
-  -O burritouser:YOUR_PASSWORD ^
-  --coinbase-addr=YOUR_BRTO_ADDRESS</code></pre>
-      <p>(<code>^</code> is the line-continuation character in Windows
-         Command Prompt — equivalent to <code>\</code> on Linux/Mac. You can also put
-         it all on one line.)</p>
-      <p>You should see lines like:</p>
-      <pre><code>[2026-05-03 14:22:01] 8 of 8 miner threads started using 'scrypt' algorithm
-[2026-05-03 14:22:05] CPU #0: 12.34 kH/s
-[2026-05-03 14:22:05] CPU #1: 12.41 kH/s
-...</code></pre>
-      <p>That's it. You're mining. The kH/s lines repeat continuously — that's
-         normal idle hashing.</p>
-
-      <div class="callout">
-        <strong>If <code>cpuminer</code> errors with <code>rule not supported</code> or <code>error -8</code>:</strong>
-        BurritoCoin's daemon requires both <code>segwit</code> and <code>mweb</code> in
-        <code>getblocktemplate</code>'s <code>rules</code> array. Most recent
-        <code>cpuminer-opt</code> builds send these correctly. If yours doesn't, update to
-        the latest release from
-        <a href="https://github.com/JayDDee/cpuminer-opt/releases" target="_blank" rel="noopener">JayDDee/cpuminer-opt</a>
-        or use a fork that supports MWEB rules.
-      </div>
+      <span class="step-number">3</span>
+      <h3>Watch the rewards arrive</h3>
+      <p>Every block you find pays <strong>10 BRTO</strong> straight into your
+         wallet — you'll see it on the <strong>History</strong> tab. New coins are
+         <strong>immature</strong> until 100 more blocks have been mined on top of
+         them: about four hours at the network's 2.5-minute target, and longer
+         while few people are mining. After that they're yours to spend.</p>
     </div>
 
     <div class="callout">
-      <strong>"accepted" never appears — is something wrong?</strong> No.
-      In <em>solo</em> mining, the <code>accepted: N/N</code> line you may have
-      seen in pool-mining tutorials only appears when you actually find a full
-      block, which on a tiny chain at low difficulty might still be minutes to
-      hours apart. Until then, you'll just see kH/s reports. When a block is
-      found, 10 BRTO is added to your wallet — verify with
-      <code>burritocoin-cli.exe getbalance</code>.
+      <strong>Want more speed, or to mine with a graphics card?</strong> Tick
+      <strong>Use an external miner program</strong> on the Mine tab and follow
+      the <strong>Set up an external miner</strong> guide linked there. The wallet
+      runs a private mining connection on your own computer for the miner to talk
+      to. Don't point a miner at the wallet's RPC port directly instead — stock
+      miners like cpuminer-opt don't support MWEB, BurritoCoin's privacy
+      extension, so the node refuses to hand them work. The Mine tab deals with
+      the node on the miner's behalf.
     </div>
   </section>
 
@@ -427,45 +260,57 @@ burritocoin-cli.exe getblockchaininfo</code></pre>
 
   <section>
     <div class="section-label">Troubleshooting</div>
-    <h2>Common Problems</h2>
+    <h2>When Something's Off</h2>
 
     <div class="faq-list">
       <div class="faq-item">
-        <h3>"VCRUNTIME140.dll was not found" or similar DLL error</h3>
-        <p>Install the latest Microsoft Visual C++ Redistributable (x64):
-           <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe" target="_blank" rel="noopener">aka.ms/vs/17/release/vc_redist.x64.exe</a>.
-           Reboot, then try again.</p>
+        <h3>"Windows protected your PC" when I open it</h3>
+        <p>The wallet isn't code-signed yet. Check its SHA256 against
+           <a href="#verify">Step 1</a>, then click <strong>More info</strong> →
+           <strong>Run anyway</strong>.</p>
       </div>
       <div class="faq-item">
-        <h3>"Connection refused" or "JSON-RPC error"</h3>
-        <p>The node isn't running, or the RPC password doesn't match. In a Command
-           Prompt: <code>burritocoin-cli.exe getblockchaininfo</code> should return
-           JSON. If it doesn't, check that <code>burritocoind.exe</code> is still
-           running and that the password in your cpuminer command matches
-           <code>%APPDATA%\BurritoCoin\burritocoin.conf</code>.</p>
+        <h3>The download never showed up</h3>
+        <p>Your browser may be holding it. Press <strong>Ctrl+J</strong>, find
+           <code>burritocoin-qt-win64.exe</code>, and choose <strong>Keep</strong>
+           from its <strong>⋯</strong> menu (Edge: then <strong>Show more</strong> →
+           <strong>Keep anyway</strong>).</p>
       </div>
       <div class="faq-item">
-        <h3>"Illegal instruction" when starting cpuminer</h3>
-        <p>You picked a build too aggressive for your CPU. Try
-           <code>cpuminer-sse2.exe</code> — it works on any 64-bit Windows machine.</p>
+        <h3>The "out of sync" notice won't go away</h3>
+        <p>Open <strong>Window → Information</strong> and compare <strong>Current
+           block height</strong> with the explorer. If they match, you're synced —
+           the notice (and "Syncing Headers" in the status bar) is about the age of
+           the newest block, not your wallet; see <a href="#sync">Step 3</a>.</p>
       </div>
       <div class="faq-item">
-        <h3>burritocoin.conf isn't being picked up</h3>
-        <p>Most likely Windows added a hidden <code>.txt</code> extension. In File
-           Explorer, View → Show → File name extensions, then check that the file is
-           literally <code>burritocoin.conf</code> and not
-           <code>burritocoin.conf.txt</code>.</p>
+        <h3>My block height stays at 0</h3>
+        <p>Hover over the network icon. With no connections, check that nothing on
+           your network blocks outgoing connections to port 9227. With a
+           connection and still 0 after 15 minutes, don't mine — open an issue on
+           <a href="https://github.com/BurritoCoinDev/BurritoCoin/issues" target="_blank" rel="noopener">GitHub</a>.</p>
       </div>
       <div class="faq-item">
-        <h3>Hash rate is low</h3>
-        <p>That's OK — it's solo CPU mining. Lower hash rate just means blocks come in
-           less often. The chain difficulty is currently very low, so even a few kH/s
-           has a real chance of finding blocks.</p>
+        <h3>The Mine tab says "BurritoCoin is still syncing."</h3>
+        <p>If your block height matches the explorer, nobody has mined for over a
+           day — see <a href="#still-syncing">Step 4</a>. If it doesn't match, you
+           aren't synced yet: give it a few minutes, or see "My block height stays
+           at 0" below.</p>
       </div>
       <div class="faq-item">
-        <h3>How do I stop mining?</h3>
-        <p>Press <code>Ctrl+C</code> in the cpuminer window. To stop the node:
-           <code>burritocoin-cli.exe stop</code>.</p>
+        <h3>The Mine tab says "Open a wallet before mining."</h3>
+        <p>Create one with <strong>File → Create Wallet…</strong>, or open an
+           existing one from <strong>File → Open Wallet</strong>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>I found a block but can't spend the coins</h3>
+        <p>Newly mined coins are immature for 100 blocks. They become spendable on
+           their own; nothing needs doing.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Where are my wallet files?</h3>
+        <p><strong>File → Show Wallet File Location…</strong> opens the folder. By
+           default everything lives under <code>%APPDATA%\BurritoCoin</code>.</p>
       </div>
     </div>
   </section>
@@ -481,17 +326,5 @@ burritocoin-cli.exe getblockchaininfo</code></pre>
       · <a href="https://github.com/BurritoCoinDev/BurritoCoin" target="_blank" rel="noopener">GitHub</a>
     </p>
   </footer>
-
-  <script>
-    function selectCpu(btn, exe) {
-      document.querySelectorAll('.cpu-btn').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      document.getElementById('miner-cmd').textContent =
-        exe + ' -a scrypt ^\n' +
-        '  -o http://127.0.0.1:9226 ^\n' +
-        '  -O burritouser:YOUR_PASSWORD ^\n' +
-        '  --coinbase-addr=YOUR_BRTO_ADDRESS';
-    }
-  </script>
 </body>
 </html>

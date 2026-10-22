@@ -12,6 +12,7 @@ Goal: stop paying for the Linode. End state:
 | Second (loopback) daemon   | **dropped — not needed on Oracle**        | —    | n/a |
 | Mining                     | **owner's Windows PC — never a cloud box**| $0   | not running |
 | Linode                     | **deleted 2026-08-19**                    | $0   | **DONE** |
+| Cutover loose ends         | stale `seed` A record, Oracle `addnode`   | —    | **DONE 2026-09-22** |
 
 **The migration is complete: the project bills $0/month.** The Linode was
 deleted on 2026-08-19 without waiting for mining to move, a deliberate call
@@ -43,7 +44,7 @@ Hard rules for the Oracle box:
   build fails on a missing Berkeley DB header no matter what the flag says.
   (That is a real bug — libmw's wallet sources are not gated behind
   `ENABLE_WALLET` — worth fixing upstream.) Build **with** the wallet
-  (`libdb++-dev` + `libsqlite3-dev` installed) and set `disablewallet=1` in
+  (`libdb5.3++-dev` + `libsqlite3-dev` installed) and set `disablewallet=1` in
   `burritocoin.conf`. Runtime enforcement is the stronger guarantee anyway: no
   wallet is loaded and none can be created. A box an abuse bot can summarily
   disable must hold nothing irreplaceable — chain data re-syncs, wallets don't.
@@ -235,39 +236,43 @@ proof that this box works as a seed, since that is what wallets rely on.
        done
        sudo apt install -y iptables-persistent && sudo netfilter-persistent save
 
-## Phase 4 — Build and run the node (aarch64, no wallet)
+## Phase 4 — Build and run the node (aarch64, wallet compiled in but disabled)
+
+The original plan here was a `depends/` build with `--disable-wallet`. Neither
+survived contact: `--disable-wallet` does not compile on this fork (see the hard
+rules above), and `depends/` is far slower on 2 OCPU. What the live box runs,
+and what to use for a rebuild, is a build from Ubuntu's own libraries with the
+wallet compiled in and switched off at runtime. As the `ubuntu` user:
 
     sudo apt update
     sudo apt install -y build-essential libtool autotools-dev automake \
-        pkg-config bzip2 curl git python3 bison
-    sudo useradd -m -s /bin/bash burrito
-    sudo -iu burrito git clone https://github.com/BurritoCoinDev/BurritoCoin.git
-    cd /home/burrito/BurritoCoin
-
-    # Pinned deps built natively for ARM. ~30-60 min on 2 OCPU; NO_QT/NO_WALLET
-    # skip everything the headless node doesn't need.
-    make -C depends -j"$(nproc)" NO_QT=1 NO_WALLET=1
-
+        pkg-config bsdmainutils python3 libssl-dev libevent-dev libboost-all-dev \
+        libsqlite3-dev libdb5.3++-dev libminiupnpc-dev libzmq3-dev \
+        libfmt-dev git curl
+    git clone https://github.com/BurritoCoinDev/BurritoCoin.git ~/BurritoCoin
+    cd ~/BurritoCoin
     ./autogen.sh
-    CONFIG_SITE=$PWD/depends/aarch64-unknown-linux-gnu/share/config.site \
-        ./configure --disable-wallet --without-gui --disable-tests --disable-bench
-    make -j"$(nproc)"
+    ./configure --without-gui --disable-tests --disable-bench \
+        --with-incompatible-bdb --with-boost-system=no
+    make -j"$(nproc)"          # roughly an hour on 2 OCPU
     sudo install -m 755 src/burritocoind src/burritocoin-cli /usr/local/bin/
 
-(`ls depends/` if the triplet directory name differs.)
+That package list and configure line are the public Linux guide's, verified
+end to end on a fresh x86_64 Ubuntu 24.04 on 2026-09-23; the package names are
+the same on arm64. (On the live box `~/BurritoCoin` already exists and predates
+the history rewrite — move it aside first.)
 
-`/home/burrito/.burritocoin/burritocoin.conf` — generate the `rpcauth` line
-with `share/rpcauth/rpcauth.py <user>`:
+`/home/ubuntu/.burritocoin/burritocoin.conf` (mode 600) is
+`contrib/oracle/burritocoin.conf.example` — copy it rather than retyping it
+here, since it carries `disablewallet=1`, which is what makes this a box with
+no keys. Leave its `maxtipage` line out until the node has caught up with the
+network, then add it and restart: on an unsynced node it would switch off the
+check that stops it serving an incomplete chain. Generate its `rpcauth` line with `share/rpcauth/rpcauth.py <user>`.
 
-    server=1
-    txindex=1
-    listen=1
-    dbcache=1024
-    rpcbind=127.0.0.1
-    rpcallowip=127.0.0.1
-    rpcauth=<paste from rpcauth.py>
-    # Parallel-run only — mesh with the Linode node; remove after cutover:
-    addnode=50.116.17.170:9227
+The parallel run also carried an `addnode=` pointing at the Linode. It was
+removed after cutover; **don't re-add it** — that IP now belongs to an
+unrelated customer. No `addnode=` is needed at all: the compiled-in fixed
+seed and `seed.burritoco.in` both point at this box.
 
 Install the systemd unit and start:
 
@@ -276,8 +281,10 @@ Install the systemd unit and start:
     sudo systemctl enable --now burritocoind
     burritocoin-cli getblockcount   # should climb to the live height
 
-`txindex=1` is required by the explorer. The chain re-syncs from the Linode
-node in minutes-to-hours at current chain size.
+`txindex=1` is required by the explorer. A rebuilt node syncs from whatever
+peers it finds — at minimum it needs one node that holds the chain. On a quiet
+chain that peer must itself run with `maxtipage`, or it won't serve headers
+(see `HANDOFF.md` §3).
 
 ## Phase 5 — Explorer, ElectrumX, and the loopback peer
 
@@ -331,6 +338,17 @@ Weekly checklist:
 
 ## Phase 7 — Cutover and cancel
 
+**Status: done, with one item still open.** Step 4 was done 2026-08-19 and
+step 2 on 2026-08-28 (the rebuilt wallet was published with the Oracle IP as
+its fixed seed). Step 3 was done in part. The `vps-mining` wallet was deliberately
+abandoned with the box, and that decision is closed. `mainwallet`, the premine,
+was copied to OneDrive and restore-verified, but no offline copy exists yet —
+that remains open as `HANDOFF.md` §7 item 1. Step 1 was missed at cutover and only done on 2026-09-22. For that
+month `seed.burritoco.in` kept returning the dead Linode address alongside
+the Oracle one, so new nodes wasted connection attempts on a host that by
+then belonged to an unrelated customer. Lesson for next time: a cutover isn't
+finished until `seed` resolves to exactly one address.
+
 1. Remove the Linode A record from `seed.burritoco.in` (Oracle record
    stays). Remove the `addnode=50.116.17.170` line from the Oracle node's
    conf.
@@ -355,3 +373,8 @@ Weekly checklist:
   it is rebuildable from this repo + the chain; treat the VM as disposable.
 - Keep at least one off-site copy of this repo current — it *is* the
   disaster-recovery plan.
+- Access and break-glass recovery (the SSH key, the bastion) are documented
+  in `HANDOFF.md` §3. Two traps found on 2026-09-22: the console's **Run
+  Command** never executes on this instance (its agent has no Run Command
+  plugin), and editing a systemd unit without `sudo systemctl daemon-reload`
+  leaves the old definition running.
