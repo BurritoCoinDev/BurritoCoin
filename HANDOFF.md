@@ -470,20 +470,36 @@ issue; everything else can wait on it.
 3. **DONE 2026-10-22 — `maxtipage=315360000` on the live seed.** Applied and
    restarted; the explorer's node page shows `"initialblockdownload": false`,
    so new nodes can download the chain again (see §3).
-4. **HIGH — the wallet's Mine tab refuses to mine on a quiet chain.**
-   `src/qt/miningutil.cpp` (`CaptureNodeHandles`) blocks both the built-in miner
-   and the external-miner bridge whenever `isInitialBlockDownload()` is true —
-   which, by default, is any time the newest block is over 24 hours old, however
-   well synced the wallet is. So after a quiet day the GUI can't mine the block
-   that would end the quiet. Until it's fixed, `/mine-windows` tells users to add
-   `maxtipage` via Settings → Options → Open Configuration File. The real fix is
-   to gate on "connected, and blocks == best known header" instead, then rebuild
-   the Windows wallet with `.github/workflows/build-windows.yml` and republish it
-   (new SHA256 on `/mine-windows#verify`, same commit).
+4. **DONE 2026-10-22 — the wallet's Mine tab mines on a quiet chain.**
+   `src/qt/miningutil.cpp` (`CaptureNodeHandles`) used to block both the
+   built-in miner and the external-miner bridge whenever
+   `isInitialBlockDownload()` was true. After startup that stays true until a
+   block less than 24 hours old arrives, so on a quiet chain no wallet could
+   mine, however well synced. It now asks `CheckMiningReadiness()`
+   (`src/node/miningreadiness.{h,cpp}`, unit-tested in
+   `src/test/miningreadiness_tests.cpp`) instead. Mining is allowed when the
+   wallet has a peer and its tip is at least as high as the height every peer
+   announced on connecting (and some peer announced more than 0). Inbound
+   peers count: a reachable wallet that the seed dialled won't dial the seed
+   back, since it is already connected to that address. It deliberately ignores the best known header and the blocks
+   peers have shown since connecting: either can point at a block no node
+   will ever connect. An earlier draft that checked the header refused to
+   mine after one orphan header in testing, and kept refusing across a
+   restart. Known
+   limit: a peer that announces a height it doesn't have blocks
+   mining while it stays connected. On a network this small every wallet may
+   connect to it, even after a restart. The remedy is to ban it: Window → Peers
+   shows each peer's Starting Block, and right-click → Ban removes one
+   (`/mine-windows` FAQ says so).
+   The Windows wallet was rebuilt (Actions
+   run `39851655047`) and republished, and `/mine-windows` no longer tells anyone
+   to edit `burritocoin.conf`. Wallets downloaded before that still have the
+   old check. Linux and macOS users mine with `generatetoaddress`, which never
+   had it.
 5. **HIGH — official release binaries: Windows done, Linux and macOS
    not.** `.github/workflows/build-windows.yml` cross-builds the Qt wallet
    from `depends/` on a GitHub runner (manual dispatch, or any `v*` tag).
-   Actions run `32530319035` produced the build published on 2026-08-28,
+   Actions run `39851655047` produced the build published on 2026-10-22,
    which the site offers as a download (homepage `#download` and
    `/mine-windows`). Still to do: Linux and macOS builds — without them
    there is nothing for Tier 1 exchanges to integrate against, which gates

@@ -16,10 +16,9 @@ the wallet with no other moving parts. The canonical way to distribute
 release binaries is GitHub Releases; moving to that would stop each rebuild
 adding another ~35 MB blob to git history.
 
-The current binary self-reports `v0.21.4.0-57f5cf3` in **Help -> About**.
-That was the source commit it was cross-built from, but it is a *pre-rewrite*
-SHA: on 2026-08-28 this repository's history was rewritten to drop 44
-superseded copies of this executable, which renumbered every commit. The
-string is baked into the compiled binary and cannot be corrected, so it no
-longer resolves with `git show`. Verify by SHA256 instead - that is the
-check that actually proves which bytes you have.
+The current binary self-reports `v0.21.4.0-f096336` in **Help -> About**:
+it was cross-built from commit `f096336` by GitHub Actions run `39851655047`
+(`.github/workflows/build-windows.yml`) on 2026-10-22. It is the first build
+whose Mine tab mines on a quiet chain; earlier builds refused to start if
+the newest block was more than a day old when the wallet was opened. The
+SHA256 is still the check that proves which bytes you have.

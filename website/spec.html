@@ -261,10 +261,13 @@ burritocoin-cli getblocktemplate '{"rules":["segwit"]}'</code></pre>
     <p>
       On mainnet, <code>getblocktemplate</code> also refuses while the node considers
       itself in initial block download (error -10, "is in initial sync and waiting for
-      blocks..."). By default that includes any time the newest block is more than 24
-      hours old — so on a quiet chain it refuses indefinitely even when fully synced. A
+      blocks..."). By default a node is in that state from startup until it sees a
+      block less than 24 hours old — so on a quiet chain it refuses indefinitely even
+      when fully synced. A
       pool or template server should run with <code>maxtipage</code> set high.
-      <code>generatetoaddress</code> doesn't have this check.
+      <code>generatetoaddress</code> doesn't have this check, and the desktop
+      wallet's Mine tab doesn't either: it starts once the wallet is connected and
+      its tip has caught up with the heights its peers announced.
     </p>
 
     <h3>RPC differences from Bitcoin Core</h3>
