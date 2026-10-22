@@ -11,9 +11,9 @@ struct NodeContext;
 
 /** Whether a node is caught up enough to mine on top of its chain tip. */
 enum class MiningReadiness {
-    READY,    //!< connected, and at least as high as every outbound peer
-    NO_PEERS, //!< no outbound connection, so it would mine a private chain
-    SYNCING,  //!< below an outbound peer's height, or no peer has a chain yet
+    READY,    //!< connected, and at least as high as every peer
+    NO_PEERS, //!< no connection, so it would mine a private chain
+    SYNCING,  //!< below a peer's height, or no peer has a chain yet
 };
 
 /**
@@ -25,17 +25,21 @@ enum class MiningReadiness {
  * block that would end the quiet, however well synced the node is. What
  * mining actually needs is narrower:
  *
- *  - at least one outbound peer. Outbound peers are ones this node chose;
- *    without any, it would mine a chain nobody else follows. Inbound peers
- *    are ignored, because anyone can connect and claim anything.
- *  - its tip is at least as high as every outbound peer's height, where a
- *    peer's height is the one it announced in its version message: its own
+ *  - at least one peer that has completed its handshake. Without one, it
+ *    would mine a chain nobody else follows.
+ *  - its tip is at least as high as every peer's height, where a peer's
+ *    height is the one it announced in its version message: its own
  *    validated tip when the connection opened. A fresh or reopened node is
  *    behind its peers' announcements until it has downloaded their blocks.
  *    On a quiet chain a synced node equals them, and stays mineable.
- *  - some outbound peer announced a height above 0. Otherwise nobody has
- *    shown a chain yet, and a node that has only met other fresh nodes would
- *    start mining from genesis.
+ *  - some peer announced a height above 0. Otherwise nobody has shown a
+ *    chain yet, and a node that has only met other fresh nodes would start
+ *    mining from genesis.
+ * Inbound peers count the same as outbound ones. A reachable node may be
+ * connected to the seed only inbound, because it won't dial an address it
+ * is already connected to; ignoring inbound peers would leave it "not
+ * connected", or judging itself only against whichever outbound peers it
+ * happens to have.
  *
  * Signals deliberately not used, because each one can stop every wallet
  * mining after a single bad block, until restart or for good:
@@ -50,14 +54,16 @@ enum class MiningReadiness {
  * never hear the headers that would prove it.
  *
  * What remains trusted is the peer's word. A peer announcing a height it does
- * not have stops this node mining for as long as it stays connected. That is
- * a peer this node chose, the failure is a refusal rather than a block on a
- * stale chain, and restarting the wallet picks peers afresh.
+ * not have stops this node mining for as long as it stays connected. The
+ * failure is a refusal rather than a block on a stale chain, but on a network
+ * this small most nodes may meet the same such peer, and meet it again after
+ * a restart. The remedy is to ban it: the Peers window shows each peer's
+ * Starting Block, and its context menu bans one.
  *
- * @param[in] tip_height                active chain tip height
- * @param[in] outbound_peer_announced   nStartingHeight of each outbound peer
+ * @param[in] tip_height        active chain tip height
+ * @param[in] peer_announced    nStartingHeight of each peer past its handshake
  */
-MiningReadiness AssessMiningReadiness(int tip_height, const std::vector<int>& outbound_peer_announced);
+MiningReadiness AssessMiningReadiness(int tip_height, const std::vector<int>& peer_announced);
 
 /** AssessMiningReadiness() for the running node's current chain and peers. */
 MiningReadiness CheckMiningReadiness(const NodeContext& node);

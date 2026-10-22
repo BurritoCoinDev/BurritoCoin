@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(ahead_of_peers_may_mine)
     BOOST_CHECK(AssessMiningReadiness(10600, {10578}) == MiningReadiness::READY);
 }
 
-BOOST_AUTO_TEST_CASE(no_outbound_peer_refuses)
+BOOST_AUTO_TEST_CASE(no_peer_refuses)
 {
     // Disconnected: mining now would build a chain nobody else follows.
     BOOST_CHECK(AssessMiningReadiness(10578, {}) == MiningReadiness::NO_PEERS);
