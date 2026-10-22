@@ -79,9 +79,9 @@ bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
         return false;
     }
 
-    // Deliberately not node.isInitialBlockDownload(): that is also true whenever
-    // the newest block is more than a day old, so after a quiet day it refused
-    // to mine the very block that would end the quiet. CheckMiningReadiness
+    // Deliberately not node.isInitialBlockDownload(): after startup that stays
+    // true until a block less than a day old arrives, so after a quiet day it
+    // refused to mine the very block that would end the quiet. CheckMiningReadiness
     // (node/miningreadiness.h) asks the narrower question mining needs. Test
     // chains skip it, as getblocktemplate does, so a lone regtest node can mine.
     const MiningReadiness readiness = Params().IsTestChain() ? MiningReadiness::READY : CheckMiningReadiness(*ctx);
