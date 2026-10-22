@@ -10,13 +10,18 @@
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <key_io.h>
+#include <net_processing.h>
 #include <node/context.h>
+#include <node/miningreadiness.h>
 #include <outputtype.h>
 #include <primitives/block.h>
 #include <script/standard.h>
 #include <validation.h>
 
+#include <algorithm>
 #include <memory>
+#include <tuple>
+#include <vector>
 
 #include <QSettings>
 
@@ -69,16 +74,46 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
 bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
                         CTxMemPool*& mempool, QString& err)
 {
-    // Resolve the node context first. isInitialBlockDownload() dereferences the
-    // active chainstate, so calling it before we know the node is fully started
-    // could assert during a narrow startup window; check the context is up first.
+    // Resolve the node context first. Reading the active chain dereferences the
+    // chainstate, so doing it before we know the node is fully started could
+    // assert during a narrow startup window; check the context is up first.
     NodeContext* ctx = node.context();
     if (!ctx || !ctx->chainman || !ctx->mempool) {
         err = QObject::tr("Mining is unavailable right now: the node is not fully started.");
         return false;
     }
 
-    if (node.isInitialBlockDownload()) {
+    // Deliberately not node.isInitialBlockDownload(): that is also true whenever
+    // the newest block is more than a day old, so after a quiet day it refused
+    // to mine the very block that would end the quiet. AssessMiningReadiness
+    // (node/miningreadiness.h) asks the narrower question mining needs.
+    int tip_height;
+    int best_header_height;
+    {
+        LOCK(cs_main);
+        tip_height = ctx->chainman->ActiveChain().Height();
+        best_header_height = pindexBestHeader ? pindexBestHeader->nHeight : tip_height;
+    }
+    std::vector<int> outbound_peer_heights;
+    interfaces::Node::NodesStats stats;
+    if (node.getNodesStats(stats)) {
+        for (const auto& peer : stats) {
+            const CNodeStats& node_stats = std::get<0>(peer);
+            if (node_stats.fInbound) continue; // only peers we chose vouch for the chain
+            int height = node_stats.nStartingHeight;
+            if (std::get<1>(peer)) height = std::max(height, std::get<2>(peer).nSyncHeight);
+            outbound_peer_heights.push_back(height);
+        }
+    }
+
+    switch (AssessMiningReadiness(Params().IsTestChain(), tip_height, best_header_height, outbound_peer_heights)) {
+    case MiningReadiness::READY:
+        break;
+    case MiningReadiness::NO_PEERS:
+        err = QObject::tr("Not connected to the BurritoCoin network. Mining becomes available "
+                          "once the wallet has a connection.");
+        return false;
+    case MiningReadiness::SYNCING:
         err = QObject::tr("BurritoCoin is still syncing. Mining becomes available once "
                           "the blockchain is up to date.");
         return false;

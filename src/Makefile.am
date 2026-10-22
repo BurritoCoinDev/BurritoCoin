@@ -223,6 +223,7 @@ BURRITOCOIN_CORE_H = \
   node/coin.h \
   node/coinstats.h \
   node/context.h \
+  node/miningreadiness.h \
   node/psbt.h \
   node/transaction.h \
   node/ui_interface.h \
