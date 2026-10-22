@@ -44,12 +44,14 @@ P2WPKH bech32 length = 44 chars; P2WSH = 64 chars.
 - Seed node / explorer / ElectrumX host: **`129.146.160.229`** (Oracle Cloud A1,
   us-phoenix-1, Ubuntu 24.04 aarch64). `seed.burritoco.in` and
   `explorer.burritoco.in` both point here.
-- Oracle access: key-only SSH as `ubuntu`. The working key is an ed25519 pair
-  commented `burritocoin-oracle` (2026-09-22), held by the project lead. With
-  no working key, recover through the Oracle console: bastion
-  `burritocoinbastion` → Managed SSH session with a fresh public key, then
-  append that key to `~/.ssh/authorized_keys` (the session's copy expires
-  with the session). Full procedure: `HANDOFF.md` §3. **Don't use Run
+- Oracle access: key-only SSH as `ubuntu`. Two ed25519 keys are authorized,
+  one per computer the project lead uses (`DESKTOP-NSVTGAH-permanent`,
+  `burritocoin-oracle-permanent`), as of 2026-10-22. With no working key,
+  recover through the Oracle console: bastion `burritocoinbastion` → Managed
+  SSH session with a fresh public key. Then make the key permanent at the
+  **top** of `~/.ssh/authorized_keys` with its own comment: the bastion's
+  temporary line sits at the end with no trailing newline and is removed when
+  the session ends, which already cost one key. Full procedure: `HANDOFF.md` §3. **Don't use Run
   Command** — this instance's Oracle Cloud Agent has no Run Command plugin,
   so the console accepts commands and never runs them.
 - Static site: **Cloudflare Pages**, built from `website/` on every push to

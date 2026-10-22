@@ -1,6 +1,6 @@
 # BurritoCoin Project — Handoff Document
 
-**Last updated:** 2026-09-23
+**Last updated:** 2026-10-22
 **Master tip when written:** `b5bb0e0`
 
 This file documents only **public** information about the BurritoCoin project:
@@ -28,9 +28,10 @@ chain tip was at block height **10,578** (`burritocoin-cli getblockcount` on
 the production node), and it is **not moving: nobody is mining.** Mining
 stopped when the Linode was retired, so the chain hasn't advanced since
 mid-August 2026, and difficulty stays frozen until someone mines again. Until
-then every node, the seed included, reports `initialblockdownload: true`,
-because its tip is more than 24 hours old. That is expected, and it clears
-across the network as soon as anyone finds a new block. There have been no
+then every node reports `initialblockdownload: true`, because its tip is more
+than 24 hours old — except the seed, which since 2026-10-22 runs with
+`maxtipage` so that it keeps serving the chain (§3). The flag clears across the
+network as soon as anyone finds a new block. There have been no
 known reorgs deeper than a single block and no consensus incidents.
 
 The public-facing surface is:
@@ -166,9 +167,9 @@ only so `getblocktemplate` would see a non-zero peer count, since the daemon
 refuses to serve mining templates when it believes it is disconnected. With
 no mining here it has no purpose.
 
-**The seed must run with `maxtipage=315360000`** (see
-`contrib/oracle/burritocoin.conf.example`) — not yet applied to the live box as
-of 2026-09-24; that's §7 item 3. Without it, once nobody has mined
+**The seed runs with `maxtipage=315360000`** (see
+`contrib/oracle/burritocoin.conf.example`), applied 2026-10-22; the explorer's
+node page then showed `"initialblockdownload": false`. Without it, once nobody has mined
 for 24 hours the seed considers itself still syncing, and a node in that state
 ignores `getheaders` from peers — so it stops handing the chain to new nodes and
 every fresh wallet sits at block 0. That is exactly what happened after mining
@@ -185,20 +186,19 @@ After reloading, its `User`, `ExecStart`, `ExecStop`, `Restart`,
 one that matters: it keeps systemd from killing the daemon in the middle of
 a slow shutdown flush.
 
-**Access and recovery.** SSH is key-only; there is no password login. The
-working key is an ed25519 pair with the comment `burritocoin-oracle`,
-created 2026-09-22 because the original key's private half couldn't be found
-on the project lead's machine. The original's *public* half was still in
-`~/.ssh/authorized_keys` alongside the new one, which leaves an authorized key
-whose whereabouts nobody can vouch for — resolving that is §7 item 2. The new
-private key is held by the project lead
-and belongs in the password manager too — a key that exists on one machine
-only is one lost laptop away from locking everyone out.
+**Access and recovery.** SSH is key-only; there is no password login. As of
+2026-10-22 exactly two keys are authorized, both ed25519, one per computer the
+project lead uses: `DESKTOP-NSVTGAH-permanent` and
+`burritocoin-oracle-permanent`. Each private key lives only on its computer, so
+keep a copy of each in the password manager — a key that exists on one machine
+only is one lost laptop away from locking everyone out. The original August RSA
+key (`ssh-key-2026-08-18`), whose private half nobody could find, was removed
+the same day.
 
 With no working key at all, get in through the Oracle Cloud console:
 
 1. Instance → **Management** → Oracle Cloud Agent: the **Bastion** plugin
-   must be Enabled and Running (it is, as of 2026-09-22).
+   must be Enabled and Running (it is, as of 2026-10-22).
 2. Identity & Security → **Bastion** → `burritocoinbastion` (target subnet
    `public subnet-burritocoin-vcn`) → **Sessions** → **Create session**:
    type *Managed SSH session*, username `ubuntu`, instance `burritocoin`,
@@ -208,9 +208,21 @@ With no working key at all, get in through the Oracle Cloud console:
    tunnels through the bastion with a `ProxyCommand`. On Windows, keep the
    private key at a path without spaces so the nested quoting survives
    PowerShell.
-4. Append the new public key to `~/.ssh/authorized_keys`. The session's own
-   copy disappears when the session expires (3 hours at most), so skipping
-   this step means repeating all of the above next time.
+4. Make the new key permanent — carefully. The bastion adds its temporary copy
+   at the **end** of `~/.ssh/authorized_keys`, under a
+   `#ocid1.bastionsession…` marker and **without a trailing newline**, and
+   removes it when the session ends (3 hours at most). So a plain `>>` append
+   glues your line onto the bastion's, and a "skip if already present" check
+   finds the bastion's copy and adds nothing. Both happened here, and the
+   September key vanished when its session expired. Put the permanent copy at
+   the **top** of the file, on its own line, with its own comment:
+
+       K=$(grep '<your key comment>' ~/.ssh/authorized_keys | head -1 | awk '{print $1" "$2}')
+       { echo "$K <computer-name>-permanent"; cat ~/.ssh/authorized_keys; } > ~/ak.new && install -m 600 ~/ak.new ~/.ssh/authorized_keys && rm ~/ak.new
+       ssh-keygen -lf ~/.ssh/authorized_keys   # your key must appear as its own line
+
+   Then delete the *session* — Bastion → Sessions → ⋯ → Delete, not
+   the bastion itself — and log in directly to prove the key stands alone.
 5. Remove every key whose private half you can't account for: delete its
    line from `~/.ssh/authorized_keys` (the trailing comment on each line
    identifies it). A lost key that still works is a standing risk, and on
@@ -452,19 +464,12 @@ issue; everything else can wait on it.
    recycle bin and only for a limited time (30 days on personal accounts).
    Put a second copy on offline media kept somewhere physically separate,
    and restore-test that copy as well. An untested backup is not a backup.
-2. **HIGH — resolve the original SSH key.** Its private half couldn't be
-   found on 2026-09-22, but its public half is still authorized on the Oracle
-   box, where `ubuntu` has passwordless sudo. Either confirm it is in the
-   project lead's password manager and record that here, or delete its line
-   from `~/.ssh/authorized_keys` (the working `burritocoin-oracle` key is
-   unaffected). A ten-second fix.
-3. **HIGH — add `maxtipage=315360000` to the live seed's `burritocoin.conf` and
-   restart it.** Without it, once nobody has mined for 24 hours the seed
-   considers itself still syncing and ignores `getheaders` from peers, so no
-   new node on any OS can download the chain (reproduced with two regtest nodes
-   on 2026-09-24; see §3). The repo's `contrib/oracle/burritocoin.conf.example`
-   already carries the line. Confirm afterwards that the explorer's node page
-   shows `"initialblockdownload": false`.
+2. **DONE 2026-10-22 — resolve the original SSH key.** The August RSA key,
+   whose private half nobody could find, was removed from
+   `~/.ssh/authorized_keys`. Only the two `-permanent` keys remain (§3).
+3. **DONE 2026-10-22 — `maxtipage=315360000` on the live seed.** Applied and
+   restarted; the explorer's node page shows `"initialblockdownload": false`,
+   so new nodes can download the chain again (see §3).
 4. **HIGH — the wallet's Mine tab refuses to mine on a quiet chain.**
    `src/qt/miningutil.cpp` (`CaptureNodeHandles`) blocks both the built-in miner
    and the external-miner bridge whenever `isInitialBlockDownload()` is true —
@@ -513,11 +518,11 @@ issue; everything else can wait on it.
    are minor parameter-comment cleanups left behind by the rebrand.
    Walk through them and decide for each whether to clarify or
    delete.
-11. **LOW — reboot the Oracle box for its staged kernel.** Logins have
-   shown `*** System restart required ***` since at least 2026-09-22.
-   `sudo reboot` takes the seed, explorer and ElectrumX down for about a
-   minute. Check that every unit comes back on boot first:
-   `systemctl is-enabled burritocoind electrumx btc-rpc-explorer nginx`.
+11. **DONE 2026-10-22 — patch and reboot the Oracle box.** Full `apt-get
+   full-upgrade`, then a reboot onto kernel `7.0.0-1013-oracle`; all four units
+   came back on their own. PHP isn't installed on the box, so that month's
+   PHP2Shell vulnerabilities don't apply. Six bug-fix updates stayed held back
+   by Ubuntu's phased rollout (cloud-init, tmux, glib); they arrive on their own.
 
 12. **LOW — make `./configure` work on Boost 1.89+ without a flag.** Boost 1.89
     dropped the compiled Boost.System library, so the build now needs
