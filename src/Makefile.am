@@ -371,6 +371,7 @@ libburritocoin_server_a_SOURCES = \
   node/coin.cpp \
   node/coinstats.cpp \
   node/context.cpp \
+  node/miningreadiness.cpp \
   node/psbt.cpp \
   node/transaction.cpp \
   node/ui_interface.cpp \

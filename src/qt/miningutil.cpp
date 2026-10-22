@@ -10,7 +10,6 @@
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <key_io.h>
-#include <net_processing.h>
 #include <node/context.h>
 #include <node/miningreadiness.h>
 #include <outputtype.h>
@@ -18,10 +17,7 @@
 #include <script/standard.h>
 #include <validation.h>
 
-#include <algorithm>
 #include <memory>
-#include <tuple>
-#include <vector>
 
 #include <QSettings>
 
@@ -85,33 +81,16 @@ bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
 
     // Deliberately not node.isInitialBlockDownload(): that is also true whenever
     // the newest block is more than a day old, so after a quiet day it refused
-    // to mine the very block that would end the quiet. AssessMiningReadiness
-    // (node/miningreadiness.h) asks the narrower question mining needs.
-    int tip_height;
-    int best_header_height;
-    {
-        LOCK(cs_main);
-        tip_height = ctx->chainman->ActiveChain().Height();
-        best_header_height = pindexBestHeader ? pindexBestHeader->nHeight : tip_height;
-    }
-    std::vector<int> outbound_peer_heights;
-    interfaces::Node::NodesStats stats;
-    if (node.getNodesStats(stats)) {
-        for (const auto& peer : stats) {
-            const CNodeStats& node_stats = std::get<0>(peer);
-            if (node_stats.fInbound) continue; // only peers we chose vouch for the chain
-            int height = node_stats.nStartingHeight;
-            if (std::get<1>(peer)) height = std::max(height, std::get<2>(peer).nSyncHeight);
-            outbound_peer_heights.push_back(height);
-        }
-    }
-
-    switch (AssessMiningReadiness(Params().IsTestChain(), tip_height, best_header_height, outbound_peer_heights)) {
+    // to mine the very block that would end the quiet. CheckMiningReadiness
+    // (node/miningreadiness.h) asks the narrower question mining needs. Test
+    // chains skip it, as getblocktemplate does, so a lone regtest node can mine.
+    const MiningReadiness readiness = Params().IsTestChain() ? MiningReadiness::READY : CheckMiningReadiness(*ctx);
+    switch (readiness) {
     case MiningReadiness::READY:
         break;
     case MiningReadiness::NO_PEERS:
-        err = QObject::tr("Not connected to the BurritoCoin network. Mining becomes available "
-                          "once the wallet has a connection.");
+        err = QObject::tr("Not connected to the BurritoCoin network yet. Mining becomes available "
+                          "once the wallet connects to it.");
         return false;
     case MiningReadiness::SYNCING:
         err = QObject::tr("BurritoCoin is still syncing. Mining becomes available once "

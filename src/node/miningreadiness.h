@@ -5,15 +5,31 @@
 #ifndef BURRITOCOIN_NODE_MININGREADINESS_H
 #define BURRITOCOIN_NODE_MININGREADINESS_H
 
-#include <algorithm>
+#include <cstdint>
 #include <vector>
+
+struct NodeContext;
 
 /** Whether a node is caught up enough to mine on top of its chain tip. */
 enum class MiningReadiness {
     READY,    //!< connected, and caught up with what its peers have
     NO_PEERS, //!< no outbound connection, so it would mine a private chain
-    SYNCING,  //!< still downloading, or behind what a peer says it has
+    SYNCING,  //!< behind what an outbound peer has, or no peer has a chain yet
 };
+
+/** What one outbound peer has told us about its chain. */
+struct PeerHeight {
+    int announced;            //!< height from its version message (CNodeStats::nStartingHeight)
+    int shown;                //!< best block it has sent us headers for, -1 if none (CNodeStateStats::nSyncHeight)
+    int64_t seconds_connected;
+};
+
+/**
+ * How long a peer's announced height is believed on its word alone. Longer
+ * than the 15-minute headers-sync timeout in net_processing, so by the time it
+ * runs out an honest chain has reached us as headers from some peer.
+ */
+static constexpr int64_t ANNOUNCED_HEIGHT_TRUST_SECONDS{20 * 60};
 
 /**
  * Decide whether mining should be allowed, without IsInitialBlockDownload().
@@ -25,35 +41,39 @@ enum class MiningReadiness {
  * is narrower:
  *
  *  - at least one outbound peer. Outbound peers are ones this node chose;
- *    without any, it would mine a chain nobody else follows.
- *  - every header it knows about has been connected as a block.
- *  - its tip is at least as high as the best outbound peer's height. A peer's
- *    height is the larger of the height it announced in its version message
- *    and the best block it has shown since. The announced height matters: on
- *    a quiet chain a synced node receives no new headers, so the shown height
- *    alone would never prove it caught up.
+ *    without any, it would mine a chain nobody else follows. Inbound peers
+ *    are ignored throughout, because a stranger can connect, claim any
+ *    height, and reconnect to claim it again.
+ *  - its tip is at least as high as every outbound peer's height.
  *
- * A peer height of 0 or less means no peer has shown a chain yet; that is
- * treated as still syncing, so a node that has only ever met other fresh
+ * A peer's height is the best block it has shown us headers for, or the
+ * height it announced in its version message if that is higher. Shown blocks
+ * are proven by proof of work. The announced height is not, but it is needed:
+ * a fresh node must not mine in the seconds before the first headers arrive,
+ * and on a quiet chain a synced node's non-sync peers send no headers at all.
+ * So an announced height is taken on trust only for the first
+ * ANNOUNCED_HEIGHT_TRUST_SECONDS of a connection. After that it counts only
+ * as far as headers this node has actually seen, which means a peer lying
+ * about its height can delay mining but not block it indefinitely.
+ *
+ * If no outbound peer has a height above 0, nobody has shown a chain yet; that
+ * is treated as still syncing, so a node that has only ever met other fresh
  * nodes can't start mining from genesis.
  *
- * Test chains skip the peer checks, as getblocktemplate does, so a single
- * regtest node can still mine.
+ * There is deliberately no "best header above the tip" test. The best-header
+ * pointer is not rewound when a block turns out invalid, and a header can
+ * arrive without its block ever following, so that test would refuse to mine
+ * until restart (or for good) after one bad block. A peer that does have the
+ * blocks shows them as headers, which the peer test already covers.
  *
- * @param[in] is_test_chain          Params().IsTestChain()
- * @param[in] tip_height             active chain tip height
- * @param[in] best_header_height     height of the best header known
- * @param[in] outbound_peer_heights  one entry per outbound peer, as above
+ * @param[in] tip_height          active chain tip height
+ * @param[in] best_header_height  height of the best header known
+ * @param[in] outbound_peers      one entry per outbound peer
  */
-inline MiningReadiness AssessMiningReadiness(bool is_test_chain, int tip_height, int best_header_height,
-                                             const std::vector<int>& outbound_peer_heights)
-{
-    if (is_test_chain) return MiningReadiness::READY;
-    if (outbound_peer_heights.empty()) return MiningReadiness::NO_PEERS;
-    if (best_header_height > tip_height) return MiningReadiness::SYNCING;
-    const int best_peer_height = *std::max_element(outbound_peer_heights.begin(), outbound_peer_heights.end());
-    if (best_peer_height <= 0 || tip_height < best_peer_height) return MiningReadiness::SYNCING;
-    return MiningReadiness::READY;
-}
+MiningReadiness AssessMiningReadiness(int tip_height, int best_header_height,
+                                      const std::vector<PeerHeight>& outbound_peers);
+
+/** AssessMiningReadiness() for the running node's current chain and peers. */
+MiningReadiness CheckMiningReadiness(const NodeContext& node);
 
 #endif // BURRITOCOIN_NODE_MININGREADINESS_H
