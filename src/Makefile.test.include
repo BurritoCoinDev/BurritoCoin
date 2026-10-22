@@ -249,6 +249,7 @@ BURRITOCOIN_TESTS =\
   test/mempool_tests.cpp \
   test/merkle_tests.cpp \
   test/merkleblock_tests.cpp \
+  test/miningreadiness_tests.cpp \
   test/miner_tests.cpp \
   test/stratum_roundtrip_tests.cpp \
   test/multisig_tests.cpp \

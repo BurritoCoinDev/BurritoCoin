@@ -11,6 +11,7 @@
 #include <interfaces/wallet.h>
 #include <key_io.h>
 #include <node/context.h>
+#include <node/miningreadiness.h>
 #include <outputtype.h>
 #include <primitives/block.h>
 #include <script/standard.h>
@@ -69,16 +70,29 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
 bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
                         CTxMemPool*& mempool, QString& err)
 {
-    // Resolve the node context first. isInitialBlockDownload() dereferences the
-    // active chainstate, so calling it before we know the node is fully started
-    // could assert during a narrow startup window; check the context is up first.
+    // Resolve the node context first. Reading the active chain dereferences the
+    // chainstate, so doing it before we know the node is fully started could
+    // assert during a narrow startup window; check the context is up first.
     NodeContext* ctx = node.context();
     if (!ctx || !ctx->chainman || !ctx->mempool) {
         err = QObject::tr("Mining is unavailable right now: the node is not fully started.");
         return false;
     }
 
-    if (node.isInitialBlockDownload()) {
+    // Deliberately not node.isInitialBlockDownload(): after startup that stays
+    // true until a block less than a day old arrives, so after a quiet day it
+    // refused to mine the very block that would end the quiet. CheckMiningReadiness
+    // (node/miningreadiness.h) asks the narrower question mining needs. Test
+    // chains skip it, as getblocktemplate does, so a lone regtest node can mine.
+    const MiningReadiness readiness = Params().IsTestChain() ? MiningReadiness::READY : CheckMiningReadiness(*ctx);
+    switch (readiness) {
+    case MiningReadiness::READY:
+        break;
+    case MiningReadiness::NO_PEERS:
+        err = QObject::tr("Not connected to the BurritoCoin network yet. Mining becomes available "
+                          "once the wallet connects to it.");
+        return false;
+    case MiningReadiness::SYNCING:
         err = QObject::tr("BurritoCoin is still syncing. Mining becomes available once "
                           "the blockchain is up to date.");
         return false;

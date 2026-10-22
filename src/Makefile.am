@@ -223,6 +223,7 @@ BURRITOCOIN_CORE_H = \
   node/coin.h \
   node/coinstats.h \
   node/context.h \
+  node/miningreadiness.h \
   node/psbt.h \
   node/transaction.h \
   node/ui_interface.h \
@@ -370,6 +371,7 @@ libburritocoin_server_a_SOURCES = \
   node/coin.cpp \
   node/coinstats.cpp \
   node/context.cpp \
+  node/miningreadiness.cpp \
   node/psbt.cpp \
   node/transaction.cpp \
   node/ui_interface.cpp \

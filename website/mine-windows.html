@@ -42,8 +42,7 @@
     <h1>🪟 Mining on Windows</h1>
     <p>About ten minutes on Windows 10 or 11 (64-bit). Download one file, create
        a wallet, and press <strong>Start Mining</strong> — the wallet has a miner
-       built in. No command line, and usually no config files (Step 4 covers the
-       one exception).</p>
+       built in. No command line, no config files.</p>
   </div>
 
   <hr class="divider" />
@@ -78,7 +77,7 @@
       <pre><code>Get-FileHash .\burritocoin-qt-win64.exe -Algorithm SHA256</code></pre>
       <p>The SHA256 of the current build should match:</p>
       <!-- NOTE: update this hash whenever contrib/release/burritocoin-qt-win64.exe is rebuilt -->
-      <pre><code>3890885D10A7E3BC6A43A95A79D0904DBF64090BEBFDF6C51F67B5D934263AF2</code></pre>
+      <pre><code>5C2CD7CEA225767E0BCAB547CBA60539BB52FA173C60D40FE21894DBD39DB8D5</code></pre>
       <p>If it doesn't match, the download is corrupted, tampered with, or this page
          is out of date relative to the repository — delete the file and re-download
          before running it.</p>
@@ -211,27 +210,28 @@
 
     <div class="step" id="still-syncing">
       <span class="step-number">2</span>
-      <h3>If it says "BurritoCoin is still syncing"</h3>
-      <p>The Mine tab won't start while the wallet thinks it's catching up — and
-         when nobody has mined for over a day, it thinks that even once you're
-         fully synced (Step 3). If your block height already matches the
-         explorer, tell the wallet a quiet chain is fine:</p>
-      <ol>
-        <li><strong>Settings → Options…</strong> → <strong>Open Configuration
-            File</strong>. It opens <code>burritocoin.conf</code>; if Windows
-            asks which app to use, pick <strong>Notepad</strong>.</li>
-        <li>Add this line, then save:
-          <pre><code>maxtipage=315360000</code></pre></li>
-        <li>Close the wallet with <strong>File → Exit</strong>, open it again, and
-            press <strong>Start Mining</strong>.</li>
-      </ol>
-      <p>Your first block un-freezes the chain for everyone else. Only do this
-         after your height matches the explorer: the setting switches off the
-         wallet's "still syncing" check, which is what stops you mining before
-         you've caught up. It stays on every time you open the wallet, so after
-         the wallet has been closed for a while, check your height against the
-         explorer again before pressing Start Mining — or delete the line once
-         other people are mining regularly.</p>
+      <h3>If the Mine tab won't start</h3>
+      <p>It tells you why. Usually it's one of these two:</p>
+      <ul>
+        <li><strong>"Not connected to the BurritoCoin network yet"</strong> — the
+            wallet hasn't reached the network, and mining now would build a chain
+            nobody else follows. Check the network icon at the bottom right
+            (<a href="#sync">Step 3</a>).</li>
+        <li><strong>"BurritoCoin is still syncing"</strong> — your block height
+            doesn't match the network's yet. Give it a minute or two, then press
+            <strong>Start Mining</strong> again.</li>
+      </ul>
+      <p>Downloaded the wallet before October 22, 2026? Older versions also refused
+         if nobody had mined for a day before you opened them, even when fully
+         synced. Close it with <strong>File → Exit</strong>, delete the old
+         <code>burritocoin-qt-win64.exe</code>, and download it again from
+         <a href="#step-1">Step 1</a> — same link — into the same folder. (If the
+         old file is still there, your browser saves the new one as
+         <code>burritocoin-qt-win64 (1).exe</code>, and you'd go on running the
+         old one.) Deleting the program doesn't touch your wallet or the blocks
+         you've already downloaded; those are kept separately. If you added a
+         <code>maxtipage</code> line to <code>burritocoin.conf</code> to get
+         around that, you can delete it now.</p>
     </div>
 
     <div class="step">
@@ -292,10 +292,22 @@
       </div>
       <div class="faq-item">
         <h3>The Mine tab says "BurritoCoin is still syncing."</h3>
-        <p>If your block height matches the explorer, nobody has mined for over a
-           day — see <a href="#still-syncing">Step 4</a>. If it doesn't match, you
-           aren't synced yet: give it a few minutes, or see "My block height stays
-           at 0" below.</p>
+        <p>Your block height doesn't match the network's yet: compare
+           <strong>Window → Information</strong> with the explorer and give it a few
+           minutes, or see "My block height stays at 0" above. On a wallet
+           downloaded before October 22, 2026 this could also mean nobody had mined
+           for a day — download it again (<a href="#still-syncing">Step 4</a>).</p>
+        <p>If your height does match the explorer and it still says this, a
+           connected computer is claiming blocks it doesn't have. Open
+           <strong>Window → Peers</strong>, click each peer in turn, and look at
+           <strong>Starting Block</strong>: right-click any peer whose number is
+           higher than the explorer's latest block and choose <strong>Ban for
+           1 week</strong>.</p>
+      </div>
+      <div class="faq-item">
+        <h3>The Mine tab says "Not connected to the BurritoCoin network yet."</h3>
+        <p>The wallet hasn't reached the network, so it won't mine a chain nobody
+           else would accept. See "My block height stays at 0" above.</p>
       </div>
       <div class="faq-item">
         <h3>The Mine tab says "Open a wallet before mining."</h3>

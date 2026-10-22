@@ -28,7 +28,8 @@ namespace MiningUtil {
 bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err);
 
 //! Capture the node's chainstate-manager and mempool handles for mining,
-//! refusing while the node is in initial block download or not fully started.
+//! refusing while the node is not fully started, has no peer, or is
+//! behind (see CheckMiningReadiness in node/miningreadiness.h).
 //! Returns false and sets err on failure.
 bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
                         CTxMemPool*& mempool, QString& err);
