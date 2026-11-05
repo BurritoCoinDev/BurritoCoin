@@ -17,11 +17,13 @@
 
 #ifdef ENABLE_WALLET
 #include <qt/test/addressbooktests.h>
+#include <qt/test/miningtests.h>
 #include <qt/test/wallettests.h>
 #endif // ENABLE_WALLET
 
 #include <QApplication>
 #include <QObject>
+#include <QSettings>
 #include <QTest>
 
 #if defined(QT_STATICPLUGIN)
@@ -78,6 +80,12 @@ int main(int argc, char* argv[])
     if (QTest::qExec(&app_tests) != 0) {
         fInvalid = true;
     }
+    // The window AppTests opened lives until the end of this run, and 600 ms
+    // after it opened it shows the first-run welcome dialog, modally, unless
+    // onboarding is done. AppTests resets the GUI settings, so set that here,
+    // after it: headless, nothing would close the dialog, and whichever later
+    // test next ran the event loop would wait on it forever.
+    QSettings().setValue(QStringLiteral("onboarding/done"), true);
     URITests test1;
     if (QTest::qExec(&test1) != 0) {
         fInvalid = true;
@@ -91,6 +99,10 @@ int main(int argc, char* argv[])
         fInvalid = true;
     }
 #ifdef ENABLE_WALLET
+    MiningTests mining_tests(app.node());
+    if (QTest::qExec(&mining_tests) != 0) {
+        fInvalid = true;
+    }
     WalletTests test5(app.node());
     if (QTest::qExec(&test5) != 0) {
         fInvalid = true;

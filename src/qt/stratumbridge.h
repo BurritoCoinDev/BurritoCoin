@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <deque>
+#include <functional>
 #include <memory>
 
 class CTxMemPool;
@@ -63,10 +64,17 @@ public:
     explicit StratumBridge(interfaces::Node& node, QObject* parent = nullptr);
     ~StratumBridge();
 
+    //! Called on this (the GUI) thread after a block pays the current payout
+    //! script; returns true and sets its argument to the script for the next
+    //! block, or false to keep paying the current one.
+    using PayoutRotator = std::function<bool(CScript&)>;
+
     //! Bind 127.0.0.1 and begin serving work paying to payout_script. Returns
     //! the bound port, or 0 on failure (port in use / node not ready). If
-    //! preferred_port is 0 an ephemeral port is chosen.
-    quint16 start(const CScript& payout_script, quint16 preferred_port = 0);
+    //! preferred_port is 0 an ephemeral port is chosen. If rotate_payout is set,
+    //! each found block switches later work to the script it returns.
+    quint16 start(const CScript& payout_script, quint16 preferred_port = 0,
+                  PayoutRotator rotate_payout = nullptr);
     void stop();
     bool isRunning() const;
     quint16 port() const { return m_port; }
@@ -107,6 +115,7 @@ private:
     ChainstateManager* m_chainman = nullptr;
     CTxMemPool* m_mempool = nullptr;
     CScript m_payout_script;
+    PayoutRotator m_rotate_payout;
 
     std::unique_ptr<QTcpServer> m_server;
     QHash<QTcpSocket*, std::shared_ptr<Session>> m_sessions;

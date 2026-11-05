@@ -744,7 +744,12 @@ void MiningPage::startExternal()
         connect(m_bridge, &StratumBridge::blockFound, this, &MiningPage::onBlockFound);
         connect(m_bridge, &StratumBridge::error, this, &MiningPage::onMiningError);
     }
-    const quint16 port = m_bridge->start(payout, 0);
+    // Each block the external miner finds pays a fresh address, like the
+    // built-in miner. Runs on this (the GUI) thread; this page outlives its
+    // bridge, which is its child.
+    const quint16 port = m_bridge->start(payout, 0, [this](CScript& next) {
+        return MiningUtil::RotateCoinbaseScript(m_wallet_model, next);
+    });
     if (port == 0) {
         // start() already emitted error() synchronously with the specific reason
         // (e.g. the OS listen error), which onMiningError surfaced. Don't clobber

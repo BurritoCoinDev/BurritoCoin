@@ -75,10 +75,14 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void poll();
+    //! After a found block: switch to a fresh payout address, then let the
+    //! workers build their next templates. Queued from the worker that found it.
+    void rotatePayout();
 
 private:
     void workerLoop(int id);
-    void submitSolved(const CBlock& block);
+    //! payout_gen is the m_payout_gen the block's coinbase script came from.
+    void submitSolved(const CBlock& block, uint64_t payout_gen);
     bool resolveCoinbaseScript(QString& err);
 
     interfaces::Node& m_node;
@@ -87,7 +91,20 @@ private:
     // Node-side handles captured at start(); valid for the node's lifetime.
     ChainstateManager* m_chainman = nullptr;
     CTxMemPool* m_mempool = nullptr;
+
+    // The payout script, replaced after every block it pays so each block pays
+    // a different address. All three are guarded by m_script_mutex, which is
+    // taken before cs_main (submitSolved holds it across ProcessNewBlock),
+    // never after.
+    std::mutex m_script_mutex;
     CScript m_coinbase_script;
+    uint64_t m_payout_gen = 0;   //!< bumped whenever m_coinbase_script changes
+    bool m_payout_used = false;  //!< a block paid it; no new templates until rotatePayout()
+
+    // rotatePayout()'s replacement while it waits for m_script_mutex (GUI thread only).
+    bool m_next_payout_ready = false;
+    bool m_next_payout_ok = false;
+    CScript m_next_payout;
 
     std::vector<std::thread> m_workers;
     std::atomic<bool> m_running{false};

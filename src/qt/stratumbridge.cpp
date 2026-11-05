@@ -78,7 +78,8 @@ bool StratumBridge::isRunning() const
     return m_server != nullptr;
 }
 
-quint16 StratumBridge::start(const CScript& payout_script, quint16 preferred_port)
+quint16 StratumBridge::start(const CScript& payout_script, quint16 preferred_port,
+                             PayoutRotator rotate_payout)
 {
     if (isRunning()) return m_port;
 
@@ -88,6 +89,7 @@ quint16 StratumBridge::start(const CScript& payout_script, quint16 preferred_por
         return 0;
     }
     m_payout_script = payout_script;
+    m_rotate_payout = std::move(rotate_payout);
     m_share_difficulty = SHARE_DIFFICULTY;
 
     m_server.reset(new QTcpServer(this));
@@ -143,6 +145,7 @@ void StratumBridge::stop()
     m_port = 0;
     m_chainman = nullptr;
     m_mempool = nullptr;
+    m_rotate_payout = nullptr;
 }
 
 void StratumBridge::onNewConnection()
@@ -400,6 +403,9 @@ bool StratumBridge::processSubmit(Session& s, const QString& job_id_q,
         if (m_chainman && MiningUtil::SubmitBlock(*m_chainman, block, hashhex)) {
             ++m_blocks_found;
             Q_EMIT blockFound(QString::fromStdString(hashhex), job.height);
+            // Pay the next block to a fresh address, before the job for the new tip goes out.
+            CScript next;
+            if (m_rotate_payout && m_rotate_payout(next)) m_payout_script = next;
             rebuildJob(); // new tip -> fresh clean job for the miner
         }
     }
