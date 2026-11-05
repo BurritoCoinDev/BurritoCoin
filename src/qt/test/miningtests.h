@@ -21,6 +21,8 @@ class MiningTests : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void payoutAddressIsReusedOnlyUntilABlockPaysIt();
+    void lockedWalletOutOfKeysKeepsItsAddress();
     void builtInMinerPaysEachBlockToANewAddress();
     void bridgePaysEachBlockToANewAddress();
 };

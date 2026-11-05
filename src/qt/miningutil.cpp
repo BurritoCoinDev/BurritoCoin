@@ -69,19 +69,32 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
     // pays it. Builds before it never set it, so their cached address (which
     // their blocks did pay) is replaced on the first start.
     QSettings settings;
+    CScript cached_script;
     const QString cached = settings.value(PayoutKey(wallet_model, "payout_address")).toString();
-    if (!cached.isEmpty() && settings.value(PayoutKey(wallet_model, "payout_unused"), false).toBool()) {
+    if (!cached.isEmpty()) {
         const CTxDestination dest = DecodeDestination(cached.toStdString());
         // Require not just a well-formed address but one this wallet can still
         // spend. Otherwise a wallet restored from an older backup (or a reused
         // wallet name pointing at a different file) would keep paying rewards to
         // an address the user no longer controls.
         if (IsValidDestination(dest) && wallet_model->wallet().isSpendable(dest)) {
-            out = GetScriptForDestination(dest);
-            if (!out.empty()) return true;
+            cached_script = GetScriptForDestination(dest);
         }
     }
-    return MintCoinbaseScript(wallet_model, out, err);
+    if (!cached_script.empty() && settings.value(PayoutKey(wallet_model, "payout_unused"), false).toBool()) {
+        out = cached_script;
+        return true;
+    }
+    if (MintCoinbaseScript(wallet_model, out, err)) return true;
+    // No fresh address: an encrypted wallet that stays locked can't make more
+    // once its ~1000 pre-generated keys are used up. Paying the last address
+    // again beats refusing to mine, which builds before per-block addresses
+    // never did.
+    if (!cached_script.empty()) {
+        out = cached_script;
+        return true;
+    }
+    return false;
 }
 
 bool RotateCoinbaseScript(WalletModel* wallet_model, CScript& out)

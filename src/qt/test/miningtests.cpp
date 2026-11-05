@@ -17,9 +17,14 @@
 #include <script/standard.h>
 #include <stratumjob.h>
 #include <test/util/setup_common.h>
+#include <support/allocators/secure.h>
 #include <univalue.h>
 #include <util/memory.h>
+#include <util/system.h>
+#include <util/translation.h>
 #include <validation.h>
+#include <wallet/db.h>
+#include <wallet/scriptpubkeyman.h>
 #include <wallet/wallet.h>
 
 #include <memory>
@@ -47,10 +52,22 @@ struct MiningFixture {
     std::unique_ptr<ClientModel> client_model;
     std::unique_ptr<WalletModel> wallet_model;
 
-    explicit MiningFixture(interfaces::Node& node)
+    //! on_disk: a real wallet file in the test data directory, for tests that
+    //! encrypt the wallet (encrypting rewrites the file; the mock has none).
+    explicit MiningFixture(interfaces::Node& node, bool on_disk = false)
     {
         node.setContext(&chain.m_node);
-        wallet = std::make_shared<CWallet>(node.context()->chain.get(), "", CreateMockWalletDatabase());
+        std::unique_ptr<WalletDatabase> database;
+        if (on_disk) {
+            DatabaseOptions options;
+            options.require_create = true;
+            DatabaseStatus status;
+            bilingual_str error;
+            database = MakeDatabase(GetDataDir() / "mining_test_wallet", options, status, error);
+        } else {
+            database = CreateMockWalletDatabase();
+        }
+        wallet = std::make_shared<CWallet>(node.context()->chain.get(), "", std::move(database));
         bool first_run;
         wallet->LoadWallet(first_run);
         {
@@ -110,6 +127,63 @@ void SendLine(QTcpSocket& socket, const std::string& json)
 }
 
 } // namespace
+
+void MiningTests::payoutAddressIsReusedOnlyUntilABlockPaysIt()
+{
+    MiningFixture f(m_node);
+    WalletModel* wallet_model = f.wallet_model.get();
+    CScript first, second, again;
+    QString err;
+
+    // Until a block pays it, every Start mines to the same address.
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, first, err));
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
+    QVERIFY(again == first);
+
+    // After a block pays it, the next one is new, and a restart keeps that.
+    QVERIFY(MiningUtil::RotateCoinbaseScript(wallet_model, second));
+    QVERIFY(second != first);
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
+    QVERIFY(again == second);
+
+    // A wallet that mined with a build before per-block addresses: its cached
+    // address was paid by every block, and nothing marks it unused.
+    QSettings().remove(QStringLiteral("mining/%1/payout_unused").arg(wallet_model->getWalletName()));
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
+    QVERIFY(again != first && again != second);
+}
+
+void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
+{
+    // An encrypted, locked wallet can't make keys, only hand out the ones it
+    // made in advance. Keep that to one at a time, so it runs out quickly.
+    struct RestoreKeypool {
+        ~RestoreKeypool() { gArgs.ForceSetArg("-keypool", std::to_string(DEFAULT_KEYPOOL_SIZE)); }
+    } restore_keypool;
+    gArgs.ForceSetArg("-keypool", "1");
+    MiningFixture f(m_node, /*on_disk=*/true);
+    WalletModel* wallet_model = f.wallet_model.get();
+    CScript current, next, again;
+    QString err;
+
+    // Mining started before the wallet was encrypted and locked.
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, current, err));
+    SecureString passphrase;
+    passphrase = "mining test";
+    QVERIFY(f.wallet->EncryptWallet(passphrase));
+    QVERIFY(f.wallet->IsLocked());
+
+    // Blocks keep paying new addresses until the pre-made keys run out; then
+    // rotation keeps the last one...
+    int rotations = 0;
+    while (MiningUtil::RotateCoinbaseScript(wallet_model, next)) {
+        current = next;
+        QVERIFY(++rotations < 10);
+    }
+    // ...and Start Mining still works, on that address, rather than demanding an unlock.
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
+    QVERIFY(again == current);
+}
 
 void MiningTests::builtInMinerPaysEachBlockToANewAddress()
 {
