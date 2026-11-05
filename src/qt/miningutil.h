@@ -24,9 +24,12 @@ namespace MiningUtil {
 
 //! Resolve the per-wallet payout coinbase script. The address is cached per
 //! wallet NAME and reused only while it is still spendable and no block has
-//! paid it yet; otherwise a fresh one is minted (and cached). If the wallet
-//! can't mint one (locked, keypool used up), a spendable cached address is
-//! reused rather than refusing. Returns false and sets err on failure.
+//! paid it yet; otherwise a fresh one is minted (and cached). If a locked
+//! wallet has used up its pre-generated keys, it asks for the passphrase so
+//! the wallet can make more; if that is cancelled, a spendable cached
+//! address is reused rather than refusing. Call it only when the user starts
+//! mining, since it may show the unlock dialog. Returns false and sets err on
+//! failure.
 bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err);
 
 //! Call after a block paid the current payout address: mark it used and mint

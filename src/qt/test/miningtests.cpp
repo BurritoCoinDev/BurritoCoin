@@ -169,6 +169,7 @@ void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
 {
     // An encrypted, locked wallet can't make keys, only hand out the ones it
     // made in advance. Keep that to one at a time, so it runs out quickly.
+    // (A real one has about 1000; a solo miner here can use that in days.)
     struct RestoreKeypool {
         ~RestoreKeypool() { gArgs.ForceSetArg("-keypool", std::to_string(DEFAULT_KEYPOOL_SIZE)); }
     } restore_keypool;
@@ -192,9 +193,15 @@ void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
         current = next;
         QVERIFY(++rotations < 10);
     }
-    // ...and Start Mining still works, on that address, rather than demanding an unlock.
+    // ...and Start Mining asks for the passphrase. Cancelled (nothing answers
+    // the request here), it still starts, on that address...
     QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
     QVERIFY(again == current);
+    // ...and given, the wallet makes a fresh batch, then locks again.
+    QObject::connect(wallet_model, &WalletModel::requireUnlock, [&] { f.wallet->Unlock(passphrase); });
+    QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
+    QVERIFY(again != current);
+    QVERIFY(f.wallet->IsLocked());
 }
 
 void MiningTests::builtInMinerPaysEachBlockToANewAddress()

@@ -86,10 +86,16 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
         return true;
     }
     if (MintCoinbaseScript(wallet_model, out, err)) return true;
-    // No fresh address: an encrypted wallet that stays locked can't make more
-    // once its ~1000 pre-generated keys are used up. Paying the last address
-    // again beats refusing to mine, which builds before per-block addresses
-    // never did.
+    // An encrypted wallet that stays locked can't make addresses beyond the
+    // ~1000 it made in advance, and each block uses one. This runs when the
+    // user presses Start, so ask for the passphrase once: unlocked, the wallet
+    // makes a fresh batch, then the context locks it again.
+    if (wallet_model->getEncryptionStatus() == WalletModel::Locked) {
+        WalletModel::UnlockContext unlock(wallet_model->requestUnlock());
+        if (unlock.isValid() && MintCoinbaseScript(wallet_model, out, err)) return true;
+    }
+    // Still no fresh address (unlock cancelled). Paying the last address again
+    // beats refusing to mine, which builds before per-block addresses never did.
     if (!cached_script.empty()) {
         out = cached_script;
         return true;
