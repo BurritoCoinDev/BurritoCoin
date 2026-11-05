@@ -38,7 +38,10 @@ NO_WALLET ?=
 NO_ZMQ ?=
 NO_UPNP ?=
 MULTIPROCESS ?=
-FALLBACK_DOWNLOAD_PATH ?= https://burritoco.in/depends-sources
+# Bitcoin Core's mirror of every upstream source tarball depends/ uses. Each
+# download is still checked against the sha256 pinned in its packages/*.mk, so
+# the mirror can't change what gets built. (burritoco.in has no such mirror.)
+FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
 
 BUILD = $(shell ./config.guess)
 HOST ?= $(BUILD)
