@@ -73,4 +73,4 @@ test_burritocoin_qt_check : qt/test/test_burritocoin-qt$(EXEEXT) FORCE
 	$(MAKE) check-TESTS TESTS=$^
 
 test_burritocoin_qt_clean: FORCE
-	rm -f $(CLEAN_burritocoin_QT_TEST) $(qt_test_test_burritocoin_qt_OBJECTS)
+	rm -f $(CLEAN_BURRITOCOIN_QT_TEST) $(qt_test_test_burritocoin_qt_OBJECTS)

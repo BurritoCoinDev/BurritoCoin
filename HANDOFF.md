@@ -1,7 +1,7 @@
 # BurritoCoin Project — Handoff Document
 
 **Last updated:** 2026-11-05
-**Master tip when written:** `b5bb0e0`
+**Master tip when written:** `a20095b`
 
 This file documents only **public** information about the BurritoCoin project:
 network parameters, repository state, pending work, and operational notes that

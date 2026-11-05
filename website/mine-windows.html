@@ -325,6 +325,18 @@
            existing one from <strong>File → Open Wallet</strong>.</p>
       </div>
       <div class="faq-item">
+        <h3>I restored a backup and some mining rewards are missing</h3>
+        <p>Each block pays a new address, and a restored wallet only looks about
+           1,000 addresses past the ones it knew when you backed it up. Unlocked,
+           it keeps looking further; locked, it can't. So with an encrypted
+           wallet, open <strong>Window → Console</strong> and run these two
+           commands, putting your passphrase in the quotes:</p>
+        <pre><code>walletpassphrase "your passphrase" 600
+rescanblockchain</code></pre>
+        <p>The rescan finds the rest. Backing up again now and then avoids the
+           step.</p>
+      </div>
+      <div class="faq-item">
         <h3>I found a block but can't spend the coins</h3>
         <p>Newly mined coins are immature for 100 blocks. They become spendable on
            their own; nothing needs doing.</p>
