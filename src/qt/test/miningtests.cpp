@@ -71,15 +71,26 @@ struct MiningFixture {
         bool first_run;
         wallet->LoadWallet(first_run);
         {
+            // Set up like a wallet made with Create Wallet (CWallet::Create): the
+            // current format with an HD seed, so payouts are bech32 like a real
+            // wallet's rather than an old-format wallet's uncompressed keys.
             LOCK(wallet->cs_wallet);
+            wallet->SetMinVersion(FEATURE_LATEST);
             wallet->SetupLegacyScriptPubKeyMan();
+            for (ScriptPubKeyMan* spk_man : wallet->GetActiveScriptPubKeyMans()) {
+                QVERIFY(spk_man->SetupGeneration());
+            }
         }
         client_model = MakeUnique<ClientModel>(node, &options_model);
         AddWallet(wallet);
         wallet_model = MakeUnique<WalletModel>(interfaces::MakeWallet(wallet), *client_model, platform_style.get());
         RemoveWallet(wallet, nullopt);
-        // No payout address cached from an earlier test.
-        QSettings().remove(QStringLiteral("mining"));
+        // No payout address cached from an earlier test, and no auto-pause
+        // (on by default when on battery, e.g. a laptop running the tests).
+        QSettings settings;
+        settings.remove(QStringLiteral("mining"));
+        settings.setValue(QStringLiteral("mining/pause_on_battery"), false);
+        settings.setValue(QStringLiteral("mining/pause_when_busy"), false);
     }
 };
 
@@ -111,6 +122,7 @@ void CheckEachBlockPaysANewWalletAddress(CWallet& wallet, int first, int last)
         const CScript payout = CoinbasePayout(height);
         CTxDestination dest;
         QVERIFY(ExtractDestination(payout, dest));
+        QVERIFY(boost::get<WitnessV0KeyHash>(&dest) != nullptr); // bech32, as the Mine tab asks for
         {
             LOCK(wallet.cs_wallet);
             QVERIFY(wallet.IsMine(dest) != ISMINE_NO);
