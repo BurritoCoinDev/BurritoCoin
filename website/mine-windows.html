@@ -77,7 +77,7 @@
       <pre><code>Get-FileHash .\burritocoin-qt-win64.exe -Algorithm SHA256</code></pre>
       <p>The SHA256 of the current build should match:</p>
       <!-- NOTE: update this hash whenever contrib/release/burritocoin-qt-win64.exe is rebuilt -->
-      <pre><code>5C2CD7CEA225767E0BCAB547CBA60539BB52FA173C60D40FE21894DBD39DB8D5</code></pre>
+      <pre><code>0397B2CA78A6920288C039F4D85DB7B636265FFC398C35551EC1CA5FC0CBB372</code></pre>
       <p>If it doesn't match, the download is corrupted, tampered with, or this page
          is out of date relative to the repository — delete the file and re-download
          before running it.</p>
@@ -140,8 +140,10 @@
          write down. The wallet's <strong>⚠ Back up wallet</strong> reminder
          changes to <strong>✔ Backed up</strong> once it's done.</p>
       <p>If you encrypt later instead (<strong>Settings → Encrypt
-         Wallet…</strong>), back up again afterwards: encrypting generates a new
-         recovery key, and older backups won't include addresses made after it.</p>
+         Wallet…</strong>), back up again afterwards and delete any backup copies
+         made before. Encrypting keeps the same recovery key, so an older,
+         unencrypted copy could still spend everything this wallet will ever
+         receive. A recovery key you already wrote down stays valid.</p>
     </div>
   </section>
 
@@ -242,6 +244,14 @@
          <strong>immature</strong> until 100 more blocks have been mined on top of
          them: about four hours at the network's 2.5-minute target, and longer
          while few people are mining. After that they're yours to spend.</p>
+      <p>Each block pays a different address in your wallet, so your blocks
+         don't all show the same address on the explorer. They're all yours:
+         <strong>Window → Receiving addresses</strong> lists them, labelled
+         <em>Mining</em>. An encrypted wallet that stays locked can only use
+         the 1,000 or so addresses it made in advance. When those run out,
+         blocks pay the last one until you next press <strong>Start
+         Mining</strong>, which then asks for your passphrase so the wallet can
+         make more.</p>
     </div>
 
     <div class="callout">
