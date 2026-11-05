@@ -54,7 +54,9 @@ struct MiningFixture {
 
     //! on_disk: a real wallet file in the test data directory, for tests that
     //! encrypt the wallet (encrypting rewrites the file; the mock has none).
-    explicit MiningFixture(interfaces::Node& node, bool on_disk = false)
+    //! hd_seed: false for a wallet that can't make keys, like one restored
+    //! from a recovery file.
+    explicit MiningFixture(interfaces::Node& node, bool on_disk = false, bool hd_seed = true)
     {
         node.setContext(&chain.m_node);
         std::unique_ptr<WalletDatabase> database;
@@ -77,8 +79,10 @@ struct MiningFixture {
             LOCK(wallet->cs_wallet);
             wallet->SetMinVersion(FEATURE_LATEST);
             wallet->SetupLegacyScriptPubKeyMan();
-            for (ScriptPubKeyMan* spk_man : wallet->GetActiveScriptPubKeyMans()) {
-                QVERIFY(spk_man->SetupGeneration());
+            if (hd_seed) {
+                for (ScriptPubKeyMan* spk_man : wallet->GetActiveScriptPubKeyMans()) {
+                    QVERIFY(spk_man->SetupGeneration());
+                }
             }
         }
         client_model = MakeUnique<ClientModel>(node, &options_model);
@@ -202,6 +206,24 @@ void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
     QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
     QVERIFY(again != current);
     QVERIFY(f.wallet->IsLocked());
+}
+
+void MiningTests::noPassphrasePromptWhenUnlockingCannotHelp()
+{
+    // A wallet with no HD seed can't make an address even when unlocked, so
+    // asking for its passphrase at Start would be pointless.
+    MiningFixture f(m_node, /*on_disk=*/true, /*hd_seed=*/false);
+    SecureString passphrase;
+    passphrase = "mining test";
+    QVERIFY(f.wallet->EncryptWallet(passphrase));
+    QVERIFY(f.wallet->IsLocked());
+    WalletModel* wallet_model = f.wallet_model.get();
+    int prompts = 0;
+    QObject::connect(wallet_model, &WalletModel::requireUnlock, [&] { ++prompts; });
+    CScript payout;
+    QString err;
+    QVERIFY(!MiningUtil::ResolveCoinbaseScript(wallet_model, payout, err));
+    QCOMPARE(prompts, 0);
 }
 
 void MiningTests::builtInMinerPaysEachBlockToANewAddress()

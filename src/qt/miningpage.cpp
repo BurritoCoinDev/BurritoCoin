@@ -730,6 +730,19 @@ void MiningPage::startExternal()
         return;
     }
 
+    // Check the node can mine before resolving the payout, which may ask for
+    // the wallet passphrase; the bridge checks again when it starts. (The
+    // built-in miner checks in this order too.)
+    {
+        ChainstateManager* chainman = nullptr;
+        CTxMemPool* mempool = nullptr;
+        QString not_ready;
+        if (!MiningUtil::CaptureNodeHandles(m_client_model->node(), chainman, mempool, not_ready)) {
+            onMiningError(not_ready);
+            return;
+        }
+    }
+
     // Resolve the wallet payout (same cache/behaviour as the in-process miner).
     CScript payout;
     QString err;

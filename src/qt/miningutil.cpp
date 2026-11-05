@@ -86,11 +86,15 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
         return true;
     }
     if (MintCoinbaseScript(wallet_model, out, err)) return true;
-    // An encrypted wallet that stays locked can't make addresses beyond the
-    // ~1000 it made in advance, and each block uses one. This runs when the
+    // An encrypted legacy wallet (what Create Wallet makes here) that stays
+    // locked can't make addresses beyond the ~1000 it made in advance, and
+    // each block uses one. This runs when the
     // user presses Start, so ask for the passphrase once: unlocked, the wallet
-    // makes a fresh batch, then the context locks it again.
-    if (wallet_model->getEncryptionStatus() == WalletModel::Locked) {
+    // makes a fresh batch, then the context locks it again. Only ask if that
+    // can work: a wallet with no HD seed (made blank, or restored from a
+    // recovery file) can't make addresses even when unlocked, and
+    // canGetAddresses() says so whether or not it is locked.
+    if (wallet_model->getEncryptionStatus() == WalletModel::Locked && wallet_model->wallet().canGetAddresses()) {
         WalletModel::UnlockContext unlock(wallet_model->requestUnlock());
         if (unlock.isValid() && MintCoinbaseScript(wallet_model, out, err)) return true;
     }
