@@ -369,7 +369,17 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
 
 MiningPage::~MiningPage()
 {
-    // m_miner is parented to this and will stop() in its destructor.
+    // Detach and stop the engines while this page is still whole. QWidget's
+    // destructor deletes child objects (the labels as well as the engines)
+    // before Qt drops this page's connections, and MiningModel::stop(), run
+    // from its destructor, emits into our slots: closing a wallet while it was
+    // mining crashed in onHashrate on an already-deleted label.
+    if (m_miner) {
+        m_miner->disconnect(this);
+        m_miner->stop();
+    }
+    if (m_bridge) m_bridge->disconnect(this);
+    if (m_external) m_external->disconnect(this);
 }
 
 void MiningPage::setClientModel(ClientModel* client_model)
@@ -788,11 +798,14 @@ void MiningPage::startExternal()
         m_miner_log->appendPlainText(QStringLiteral("$ %1 %2")
                                          .arg(program, args.join(QLatin1Char(' '))));
     }
-    m_external->start(program, args);
-    QSettings().setValue(QStringLiteral("mining/external_path"), program);
-
+    // Mark the run active before launching it. On Windows, QProcess reports a
+    // program that can't be started (missing, quarantined) synchronously from
+    // inside start(); onMiningError only tears the bridge and UI down for an
+    // active run, so marking it afterwards left "Mining" showing with no miner.
     m_external_active = true;
     applyMiningUi(true);
+    m_external->start(program, args);
+    QSettings().setValue(QStringLiteral("mining/external_path"), program);
 }
 
 void MiningPage::stopExternal()

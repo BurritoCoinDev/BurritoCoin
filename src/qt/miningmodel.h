@@ -37,11 +37,13 @@ class Node;
  * blocks are submitted via ChainstateManager::ProcessNewBlock — exactly the
  * path src/rpc/mining.cpp uses.
  *
- * Workers are plain std::threads communicating only through atomics; a QTimer
- * on the GUI thread polls those atomics to compute hashrate, detect a new tip
- * (so workers reload onto it), and emit Qt signals for the UI. This keeps the
- * hot loop free of any QObject affinity concerns and lets Stop() interrupt
- * within a single hash instead of a long blocking RPC.
+ * Workers are plain std::threads communicating through atomics, plus one
+ * mutex around the payout script (taken once per template, not per hash); a
+ * QTimer on the GUI thread polls those atomics to compute hashrate, detect a
+ * new tip (so workers reload onto it), and emit Qt signals for the UI. The
+ * wallet is only touched on the GUI thread. This keeps the hot loop free of
+ * any QObject affinity concerns and lets Stop() interrupt within a single hash
+ * instead of a long blocking RPC.
  */
 class MiningModel : public QObject
 {

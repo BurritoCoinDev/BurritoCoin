@@ -24,6 +24,7 @@ private Q_SLOTS:
     void payoutAddressIsReusedOnlyUntilABlockPaysIt();
     void lockedWalletOutOfKeysKeepsItsAddress();
     void noPassphrasePromptWhenUnlockingCannotHelp();
+    void closingTheMinePageWhileMiningDoesNotCrash();
     void builtInMinerPaysEachBlockToANewAddress();
     void bridgePaysEachBlockToANewAddress();
 };

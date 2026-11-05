@@ -9,6 +9,7 @@
 #include <interfaces/node.h>
 #include <qt/clientmodel.h>
 #include <qt/miningmodel.h>
+#include <qt/miningpage.h>
 #include <qt/miningutil.h>
 #include <qt/optionsmodel.h>
 #include <qt/platformstyle.h>
@@ -172,12 +173,12 @@ void MiningTests::payoutAddressIsReusedOnlyUntilABlockPaysIt()
 void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
 {
     // An encrypted, locked wallet can't make keys, only hand out the ones it
-    // made in advance. Keep that to one at a time, so it runs out quickly.
-    // (A real one has about 1000; a solo miner here can use that in days.)
+    // made in advance. Make three, so it runs out quickly. (A real one has
+    // about 1000; a solo miner here can use that in days.)
     struct RestoreKeypool {
         ~RestoreKeypool() { gArgs.ForceSetArg("-keypool", std::to_string(DEFAULT_KEYPOOL_SIZE)); }
     } restore_keypool;
-    gArgs.ForceSetArg("-keypool", "1");
+    gArgs.ForceSetArg("-keypool", "3");
     MiningFixture f(m_node, /*on_disk=*/true);
     WalletModel* wallet_model = f.wallet_model.get();
     CScript current, next, again;
@@ -194,9 +195,11 @@ void MiningTests::lockedWalletOutOfKeysKeepsItsAddress()
     // rotation keeps the last one...
     int rotations = 0;
     while (MiningUtil::RotateCoinbaseScript(wallet_model, next)) {
+        QVERIFY(next != current);
         current = next;
         QVERIFY(++rotations < 10);
     }
+    QVERIFY(rotations >= 1); // it did rotate while locked, from the pre-made keys
     // ...and Start Mining asks for the passphrase. Cancelled (nothing answers
     // the request here), it still starts, on that address...
     QVERIFY(MiningUtil::ResolveCoinbaseScript(wallet_model, again, err));
@@ -224,6 +227,23 @@ void MiningTests::noPassphrasePromptWhenUnlockingCannotHelp()
     QString err;
     QVERIFY(!MiningUtil::ResolveCoinbaseScript(wallet_model, payout, err));
     QCOMPARE(prompts, 0);
+}
+
+void MiningTests::closingTheMinePageWhileMiningDoesNotCrash()
+{
+    // What Close Wallet does to a Mine page that is mining: the page is
+    // deleted. Its miner used to stop from QWidget's destructor and signal
+    // into the half-destroyed page, which crashed on a deleted label.
+    MiningFixture f(m_node);
+    QSettings().setValue(QStringLiteral("mining/disclosure_shown"), true); // skip the modal first-run notice
+    MiningPage* page = new MiningPage(f.platform_style.get());
+    page->setClientModel(f.client_model.get());
+    page->setWalletModel(f.wallet_model.get());
+    const int start_height = ChainHeight();
+    QVERIFY(QMetaObject::invokeMethod(page, "onStartStopClicked"));
+    QTRY_VERIFY_WITH_TIMEOUT(ChainHeight() >= start_height + 2, TIMEOUT_MS);
+    delete page; // must not crash
+    QVERIFY(ChainHeight() >= start_height + 2);
 }
 
 void MiningTests::builtInMinerPaysEachBlockToANewAddress()
