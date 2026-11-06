@@ -107,8 +107,9 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
     if (!wallet_model->wallet().canGetAddresses()) {
         // Unlocking can't help this wallet, so don't say it would.
         err = QObject::tr("This wallet can't make new addresses, because it has no recovery key "
-                          "(for example, it was restored from a recovery file). Mine into a "
-                          "wallet made with Create Wallet or restored from a recovery key.");
+                          "(for example, it was restored from a recovery file, or made blank or "
+                          "watch-only). Mine into a wallet that has one, such as a standard new "
+                          "wallet or one restored from a recovery key.");
     }
     return false;
 }
