@@ -499,7 +499,7 @@ issue; everything else can wait on it.
 5. **HIGH — official release binaries: Windows done, Linux and macOS
    not.** `.github/workflows/build-windows.yml` cross-builds the Qt wallet
    from `depends/` on a GitHub runner (manual dispatch, or any `v*` tag).
-   Actions run `42079978699` produced the build published on 2026-11-05,
+   Actions run `42134376589` produced the build published on 2026-11-06,
    which the site offers as a download (homepage `#download` and
    `/mine-windows`). Still to do: Linux and macOS builds — without them
    there is nothing for Tier 1 exchanges to integrate against, which gates
