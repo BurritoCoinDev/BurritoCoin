@@ -155,8 +155,9 @@ printf 'daemon=1\nserver=1\n' > ~/.burritocoin/burritocoin.conf</code></pre>
       <h3>Back it up</h3>
       <pre><code>burritocoin-cli backupwallet ~/wallet-backup.dat</code></pre>
       <p>Copy <code>wallet-backup.dat</code> off this machine. Back up
-         <em>after</em> encrypting: encrypting generates a new seed, so a backup
-         taken before it won't cover the addresses you use from now on.</p>
+         <em>after</em> encrypting, so the backup is encrypted too. Encrypting
+         keeps the same seed, so a copy taken before it is an unencrypted key to
+         everything this wallet will ever receive: delete any such copies.</p>
     </div>
   </section>
 

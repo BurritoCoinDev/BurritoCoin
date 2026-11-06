@@ -140,10 +140,10 @@ void AskPassphraseDialog::accept()
                                              "<qt>" +
                                              tr("Your wallet is now encrypted. ") + encryption_reminder +
                                              "<br><br><b>" +
-                                             tr("IMPORTANT: Any previous backups you have made of your wallet file "
-                                             "should be replaced with the newly generated, encrypted wallet file. "
-                                             "For security reasons, previous backups of the unencrypted wallet file "
-                                             "will become useless as soon as you start using the new, encrypted wallet.") +
+                                             tr("IMPORTANT: Encrypting keeps this wallet's keys, so any backup you made "
+                                             "before now is an unencrypted copy that can spend everything this wallet "
+                                             "will ever receive. Make a new backup of the encrypted wallet, then delete "
+                                             "the old copies.") +
                                              "</b></qt>");
                     }
                     else

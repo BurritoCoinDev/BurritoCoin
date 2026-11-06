@@ -13,6 +13,7 @@
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <key_io.h>
+#include <logging.h>
 #include <miner.h>
 #include <node/context.h>
 #include <outputtype.h>
@@ -56,7 +57,13 @@ int MiningModel::maxThreads()
 
 bool MiningModel::resolveCoinbaseScript(QString& err)
 {
-    return MiningUtil::ResolveCoinbaseScript(m_wallet_model, m_coinbase_script, err);
+    CScript script;
+    if (!MiningUtil::ResolveCoinbaseScript(m_wallet_model, script, err)) return false;
+    std::lock_guard<std::mutex> lock(m_script_mutex);
+    m_coinbase_script = script;
+    ++m_payout_gen;
+    m_payout_used = false;
+    return true;
 }
 
 void MiningModel::start(int threads)
@@ -126,10 +133,25 @@ void MiningModel::workerLoop(int id)
             continue;
         }
         const uint32_t epoch = m_epoch.load();
+        CScript coinbase_script;
+        uint64_t payout_gen;
+        bool payout_used;
+        {
+            std::lock_guard<std::mutex> lock(m_script_mutex);
+            coinbase_script = m_coinbase_script;
+            payout_gen = m_payout_gen;
+            payout_used = m_payout_used;
+        }
+        if (payout_used) {
+            // A block just paid this address; wait (milliseconds) for
+            // rotatePayout() so the next template pays a new one.
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            continue;
+        }
 
         std::unique_ptr<CBlockTemplate> tmpl;
         try {
-            tmpl = BlockAssembler(*m_mempool, params).CreateNewBlock(m_coinbase_script);
+            tmpl = BlockAssembler(*m_mempool, params).CreateNewBlock(coinbase_script);
         } catch (const std::exception&) {
             tmpl.reset();
         }
@@ -166,11 +188,17 @@ void MiningModel::workerLoop(int id)
         }
         ++extra_nonce; // advance this worker's band for the next template
         block.nNonce = 0;
+        {
+            // Another worker may have found a block paying this address while
+            // the template was being built; it would pay the address twice.
+            std::lock_guard<std::mutex> lock(m_script_mutex);
+            if (m_payout_used || m_payout_gen != payout_gen) continue;
+        }
 
         while (m_running.load() && !m_paused.load() && m_epoch.load() == epoch &&
                block.nNonce < std::numeric_limits<uint32_t>::max()) {
             if (CheckProofOfWork(block.GetPoWHash(), block.nBits, consensus)) {
-                submitSolved(block);
+                submitSolved(block, payout_gen);
                 break; // reload a fresh template on the next outer iteration
             }
             ++block.nNonce;
@@ -179,8 +207,11 @@ void MiningModel::workerLoop(int id)
     }
 }
 
-void MiningModel::submitSolved(const CBlock& block)
+void MiningModel::submitSolved(const CBlock& block, uint64_t payout_gen)
 {
+    // Held across the submit so that no worker can copy the payout script
+    // between this block connecting and the script being marked used below.
+    std::lock_guard<std::mutex> script_lock(m_script_mutex);
     std::string hash;
     if (MiningUtil::SubmitBlock(*m_chainman, block, hash)) {
         {
@@ -188,10 +219,46 @@ void MiningModel::submitSolved(const CBlock& block)
             m_last_found_hash = QString::fromStdString(hash);
         }
         m_blocks_found.fetch_add(1);
+        if (payout_gen == m_payout_gen && !m_payout_used) {
+            // This block paid the current address. Workers wait until
+            // rotatePayout() (on the GUI thread, which is the only one that
+            // touches the wallet) has replaced it.
+            m_payout_used = true;
+            QMetaObject::invokeMethod(this, "rotatePayout", Qt::QueuedConnection);
+        }
         // Switch every worker onto the new tip immediately rather than waiting
         // for the next poll() to notice the height change.
         m_epoch.fetch_add(1);
     }
+}
+
+void MiningModel::rotatePayout()
+{
+    if (!m_next_payout_ready) {
+        m_next_payout_ok = MiningUtil::RotateCoinbaseScript(m_wallet_model, m_next_payout);
+        if (!m_next_payout_ok) {
+            // Keep mining to the current address rather than stopping; the
+            // next Start asks the wallet for a fresh one again.
+            LogPrintf("Mining: could not get a new payout address from the wallet; reusing the current one\n");
+        }
+        m_next_payout_ready = true;
+    }
+    // Never block this (the GUI) thread on m_script_mutex: a worker holds it
+    // across ProcessNewBlock, which can itself wait on the GUI thread to show a
+    // modal error (AbortNode). Try again shortly instead.
+    std::unique_lock<std::mutex> lock(m_script_mutex, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        QTimer::singleShot(10, this, &MiningModel::rotatePayout);
+        return;
+    }
+    if (m_next_payout_ok) {
+        m_coinbase_script = m_next_payout;
+        ++m_payout_gen;
+    }
+    m_payout_used = false;
+    m_next_payout_ready = false;
+    lock.unlock();
+    m_epoch.fetch_add(1);
 }
 
 void MiningModel::poll()

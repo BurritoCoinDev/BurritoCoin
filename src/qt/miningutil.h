@@ -23,9 +23,21 @@ namespace interfaces { class Node; }
 namespace MiningUtil {
 
 //! Resolve the per-wallet payout coinbase script. The address is cached per
-//! wallet NAME and re-validated as spendable; a fresh one is minted (and cached)
-//! when missing or no longer owned. Returns false and sets err on failure.
+//! wallet NAME and reused only while it is still spendable and no block has
+//! paid it yet; otherwise a fresh one is minted (and cached). If a locked
+//! wallet has used up its pre-generated keys, it asks for the passphrase so
+//! the wallet can make more; if that is cancelled, a spendable cached
+//! address is reused rather than refusing. Call it only when the user starts
+//! mining, since it may show the unlock dialog. Returns false and sets err on
+//! failure.
 bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err);
+
+//! Call after a block paid the current payout address: mark it used and mint
+//! the next one, so every block pays a different address. Returns false, with
+//! out unchanged, if the wallet can't give a new address (e.g. it is locked and
+//! out of pre-generated keys); the caller should keep mining to the old one,
+//! and the next ResolveCoinbaseScript() will try again.
+bool RotateCoinbaseScript(WalletModel* wallet_model, CScript& out);
 
 //! Capture the node's chainstate-manager and mempool handles for mining,
 //! refusing while the node is not fully started, has no peer, or is

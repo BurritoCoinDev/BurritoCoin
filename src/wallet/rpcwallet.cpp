@@ -2298,7 +2298,9 @@ static RPCHelpMan encryptwallet()
         throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Error: Failed to encrypt the wallet.");
     }
 
-    return "wallet encrypted; The keypool has been flushed and a new HD seed was generated (if you are using HD). You need to make a new backup.";
+    // This fork keeps the HD seed when encrypting (see CWallet::EncryptWallet),
+    // so earlier backups stay valid, and unencrypted.
+    return "wallet encrypted; the keys and HD seed are unchanged, so any earlier backup is an unencrypted copy that can spend everything this wallet will ever receive. Make a new backup and delete the old ones.";
 },
     };
 }

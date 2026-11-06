@@ -369,7 +369,17 @@ MiningPage::MiningPage(const PlatformStyle* platform_style, QWidget* parent)
 
 MiningPage::~MiningPage()
 {
-    // m_miner is parented to this and will stop() in its destructor.
+    // Detach and stop the engines while this page is still whole. QWidget's
+    // destructor deletes child objects (the labels as well as the engines)
+    // before Qt drops this page's connections, and MiningModel::stop(), run
+    // from its destructor, emits into our slots: closing a wallet while it was
+    // mining crashed in onHashrate on an already-deleted label.
+    if (m_miner) {
+        m_miner->disconnect(this);
+        m_miner->stop();
+    }
+    if (m_bridge) m_bridge->disconnect(this);
+    if (m_external) m_external->disconnect(this);
 }
 
 void MiningPage::setClientModel(ClientModel* client_model)
@@ -730,6 +740,19 @@ void MiningPage::startExternal()
         return;
     }
 
+    // Check the node can mine before resolving the payout, which may ask for
+    // the wallet passphrase; the bridge checks again when it starts. (The
+    // built-in miner checks in this order too.)
+    {
+        ChainstateManager* chainman = nullptr;
+        CTxMemPool* mempool = nullptr;
+        QString not_ready;
+        if (!MiningUtil::CaptureNodeHandles(m_client_model->node(), chainman, mempool, not_ready)) {
+            onMiningError(not_ready);
+            return;
+        }
+    }
+
     // Resolve the wallet payout (same cache/behaviour as the in-process miner).
     CScript payout;
     QString err;
@@ -744,7 +767,12 @@ void MiningPage::startExternal()
         connect(m_bridge, &StratumBridge::blockFound, this, &MiningPage::onBlockFound);
         connect(m_bridge, &StratumBridge::error, this, &MiningPage::onMiningError);
     }
-    const quint16 port = m_bridge->start(payout, 0);
+    // Each block the external miner finds pays a fresh address, like the
+    // built-in miner. Runs on this (the GUI) thread; this page outlives its
+    // bridge, which is its child.
+    const quint16 port = m_bridge->start(payout, 0, [this](CScript& next) {
+        return MiningUtil::RotateCoinbaseScript(m_wallet_model, next);
+    });
     if (port == 0) {
         // start() already emitted error() synchronously with the specific reason
         // (e.g. the OS listen error), which onMiningError surfaced. Don't clobber
@@ -770,11 +798,14 @@ void MiningPage::startExternal()
         m_miner_log->appendPlainText(QStringLiteral("$ %1 %2")
                                          .arg(program, args.join(QLatin1Char(' '))));
     }
-    m_external->start(program, args);
-    QSettings().setValue(QStringLiteral("mining/external_path"), program);
-
+    // Mark the run active before launching it. On Windows, QProcess reports a
+    // program that can't be started (missing, quarantined) synchronously from
+    // inside start(); onMiningError only tears the bridge and UI down for an
+    // active run, so marking it afterwards left "Mining" showing with no miner.
     m_external_active = true;
     applyMiningUi(true);
+    m_external->start(program, args);
+    QSettings().setValue(QStringLiteral("mining/external_path"), program);
 }
 
 void MiningPage::stopExternal()

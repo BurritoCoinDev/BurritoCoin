@@ -23,6 +23,36 @@
 
 namespace MiningUtil {
 
+namespace {
+
+QString PayoutKey(WalletModel* wallet_model, const char* field)
+{
+    return QStringLiteral("mining/%1/%2").arg(wallet_model->getWalletName(), QLatin1String(field));
+}
+
+//! Mint a fresh payout address, cache it as the next one to use, and return its script.
+bool MintCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err)
+{
+    CTxDestination dest;
+    if (!wallet_model->wallet().getNewDestination(OutputType::BECH32, "Mining", dest)) {
+        err = QObject::tr("Could not get a payout address from the wallet. If the wallet is "
+                          "encrypted, unlock it first, then try again.");
+        return false;
+    }
+    CScript script = GetScriptForDestination(dest);
+    if (script.empty()) {
+        err = QObject::tr("The wallet returned an unusable payout address.");
+        return false;
+    }
+    QSettings settings;
+    settings.setValue(PayoutKey(wallet_model, "payout_address"), QString::fromStdString(EncodeDestination(dest)));
+    settings.setValue(PayoutKey(wallet_model, "payout_unused"), true);
+    out = script;
+    return true;
+}
+
+} // namespace
+
 bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err)
 {
     if (!wallet_model) {
@@ -32,39 +62,66 @@ bool ResolveCoinbaseScript(WalletModel* wallet_model, CScript& out, QString& err
 
     // Cache the payout address per wallet NAME (not process-global) so a
     // multi-wallet user mining into wallet A while viewing wallet B can't be
-    // silently cross-credited. Reuse a previously chosen address if it is still
-    // a valid destination; otherwise mint a fresh one and remember it.
-    const QString wallet_name = wallet_model->getWalletName();
+    // silently cross-credited. Reuse the cached address only while no block has
+    // paid it yet: each block then pays a different address, which keeps one
+    // miner's blocks from all reading as the same payee on the explorer.
+    // "payout_unused" is set when an address is minted and cleared once a block
+    // pays it. Builds before it never set it, so their cached address (which
+    // their blocks did pay) is replaced on the first start.
     QSettings settings;
-    const QString key = QStringLiteral("mining/%1/payout_address").arg(wallet_name);
-
-    CTxDestination dest;
-    bool have_dest = false;
-    const QString cached = settings.value(key).toString();
+    CScript cached_script;
+    const QString cached = settings.value(PayoutKey(wallet_model, "payout_address")).toString();
     if (!cached.isEmpty()) {
-        dest = DecodeDestination(cached.toStdString());
+        const CTxDestination dest = DecodeDestination(cached.toStdString());
         // Require not just a well-formed address but one this wallet can still
         // spend. Otherwise a wallet restored from an older backup (or a reused
         // wallet name pointing at a different file) would keep paying rewards to
-        // an address the user no longer controls. If it's not spendable, fall
-        // through and mint a fresh owned address (which also rewrites the cache).
-        have_dest = IsValidDestination(dest) && wallet_model->wallet().isSpendable(dest);
-    }
-    if (!have_dest) {
-        if (!wallet_model->wallet().getNewDestination(OutputType::BECH32, "Mining", dest)) {
-            err = QObject::tr("Could not get a payout address from the wallet. If the wallet is "
-                              "encrypted, unlock it first, then try again.");
-            return false;
+        // an address the user no longer controls.
+        if (IsValidDestination(dest) && wallet_model->wallet().isSpendable(dest)) {
+            cached_script = GetScriptForDestination(dest);
         }
-        settings.setValue(key, QString::fromStdString(EncodeDestination(dest)));
     }
+    if (!cached_script.empty() && settings.value(PayoutKey(wallet_model, "payout_unused"), false).toBool()) {
+        out = cached_script;
+        return true;
+    }
+    if (MintCoinbaseScript(wallet_model, out, err)) return true;
+    // An encrypted legacy wallet (what Create Wallet makes here) that stays
+    // locked can't make addresses beyond the ~1000 it made in advance, and
+    // each block uses one. This runs when the
+    // user presses Start, so ask for the passphrase once: unlocked, the wallet
+    // makes a fresh batch, then the context locks it again. Only ask if that
+    // can work: a wallet with no HD seed (made blank, or restored from a
+    // recovery file) can't make addresses even when unlocked, and
+    // canGetAddresses() says so whether or not it is locked.
+    if (wallet_model->getEncryptionStatus() == WalletModel::Locked && wallet_model->wallet().canGetAddresses()) {
+        WalletModel::UnlockContext unlock(wallet_model->requestUnlock());
+        if (unlock.isValid() && MintCoinbaseScript(wallet_model, out, err)) return true;
+    }
+    // Still no fresh address (unlock cancelled). Paying the last address again
+    // beats refusing to mine, which builds before per-block addresses never did.
+    if (!cached_script.empty()) {
+        out = cached_script;
+        return true;
+    }
+    if (!wallet_model->wallet().canGetAddresses()) {
+        // Unlocking can't help this wallet, so don't say it would.
+        err = QObject::tr("This wallet can't make new addresses, because it has no recovery key "
+                          "(for example, it was restored from a recovery file, or made blank or "
+                          "watch-only). Mine into a wallet that has one, such as a standard new "
+                          "wallet or one restored from a recovery key.");
+    }
+    return false;
+}
 
-    out = GetScriptForDestination(dest);
-    if (out.empty()) {
-        err = QObject::tr("The wallet returned an unusable payout address.");
-        return false;
-    }
-    return true;
+bool RotateCoinbaseScript(WalletModel* wallet_model, CScript& out)
+{
+    if (!wallet_model) return false;
+    // The current address is used now whatever happens next, so a later
+    // ResolveCoinbaseScript() must not hand it out again.
+    QSettings().setValue(PayoutKey(wallet_model, "payout_unused"), false);
+    QString err;
+    return MintCoinbaseScript(wallet_model, out, err);
 }
 
 bool CaptureNodeHandles(interfaces::Node& node, ChainstateManager*& chainman,
